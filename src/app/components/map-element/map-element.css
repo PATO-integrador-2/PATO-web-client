@@ -2,6 +2,46 @@
   display: block;
   width: 100%;
   height: 100%;
+  position: relative;
+}
+
+.map-legend {
+  position: absolute;
+  z-index: 1000;
+  right: 16px;
+  bottom: 24px;
+  width: 156px;
+  padding: 10px 12px;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #1f2937;
+  font-size: 11px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.16);
+  pointer-events: none;
+}
+
+.map-legend__title {
+  margin-bottom: 7px;
+  font-weight: 700;
+}
+
+.map-legend__gradient {
+  height: 10px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #2e7d32 0%, #f5c442 50%, #c62828 100%);
+}
+
+.map-legend__labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.map-legend__note {
+  margin-top: 7px;
+  color: #64748b;
+  font-size: 10px;
 }
 
 ::ng-deep .department-label {
