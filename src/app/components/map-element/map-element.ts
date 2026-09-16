@@ -11,11 +11,57 @@ import { LocationService } from '../../core/services/location.service';
 
 
 const DEFAULT_VIEW = { center: [4.5709, -74.2973] as L.LatLngExpression, zoom: 6 };
+const LATIN_AMERICA_BOUNDS: L.LatLngBoundsExpression = [[-60, -160], [35, -20]];
 
 const REGION_BASE_STYLE = { color: '#4b5563', weight: 2, fillColor: '#e5e7eb', fillOpacity: 0.6 };
 const REGION_HOVER_STYLE = { weight: 3, color: '#111827', fillOpacity: 0.8 };
 const DEPARTMENT_BASE_STYLE = { color: '#6b7280', weight: 1.2, fillColor: '#f3f4f6', fillOpacity: 0.6 };
 const DEPARTMENT_HOVER_STYLE = { weight: 2.5, color: '#111827', fillOpacity: 0.8 };
+const COUNTRY_BASE_STYLE = { color: '#64748b', weight: 1, fillColor: '#cbd5e1', fillOpacity: 0.45 };
+const NO_DATA_COLOR = '#d1d5db';
+const SIMULATED_REGION_IPM: Record<string, number> = {
+  Amazonia: 0.78,
+  Andina: 0.34,
+  Caribe: 0.68,
+  Orinoquia: 0.52,
+  Pacifica: 0.86,
+};
+
+export function metricColor(value: number | undefined): string {
+  if (value === undefined || Number.isNaN(value)) return NO_DATA_COLOR;
+
+  const normalized = Math.min(1, Math.max(0, value));
+  const stops = [
+    { at: 0, color: [46, 125, 50] },
+    { at: 0.5, color: [245, 196, 66] },
+    { at: 1, color: [198, 40, 40] },
+  ];
+  const start = normalized <= 0.5 ? stops[0] : stops[1];
+  const end = normalized <= 0.5 ? stops[1] : stops[2];
+  const ratio = (normalized - start.at) / (end.at - start.at);
+  const channels = start.color.map((channel, index) =>
+    Math.round(channel + (end.color[index] - channel) * ratio)
+  );
+
+  return `rgb(${channels.join(', ')})`;
+}
+
+function simulatedDepartmentMetric(code: string | undefined): number | undefined {
+  if (!code) return undefined;
+
+  let hash = 0;
+  for (const character of code) hash = (hash * 31 + character.charCodeAt(0)) % 997;
+  return 0.2 + (hash / 997) * 0.7;
+}
+
+function simulatedCountryMetric(name: string | undefined): number | undefined {
+  if (!name) return undefined;
+  if (name === 'Colombia') return 0.42;
+
+  let hash = 0;
+  for (const character of name) hash = (hash * 31 + character.charCodeAt(0)) % 997;
+  return 0.15 + (hash / 997) * 0.75;
+}
 
 type ColombiaViewLevel = 'regions' | 'departments';
 
@@ -39,6 +85,9 @@ export class MapElementComponent implements OnDestroy {
   private departmentsLayer: L.GeoJSON | undefined;
   private colombiaLevel: ColombiaViewLevel = 'regions';
   private countriesGeojson: FeatureCollection | undefined;
+  private countriesRequestId = 0;
+  private regionsRequestId = 0;
+  private departmentsRequestId = 0;
 
   constructor(
     private injector: Injector,
@@ -63,6 +112,9 @@ export class MapElementComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.countriesRequestId++;
+    this.regionsRequestId++;
+    this.departmentsRequestId++;
     this.map?.remove();
   }
 
@@ -72,6 +124,9 @@ export class MapElementComponent implements OnDestroy {
     this.map = L.map(this.mapContainer.nativeElement, {
       center: DEFAULT_VIEW.center,
       zoom: DEFAULT_VIEW.zoom,
+      maxBounds: LATIN_AMERICA_BOUNDS,
+      maxBoundsViscosity: 1,
+      minZoom: 3,
     });
 
     L.tileLayer(
@@ -79,6 +134,8 @@ export class MapElementComponent implements OnDestroy {
       {
         attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
         maxZoom: 16,
+        noWrap: true,
+        bounds: LATIN_AMERICA_BOUNDS,
       }
     ).addTo(this.map);
   }
@@ -166,17 +223,18 @@ export class MapElementComponent implements OnDestroy {
   private showRegionsLayer(): void {
     if (this.regionsLayer || !this.map) return;
     const L = this.leaflet!;
+    const requestId = ++this.regionsRequestId;
 
     this.geoDataService.getColombiaRegions().subscribe((geojson) => {
-      if (!this.map) return;
+      if (!this.map || requestId !== this.regionsRequestId || this.regionsLayer) return;
       this.regionsLayer = L.geoJSON(geojson as any, {
-        style: () => REGION_BASE_STYLE,
+        style: (feature) => this.regionStyle(feature as Feature | undefined),
         onEachFeature: (feature: Feature, layer: L.Layer) => {
           const name = feature.properties?.['region'] ?? 'Región';
           layer.bindTooltip(name, { permanent: true, direction: 'center', className: 'department-label' });
 
           layer.on('mouseover', () => (layer as L.Path).setStyle(REGION_HOVER_STYLE));
-          layer.on('mouseout', () => (layer as L.Path).setStyle(REGION_BASE_STYLE));
+          layer.on('mouseout', () => (layer as L.Path).setStyle(this.regionStyle(feature)));
 
           layer.on('click', () => {
             this.colombiaLevel = 'departments';
@@ -201,17 +259,18 @@ export class MapElementComponent implements OnDestroy {
   private showDepartmentsLayer(): void {
     if (this.departmentsLayer || !this.map) return;
     const L = this.leaflet!;
+    const requestId = ++this.departmentsRequestId;
 
     this.geoDataService.getColombiaDepartments().subscribe((geojson) => {
-      if (!this.map) return;
+      if (!this.map || requestId !== this.departmentsRequestId || this.departmentsLayer) return;
       this.departmentsLayer = L.geoJSON(geojson as any, {
-        style: () => DEPARTMENT_BASE_STYLE,
+        style: (feature) => this.departmentStyle(feature as Feature | undefined),
         onEachFeature: (feature: Feature, layer: L.Layer) => {
           const name = feature.properties?.[dptName] ?? 'Departamento';
           layer.bindTooltip(name, { permanent: true, direction: 'center', className: 'department-label' });
 
           layer.on('mouseover', () => (layer as L.Path).setStyle(DEPARTMENT_HOVER_STYLE));
-          layer.on('mouseout', () => (layer as L.Path).setStyle(DEPARTMENT_BASE_STYLE));
+          layer.on('mouseout', () => (layer as L.Path).setStyle(this.departmentStyle(feature)));
           layer.on('click', () => {
             const code = feature.properties?.['DPTO'] ?? null;
 
@@ -229,12 +288,30 @@ export class MapElementComponent implements OnDestroy {
     });
   }
 
+  private regionStyle(feature: Feature | undefined): typeof REGION_BASE_STYLE {
+    const name = feature?.properties?.['region'];
+    return {
+      ...REGION_BASE_STYLE,
+      fillColor: metricColor(SIMULATED_REGION_IPM[name]),
+    };
+  }
+
+  private departmentStyle(feature: Feature | undefined): typeof DEPARTMENT_BASE_STYLE {
+    const code = feature?.properties?.['DPTO'];
+    return {
+      ...DEPARTMENT_BASE_STYLE,
+      fillColor: metricColor(simulatedDepartmentMetric(code)),
+    };
+  }
+
   private removeRegionsLayer(): void {
+    this.regionsRequestId++;
     this.regionsLayer?.remove();
     this.regionsLayer = undefined;
   }
 
   private removeDepartmentsLayer(): void {
+    this.departmentsRequestId++;
     this.departmentsLayer?.remove();
     this.departmentsLayer = undefined;
   }
@@ -243,20 +320,16 @@ export class MapElementComponent implements OnDestroy {
     if (this.countriesLayer || !this.map || !this.leaflet) return;
 
     const L = this.leaflet;
+    const requestId = ++this.countriesRequestId;
 
     this.geoDataService.getCountries().subscribe({
       next: (geojson) => {
-        if (!this.map) return;
+        if (!this.map || requestId !== this.countriesRequestId || this.countriesLayer) return;
 
         this.countriesGeojson = geojson;
 
         this.countriesLayer = L.geoJSON(geojson as any, {
-          style: {
-            color: '#64748b',
-            weight: 1,
-            fillColor: '#cbd5e1',
-            fillOpacity: 0.45,
-          },
+          style: (feature) => this.countryStyle(feature as Feature | undefined),
 
           onEachFeature: (feature: Feature, layer: L.Layer) => {
             const name = feature.properties?.['name'] ?? 'País';
@@ -275,12 +348,7 @@ export class MapElementComponent implements OnDestroy {
             });
 
             layer.on('mouseout', () => {
-              (layer as L.Path).setStyle({
-                color: '#64748b',
-                weight: 1,
-                fillColor: '#cbd5e1',
-                fillOpacity: 0.45,
-              });
+              (layer as L.Path).setStyle(this.countryStyle(feature));
             });
 
             layer.on('click', (event) => {
@@ -294,12 +362,7 @@ export class MapElementComponent implements OnDestroy {
               this.map?.flyToBounds(bounds, { duration: 1 });
 
               // Mantiene el estilo normal, sin selección naranja
-              path.setStyle({
-                color: '#64748b',
-                weight: 1,
-                fillColor: '#cbd5e1',
-                fillOpacity: 0.45,
-              });
+              path.setStyle(this.countryStyle(feature));
 
               this.locationChange.emit({
                 pais: name,
@@ -319,7 +382,16 @@ export class MapElementComponent implements OnDestroy {
     });
   }
 
+  private countryStyle(feature: Feature | undefined): typeof COUNTRY_BASE_STYLE {
+    const name = feature?.properties?.['name'];
+    return {
+      ...COUNTRY_BASE_STYLE,
+      fillColor: metricColor(simulatedCountryMetric(name)),
+    };
+  }
+
   private removeCountriesLayer(): void {
+    this.countriesRequestId++;
     this.countriesLayer?.remove();
     this.countriesLayer = undefined;
   }
