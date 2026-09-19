@@ -1,12 +1,25 @@
-<div #mapContainer class="w-full h-full"></div>
+<div #mapContainer class="map-container"></div>
 
-<div class="map-legend" aria-label="Leyenda de valores IPM simulados">
-	<div class="map-legend__title">IPM simulado</div>
+<div class="map-actions" aria-label="Controles del mapa">
+	@if (location()?.pais === 'Colombia') {
+		<div class="level-control" role="group" aria-label="Nivel geográfico">
+			<button type="button" [class.is-active]="colombiaLevel === 'regions'" (click)="setColombiaLevel('regions')">Región</button>
+			<button type="button" [class.is-active]="colombiaLevel === 'departments'" (click)="setColombiaLevel('departments')">Departamento</button>
+		</div>
+	}
+
+	<button type="button" class="map-action" (click)="goBackToLatinAmerica()">
+		Volver a LATAM
+	</button>
+</div>
+
+<div class="map-legend" aria-label="Leyenda de incidencia IPM">
+	<div class="map-legend__title">Incidencia IPM</div>
 	<div class="map-legend__gradient"></div>
 	<div class="map-legend__labels">
 		<span>Bajo</span>
 		<span>Medio</span>
 		<span>Alto</span>
 	</div>
-	<div class="map-legend__note">Datos demostrativos</div>
+	<div class="map-legend__note">Año: {{ mapYear() ?? 'cargando...' }}</div>
 </div>
