@@ -23,15 +23,6 @@ export interface GeoCountry {
 const dptName = 'NOMBRE_DPT';
 const dptCode = 'DPTO';
 
-function normalize(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, ' ');
-}
-
 @Injectable({ providedIn: 'root' })
 export class LocationService {
   private geoDataService = inject(GeoDataService);
@@ -44,41 +35,8 @@ export class LocationService {
   readonly status = this._status.asReadonly();
   readonly error = this._error.asReadonly();
 
-  // Selección
-  readonly selectedRegion = signal<string | null>(null);
-  readonly selectedDepartmentCode = signal<string | null>(null);
-
-  // Derivados públicos, deduplicados por nombre normalizado
-  readonly regionNames = computed(() => {
-    const seen = new Set<string>();
-    const out: string[] = [];
-    for (const r of this._regions()) {
-      const key = normalize(r.name);
-      if (!seen.has(key)) { seen.add(key); out.push(r.name); }
-    }
-    return out.sort((a, b) => a.localeCompare(b));
-  });
-
-  readonly departmentsForSelectedRegion = computed(() => {
-    const region = this.selectedRegion();
-    const all = this._departments();
-    const filtered = region ? all.filter(d => d.regionName === region) : all;
-
-    const seen = new Set<string>();
-    const out: GeoDepartment[] = [];
-    for (const d of filtered) {
-      const key = normalize(d.name);
-      if (!seen.has(key)) { seen.add(key); out.push(d); }
-    }
-    return out.sort((a, b) => a.name.localeCompare(b.name));
-  });
-
   readonly regionFeatures = computed(() => this._regions());
-  readonly departmentFeatures = computed(() =>
-    this.selectedRegion()
-      ? this._departments().filter(d => d.regionName === this.selectedRegion())
-      : this._departments()
-  );
+  readonly departmentFeatures = computed(() => this._departments());
 
   load(): void {
     if (this._status() !== 'idle') return; // evita cargas duplicadas
@@ -100,15 +58,6 @@ export class LocationService {
       },
       error: (err) => this.handleError(err),
     });
-  }
-
-  selectRegion(regionName: string | null): void {
-    this.selectedRegion.set(regionName);
-    this.selectedDepartmentCode.set(null); // reset del nivel inferior
-  }
-
-  selectDepartment(code: string | null): void {
-    this.selectedDepartmentCode.set(code);
   }
 
   private parseRegions(geo: FeatureCollection): GeoRegion[] {

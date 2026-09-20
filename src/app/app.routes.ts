@@ -12,7 +12,6 @@ import { LatinAmerica } from './pages/latin-america/latin-america';
 import { ColDept } from './pages/col-dept/col-dept';
 import { authGuard } from './core/guards/auth-guard';
 import { authenticatedGuard } from './core/guards/authenticated-guard';
-import { ColNational } from './pages/prediction-viewer/col-national/col-national';
 
 export const routes: Routes = [
   {path: '', redirectTo: 'login', pathMatch: 'full'},
@@ -30,7 +29,7 @@ export const routes: Routes = [
   { path: 'latin', component: LatinAmerica, canActivate: [authGuard]},
   { path: 'map-viewer', component: MapViewer, canActivate: [authGuard]},
   { path: 'chat-bot', component: ChatBOT, canActivate: [authGuard]},
-  { path: 'prediction-viewer', component: ColNational, canActivate: [authGuard]},
+  { path: 'prediction-viewer', component: PredictionViewer, canActivate: [authGuard]},
 
   // Ruta comodín
   { path: '**', redirectTo: 'login' }

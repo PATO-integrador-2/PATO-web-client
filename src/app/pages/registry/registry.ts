@@ -123,7 +123,6 @@ export class Registry {
     const pass = this.newPassword.value;
     const confirmPass = this.confirmPassword.value;
 
-
     this.registryService.registry(username, email, pass, confirmPass).subscribe({
       next: () => {
         // Bocadillo de usuario actualizada con éxito
@@ -131,7 +130,7 @@ export class Registry {
           duration: 3000,
           verticalPosition: 'bottom',
         });
-        this.router.navigate([''])
+        this.router.navigate(['verify-email'])
       },
       error: (err) => {
           console.error('Error al cambiar la cotraseña', err);

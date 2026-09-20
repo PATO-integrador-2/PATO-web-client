@@ -1,15 +1,10 @@
-<div class="flex flex-col h-screen">
+<div class="map-viewer-shell">
   <app-navbar></app-navbar>
 
-  <div class="flex flex-1 overflow-hidden">
-    <app-sidebar-map
-      [selection]="currentSelection()"
-      (selectionChange)="onSelectionChange($event)">
-    </app-sidebar-map>
-
-    <main class="flex-1 relative bg-gray-100">
+  <div class="map-viewer-content">
+    <main class="map-viewer-main">
       <app-map-element
-        [location]="currentSelection().locations[0]"
+        [location]="currentLocation()"
         (locationChange)="onMapLocationChange($event)">
       </app-map-element>
     </main>
