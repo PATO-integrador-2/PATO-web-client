@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PredictionViewer } from './prediction-viewer';
+import { Percentage } from './percentage';
 
-describe('PredictionViewer', () => {
-  let component: PredictionViewer;
-  let fixture: ComponentFixture<PredictionViewer>;
+describe('Percentage', () => {
+  let component: Percentage;
+  let fixture: ComponentFixture<Percentage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PredictionViewer],
+      imports: [Percentage],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PredictionViewer);
+    fixture = TestBed.createComponent(Percentage);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
