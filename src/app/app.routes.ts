@@ -9,7 +9,9 @@ import { FindAccount } from './pages/account-recovery/account-recovery';
 import { VerifyEmail } from './pages/verify-email/verify-email';
 import { ResetPassword } from './pages/reset-password/reset-password';
 import { LatinAmerica } from './pages/latin-america/latin-america';
+import { ColNational } from './pages/col-national/col-national';
 import { ColDept } from './pages/col-dept/col-dept';
+import { ColNational as PredictionViewer } from './pages/prediction-viewer/col-national/col-national';
 import { authGuard } from './core/guards/auth-guard';
 import { authenticatedGuard } from './core/guards/authenticated-guard';
 
