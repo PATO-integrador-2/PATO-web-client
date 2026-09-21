@@ -11,9 +11,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     if (isPlatformBrowser(platformId)) {
         const token = localStorage.getItem('authToken');
 
-        // Log para depurar en consola del navegador
-        console.log(`[Interceptor] Petición a: ${req.url} | Token encontrado:`, !!token);
-
         if (token) {
             const authReq = req.clone({
                 setHeaders: {

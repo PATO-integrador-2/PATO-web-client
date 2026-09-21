@@ -34,10 +34,6 @@ body {
 }
 
 :root {
-  @include mat.snack-bar-overrides((button-color: #000000,
-      container-color: red,
-    ));
-
   .campo-password {
     @include mat.form-field-overrides((outlined-container-shape: 1rem,
         outlined-outline-color: #d1d5db,
@@ -106,28 +102,25 @@ body {
   justify-content: center;
 }
 
-.header-title h3 {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: #1e293b;
-}
+// Dashboard 
+
 
 .chart-wrapper {
   position: relative;
   width: 100%;
-  height: 320px;
-  max-width: 100%;
+  height: 100%;
+  min-height: 280px; 
 }
 
-// DASHBOARD CSS
-:host {
-  display: block;
+.chart-container {
+  flex: 1 1 auto; 
+  display: flex;   
+  flex-direction: column;
   width: 100%;
-  min-height: 100vh;
-  background-color: #f8fafc;
-  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 0;   
+  position: relative;
 }
+
 
 .dashboard-layout {
   display: flex;
@@ -154,11 +147,34 @@ body {
 
 .dashboard-widgets {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  /* Define columnas adaptables que se reparten el espacio equitativamente */
+  grid-template-columns: repeat(auto-fit, minmax(700px, 1fr));
+  grid-auto-rows: 500px; 
+  gap: 1.5rem;
   width: 100%;
-  align-items: start;
+  box-sizing: border-box;
 }
+
+.dashboard-card {
+  break-inside: avoid;
+  margin-bottom: 24px;
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  position: relative;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+// Barra lateral izquierda
 
 .sidebar {
   width: 280px;
@@ -222,26 +238,36 @@ body {
   font-size: 12.8px;
 }
 
-.dashboard-grid {
-  column-count: 2;
-  column-gap: 24px;
-  width: 100%;
+// Barra de navegación
+mat-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 }
 
-.dashboard-card {
-  break-inside: avoid;
-  margin-bottom: 24px;
-  display: inline-block;
-  width: 100%;
+// emergenxy
+.title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 20px 0px 20px;
+}
 
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.navbar-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 20px 10px 20px;
+    border-bottom: 2px solid #325754;
+}
 
-  position: relative;
-  min-width: 0;
-  box-sizing: border-box;
-  overflow: hidden;
+.navbar-card h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1e293b;
 }

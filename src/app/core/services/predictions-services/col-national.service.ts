@@ -4,13 +4,13 @@ import { WidgetItem } from '../../../interfaces/ipm.interface';
 import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
 import { DeprivationsItem, DimensionItem, MpiItem, PercentageItem } from '../../../interfaces/predictions.interface';
-import { Mpi } from '../../../pages/prediction-viewer/col-national/widgets/mpi/mpi';
-import { Deprivations } from '../../../pages/prediction-viewer/col-national/widgets/deprivations/deprivations';
-import { Percentage } from '../../../pages/prediction-viewer/col-national/widgets/percentage/percentage';
-import { Dimension } from '../../../pages/prediction-viewer/col-national/widgets/dimension/dimension';
+import { Mpi } from '../../../pages/prediction-viewer/col-national-predict/widgets/mpi/mpi';
 import { IncidenceByHeadSexItem, IncidenceBySexItem } from '../../../interfaces/predictions.interface';
-import { IncidenceBySex } from '../../../pages/prediction-viewer/col-national/widgets/incidence-by-sex/incidence-by-sex';
-import { IncidenceByHeadSex } from '../../../pages/prediction-viewer/col-national/widgets/incidence-by-head-sex/incidence-by-head-sex';
+import { Percentage } from '../../../pages/prediction-viewer/col-national-predict/widgets/percentage/percentage';
+import { Deprivations } from '../../../pages/prediction-viewer/col-national-predict/widgets/deprivations/deprivations';
+import { Dimension } from '../../../pages/prediction-viewer/col-national-predict/widgets/dimension/dimension';
+import { IncidenceBySex } from '../../../pages/prediction-viewer/col-national-predict/widgets/incidence-by-sex/incidence-by-sex';
+import { IncidenceByHeadSex } from '../../../pages/prediction-viewer/col-national-predict/widgets/incidence-by-head-sex/incidence-by-head-sex';
 
 @Service()
 export class ColNationalService {

@@ -1,26 +1,35 @@
 import { Service, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PmiApiResponse, DeprivationsItem, WidgetItem, IntensityPovertyItem, ContributionPovertyItem, NationalPovertyItem, PovertyByAgeItem } from '../../../interfaces/ipm.interface';
+import { PmiApiResponse, DeprivationsItem, WidgetItem, IntensityPovertyItem, ContributionPovertyItem, NationalPovertyItem, PovertyByAgeItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
 import { environment } from '../../../../environments/environment.development';
-import { RadarDeprivations } from '../../../pages/col-national/widgets/radar-deprivations/radar-deprivations';
 import { isPlatformBrowser } from '@angular/common';
-import { IntensityPoverty } from '../../../pages/col-national/widgets/intensity-poverty/intensity-poverty';
-import { ContributionsImpact } from '../../../pages/col-national/widgets/contributions-impact/contributions-impact';
-import { Mpi } from '../../../pages/col-national/widgets/mpi/mpi';
-import { MpiSex } from '../../../pages/col-national/widgets/mpi-sex/mpi-sex';
-import { MpiBossSex } from '../../../pages/col-national/widgets/mpi-boss-sex/mpi-boss-sex';
-import { ContributionDeprivations } from '../../../pages/latin-america/widgets/contribution-deprivations/contribution-deprivations';
-import { PopulationPoverty } from '../../../pages/latin-america/widgets/population-poverty/population-poverty';
-import { PovertyByAge } from '../../../pages/latin-america/widgets/poverty-by-age/poverty-by-age';
+import { ContributionDeprivations } from '../../../pages/dashboard-viewer/latin-america-dash/widgets/contribution-deprivations/contribution-deprivations';
+import { PopulationPoverty } from '../../../pages/dashboard-viewer/latin-america-dash/widgets/population-poverty/population-poverty';
+import { PovertyByAge } from '../../../pages/dashboard-viewer/latin-america-dash/widgets/poverty-by-age/poverty-by-age';
 @Service()
 export class LatinAmericaService {
     private httpClient = inject(HttpClient);
     private platformId = inject(PLATFORM_ID);
 
     widgets = signal<WidgetItem[]>([
-        { id: 1, label: 'Contribución relativa de las privaciones a la pobreza multidimensional', content: ContributionDeprivations },
-        { id: 2, label: 'Población en situación de pobreza multidimensional (cifras nacionales)', content: PopulationPoverty },
-        { id: 3, label: 'Incidencia de la pobreza multidimensional por grupo de edad y área', content: PovertyByAge },
+        {
+            id: 1,
+            label: 'Contribución relativa de las privaciones a la pobreza multidimensional',
+            content: ContributionDeprivations,
+            
+        },
+        {
+            id: 2,
+            label: 'Población en situación de pobreza multidimensional (cifras nacionales)',
+            content: PopulationPoverty,
+
+        },
+        {
+            id: 3,
+            label: 'Incidencia de la pobreza multidimensional por grupo de edad y área',
+            content: PovertyByAge,
+
+        },
 
     ]);
 

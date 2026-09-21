@@ -1,9 +1,9 @@
 import { Service, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PmiApiResponse, DeprivationsItem, WidgetItem, IndicatorDeptItem } from '../../../interfaces/ipm.interface';
+import { PmiApiResponse, DeprivationsItem, WidgetItem, IndicatorDeptItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
 import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
-import { MPHouseholdsDep } from '../../../pages/col-dept/widgets/mp-households-dep/mp-households-dep';
+import { MPHouseholdsDep } from '../../../pages/dashboard-viewer/col-dept-dash/widgets/mp-households-dep/mp-households-dep';
 
 
 @Service()
@@ -12,7 +12,11 @@ export class ColDeptService {
     private platformId = inject(PLATFORM_ID);
 
     widgets = signal<WidgetItem[]>([
-        { id: 1, label: 'Contribución relativa de las privaciones a la pobreza multidimensional', content: MPHouseholdsDep },
+        {
+            id: 1,
+            label: 'Contribución relativa de las privaciones a la pobreza multidimensional',
+            content: MPHouseholdsDep,
+        },
 
     ]);
 

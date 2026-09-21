@@ -1,0 +1,43 @@
+<!--Encabezado-->
+<div class="title-bar">
+    <button class="btn-close" mat-icon-button mat-dialog-close aria-label="Cerrar ventana">
+        <mat-icon>close</mat-icon>
+    </button>
+</div>
+
+<h2 mat-dialog-title>Filtrar: {{ data.title }}</h2>
+
+<mat-action-list class="content">
+
+    <div class="fields-grid">
+
+            <!-- Campo AÑO (Se muestra solo si la tarjeta lo requiere) -->
+            @if (data.filterFields.includes('year')) {
+            <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Año</mat-label>
+                <mat-select [(ngModel)]="selectedFilters.year">
+                    @for (year of data.availableYears; track year) {
+                    <mat-option [value]="year">{{ year }}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+            }
+
+            <!-- Campo DOMINIO (Se muestra solo si la tarjeta lo requiere) -->
+            @if (data.filterFields.includes('domain')) {
+            <mat-form-field appearance="outline" >
+                <mat-label>Dominio</mat-label>
+                <mat-select [(ngModel)]="selectedFilters.domain">
+                    @for (domain of data.availableDomains; track domain) {
+                    <mat-option [value]="domain">{{ domain }}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+            }
+
+    </div>
+
+    <div class="container-btn-action">
+        <button (click)="apply()" class="btn-action" matButton="filled" cdkFocusInitial>Aplicar</button>
+    </div>
+</mat-action-list>
