@@ -6,6 +6,16 @@ export interface WidgetItem {
     content: Type<unknown>;
 }
 
+export interface WidgetItemDash {
+    id: number;
+    label: string;
+    content: Type<unknown>;
+    filterFields: Array<'year' | 'domain' | 'country'>;
+    getYearsSignal?: () => number[];
+    getDomainsSignal?: () => string[];
+    loadData: (filters: { year?: number; domain?: string }) => void;
+}
+
 // Dashboard 1
 
 export interface PmiApiResponse {

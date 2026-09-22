@@ -1,0 +1,35 @@
+<app-navbar></app-navbar>
+
+<div class="dashboard-layout">
+    
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+        <header class="dashboard-header">
+            <h1>Panel Multidimensional de Pobreza</h1>
+        </header>
+        <br><br>
+
+        <!-- RENDERIZADO DE WIDGETS -->
+        <div class="dashboard-widgets">
+            @for (widget of dashboardService.widgets(); track widget.id) {
+            <div class="dashboard-card">
+
+                <div class="navbar-card">
+                    <h3>{{ widget.label }}</h3>
+
+                    <button  mat-icon-button type="button" class="filter-btn" (click)="onClickFilter(widget)"
+                        aria-label="Filtrar">
+                        <mat-icon>filter_list</mat-icon>
+                    </button>
+                </div><br>
+
+                <div class="chart-container">
+                    <ng-container [ngComponentOutlet]="widget.content" />
+                </div>
+
+            </div>
+            }
+        </div>
+    </main>
+
+</div>

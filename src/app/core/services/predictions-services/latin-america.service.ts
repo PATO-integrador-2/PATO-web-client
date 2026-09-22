@@ -4,9 +4,9 @@ import { WidgetItem } from '../../../interfaces/ipm.interface';
 import { ContributionLatamItem, NationalPovertyItem, PovertyByAgeItem } from '../../../interfaces/predictions.interface';
 import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
-import { Deprivations } from '../../../pages/prediction-viewer/col-national/widgets/deprivations/deprivations';
-import { Percentage } from '../../../pages/prediction-viewer/col-national/widgets/percentage/percentage';
-import { ContributionLatam } from '../../../pages/prediction-viewer/latin-america/widgets/contribution-latam/contribution-latam';
+import { Deprivations } from '../../../pages/prediction-viewer/col-national-predict/widgets/deprivations/deprivations';
+import { Percentage } from '../../../pages/prediction-viewer/col-national-predict/widgets/percentage/percentage';
+import { ContributionLatam } from '../../../pages/prediction-viewer/latin-america-predict/widgets/contribution-latam/contribution-latam';
 
 
 @Service()

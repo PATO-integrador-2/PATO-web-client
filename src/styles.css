@@ -14,5 +14,5 @@ router-outlet {
 }
 
 body {
-	overflow: hidden;
+	overflow-y: auto;
 }

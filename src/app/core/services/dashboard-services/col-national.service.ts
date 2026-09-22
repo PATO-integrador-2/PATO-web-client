@@ -1,27 +1,94 @@
 import { Service, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PmiApiResponse, DeprivationsItem, WidgetItem, IntensityPovertyItem, ContributionImpactItem, MpiSexItem, MpiBossSexItem } from '../../../interfaces/ipm.interface';
+import { PmiApiResponse, DeprivationsItem, WidgetItem, IntensityPovertyItem, ContributionImpactItem, MpiSexItem, MpiBossSexItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
 import { environment } from '../../../../environments/environment.development';
-import { RadarDeprivations } from '../../../pages/col-national/widgets/radar-deprivations/radar-deprivations';
+import { RadarDeprivations } from '../../../pages/dashboard-viewer/col-national-dash/widgets/radar-deprivations/radar-deprivations';
+import { MpiSex } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi-sex/mpi-sex';
+import { IntensityPoverty } from '../../../pages/dashboard-viewer/col-national-dash/widgets/intensity-poverty/intensity-poverty';
+import { ContributionsImpact } from '../../../pages/dashboard-viewer/col-national-dash/widgets/contributions-impact/contributions-impact';
+import { MpiBossSex } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi-boss-sex/mpi-boss-sex';
 import { isPlatformBrowser } from '@angular/common';
-import { IntensityPoverty } from '../../../pages/col-national/widgets/intensity-poverty/intensity-poverty';
-import { ContributionsImpact } from '../../../pages/col-national/widgets/contributions-impact/contributions-impact';
-import { Mpi } from '../../../pages/col-national/widgets/mpi/mpi';
-import { MpiSex } from '../../../pages/col-national/widgets/mpi-sex/mpi-sex';
-import { MpiBossSex } from '../../../pages/col-national/widgets/mpi-boss-sex/mpi-boss-sex';
+import { Mpi } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi/mpi';
+import { runInThisContext } from 'node:vm';
 
 @Service()
 export class ColNationalService {
     private httpClient = inject(HttpClient);
     private platformId = inject(PLATFORM_ID);
 
-    widgets = signal<WidgetItem[]>([
-        { id: 1, label: 'INCIDENCIA IPM', content: Mpi },
-        { id: 2, label: 'Privaciones por hogar', content: RadarDeprivations },
-        { id: 3, label: 'Incidencia de Pobreza Multidimensioanl según sexo de la persona ', content: MpiSex },
-        { id: 4, label: 'Proporción de privaciones entre las personas en situación de Pobreza Multidimensional', content: IntensityPoverty },
-        { id: 5, label: 'Contribuciones a la incidencia Ajustada del IPM', content: ContributionsImpact },
-        { id: 6, label: 'Incidencia de Pobreza Multidimensioanl según sexo del jefe del hogar', content: MpiBossSex },
+    widgets = signal<WidgetItemDash[]>([
+        {
+            id: 1,
+            label: 'INCIDENCIA IPM',
+            content: Mpi,
+            filterFields: ['year'],
+            getYearsSignal: () => this.pmiYears(),
+            loadData: (f) => {
+                const selectedYear = f?.year ?? 2025;
+                this.loadIpmData(selectedYear);
+            }
+        },
+        {
+            id: 2,
+            label: 'Privaciones por hogar',
+            content: RadarDeprivations,
+            filterFields: ['year', 'domain'],
+            getYearsSignal: () => this.deprivationYears(),
+            getDomainsSignal: () => this.deprivationDomains(),
+            loadData: (f) => {
+                const selectedYear = f?.year ?? 2025;
+                const selectedDomain = f?.domain ?? 'Nacional';
+                this.loadPrivationsData(selectedDomain, selectedYear);
+            }
+        },
+        {
+            id: 3,
+            label: 'Incidencia de Pobreza Multidimensioanl según sexo de la persona ',
+            content: MpiSex,
+            filterFields: ['domain'],
+            getDomainsSignal: () => this.mpiSexDomains(),
+            loadData: (f) => {
+                const selectedDomain = f?.domain ?? 'Cabeceras';
+                this.loadIpmSexData(selectedDomain);
+            }
+
+        },
+        {
+            id: 4,
+            label: 'Proporción de privaciones entre las personas en situación de Pobreza Multidimensional',
+            content: IntensityPoverty,
+            filterFields: ['year'],
+            getYearsSignal: () => this.intensityYears(),
+            loadData: (f) => {
+                const selectedYear = f?.year ?? 2025;
+                this.loadIntensityPovertyData(selectedYear);
+            }
+        },
+        {
+            id: 5,
+            label: 'Contribuciones a la incidencia Ajustada del IPM',
+            content: ContributionsImpact,
+            filterFields: ['year', 'domain'],
+            getYearsSignal: () => this.constributionYears(),
+            getDomainsSignal: () => this.constributionDomains(),
+            loadData: (f) => {
+                const selectedYear = f?.year ?? 2025;
+                const selectedDomain = f?.domain ?? 'Nacional';
+                this.loadContributionsImpact(selectedDomain, selectedYear);
+            }
+        },
+        {
+            id: 6,
+            label: 'Incidencia de Pobreza Multidimensioanl según sexo del jefe del hogar',
+            content: MpiBossSex,
+            filterFields: ['domain'],
+            getDomainsSignal: () => this.mpiSexDomains(),
+            loadData: (f) => {
+                const selectedDomain = f?.domain ?? 'Cabeceras';
+                this.loadIpmBossSexData(selectedDomain);
+            }
+
+        },
 
     ]);
 
@@ -29,7 +96,7 @@ export class ColNationalService {
     pmiData = signal<PmiApiResponse[]>([]);
     pmiYears = signal<number[]>([]);
 
-    loadIpmData(year: number | string = 2012) {
+    loadIpmData(year: number) {
         if (!isPlatformBrowser(this.platformId)) return;
 
         this.httpClient.get<PmiApiResponse[]>(this.IPM_URL).subscribe({
@@ -57,7 +124,7 @@ export class ColNationalService {
     deprivationYears = signal<number[]>([]);
     deprivationDomains = signal<string[]>([]);
 
-    loadPrivationsData(domain = 'Nacional', year: number | string = 2010) {
+    loadPrivationsData(domain: string, year: number) {
         if (!isPlatformBrowser(this.platformId)) return;
 
         this.httpClient.get<DeprivationsItem[]>(this.DEPRIVATIONS_URL).subscribe({
@@ -94,7 +161,7 @@ export class ColNationalService {
     intensityPovertyData = signal<IntensityPovertyItem[]>([]);
     intensityYears = signal<number[]>([]);
 
-    loadIntensityPovertyData(year: number | string = 2012) {
+    loadIntensityPovertyData(year: number) {
         if (!isPlatformBrowser(this.platformId)) return;
 
         this.httpClient.get<IntensityPovertyItem[]>(this.INTENSITY_POVERTY_URL).subscribe({
@@ -122,7 +189,7 @@ export class ColNationalService {
     constributionYears = signal<number[]>([]);
     constributionDomains = signal<string[]>([]);
 
-    loadContributionsImpact(domain: string, year: number | string) {
+    loadContributionsImpact(domain: string, year: number) {
         if (!isPlatformBrowser(this.platformId)) return;
         this.httpClient.get<ContributionImpactItem[]>(this.constribution_URL).subscribe({
             next: (data) => {
