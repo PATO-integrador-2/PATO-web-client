@@ -3,6 +3,7 @@
   width: 100%;
   height: 100%;
   position: relative;
+  --map-controls-top: clamp(48px, 8vh, 80px);
 }
 
 .map-container {
@@ -71,7 +72,7 @@
 .map-actions {
   position: absolute;
   z-index: 1000;
-  top: 16px;
+  top: var(--map-controls-top);
   right: 16px;
   display: flex;
   align-items: center;
@@ -123,8 +124,11 @@
 }
 
 @media (max-width: 640px) {
+  :host {
+    --map-controls-top: clamp(40px, 7vh, 64px);
+  }
+
   .map-actions {
-    top: 12px;
     right: 12px;
     max-width: calc(100% - 24px);
     flex-wrap: wrap;
@@ -138,7 +142,7 @@
 }
 
 ::ng-deep .leaflet-top.leaflet-left {
-  top: 16px;
+  top: var(--map-controls-top);
   left: 16px;
 }
 

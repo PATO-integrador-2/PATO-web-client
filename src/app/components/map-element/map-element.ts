@@ -73,6 +73,10 @@ export class MapElementComponent implements OnDestroy {
   private countriesRequestId = 0;
   private regionsRequestId = 0;
   private departmentsRequestId = 0;
+  private mapResizeObserver?: ResizeObserver;
+  private readonly handleWindowResize = (): void => {
+    this.map?.invalidateSize();
+  };
 
   constructor(
     private injector: Injector,
@@ -85,6 +89,10 @@ export class MapElementComponent implements OnDestroy {
       this.leaflet = leafletModule.default ?? leafletModule;
 
       this.initMap();
+      window.addEventListener('resize', this.handleWindowResize);
+      this.mapResizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
+      this.mapResizeObserver.observe(this.mapContainer.nativeElement);
+      requestAnimationFrame(() => this.map?.invalidateSize());
       this.locationService.load();
       this.mapMetricsService.load();
 
@@ -105,6 +113,8 @@ export class MapElementComponent implements OnDestroy {
     this.countriesRequestId++;
     this.regionsRequestId++;
     this.departmentsRequestId++;
+    window.removeEventListener('resize', this.handleWindowResize);
+    this.mapResizeObserver?.disconnect();
     this.map?.remove();
   }
 
