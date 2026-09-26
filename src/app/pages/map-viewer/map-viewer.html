@@ -5,8 +5,20 @@
     <main class="map-viewer-main">
       <app-map-element
         [location]="currentLocation()"
-        (locationChange)="onMapLocationChange($event)">
+        (locationChange)="onMapLocationChange($event)"
+        (locationAnchor)="onLocationAnchorChange($event)">
       </app-map-element>
+
+      @if (panelOpen()) {
+        <app-location-info-panel
+          [locationName]="selectedName()"
+          [level]="selectedLevel()"
+          [metrics]="selectedMetrics()"
+          [style.left.px]="panelPosition()?.x"
+          [style.top.px]="panelPosition()?.y"
+          (close)="closeLocationPanel()">
+        </app-location-info-panel>
+      }
     </main>
   </div>
 </div>
