@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import type { IndicatorDeptItem, NationalPovertyItem } from '../../interfaces/ipm.interface';
+import type { LocationInfoMetrics } from '../../interfaces/map-location';
 
 type MetricMap = ReadonlyMap<string, number>;
 
@@ -80,11 +81,13 @@ export class MapMetricsService {
   private readonly _status = signal<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   private readonly _year = signal<number | null>(null);
   private readonly _countryMetrics = signal<MetricMap>(new Map());
+  private readonly _countryInfo = signal<ReadonlyMap<string, LocationInfoMetrics>>(new Map());
   private readonly _regionMetrics = signal<MetricMap>(new Map());
 
   readonly status = this._status.asReadonly();
   readonly year = this._year.asReadonly();
   readonly countryMetrics = this._countryMetrics.asReadonly();
+  readonly countryInfo = this._countryInfo.asReadonly();
   readonly regionMetrics = this._regionMetrics.asReadonly();
   readonly ready = computed(() => this._status() === 'loaded');
 
@@ -100,8 +103,10 @@ export class MapMetricsService {
         const countryItems = extractItems<NationalPovertyItem>(countries);
         const departmentItems = extractItems<IndicatorDeptItem>(departments);
         const countryMetrics = buildCountryMetrics(countryItems);
+        const countryInfo = buildCountryInfo(countryItems);
         const regionMetrics = buildRegionMetrics(departmentItems);
         this._countryMetrics.set(countryMetrics);
+        this._countryInfo.set(countryInfo);
         this._regionMetrics.set(regionMetrics);
         this._year.set(null);
         this._status.set('loaded');
@@ -167,4 +172,42 @@ function averageMetrics(valuesByKey: Map<string, number[]>): MetricMap {
       values.reduce((sum, value) => sum + value, 0) / values.length,
     ])
   );
+}
+
+function buildCountryInfo(items: NationalPovertyItem[]): ReadonlyMap<string, LocationInfoMetrics> {
+  const valuesByCountry = new Map<string, {
+    national: Array<{ year: number; value: number }>;
+    urban: number[];
+    rural: number[];
+  }>();
+
+  for (const item of items) {
+    const country = normalizeCountryName(item.pais);
+    const metric = normalizeMetric(item.valor_porcentaje);
+    const year = Number(item.anio);
+    if (!country || metric === undefined || !Number.isFinite(year)) continue;
+
+    const values = valuesByCountry.get(country) ?? { national: [], urban: [], rural: [] };
+    const area = normalizeName(item.area_geografica);
+    if (area.includes('nacional')) values.national.push({ year, value: metric });
+    else if (area.includes('urbano')) values.urban.push(metric);
+    else if (area.includes('rural')) values.rural.push(metric);
+    valuesByCountry.set(country, values);
+  }
+
+  return new Map([...valuesByCountry.entries()].map(([country, values]) => {
+    const highest = values.national.reduce((best, current) => current.value > best.value ? current : best, values.national[0]);
+    const lowest = values.national.reduce((best, current) => current.value < best.value ? current : best, values.national[0]);
+    return [country, {
+      national: average(values.national.map(item => item.value)),
+      urban: average(values.urban),
+      rural: average(values.rural),
+      highestYear: highest?.year,
+      lowestYear: lowest?.year,
+    }];
+  }));
+}
+
+function average(values: number[]): number | undefined {
+  return values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : undefined;
 }

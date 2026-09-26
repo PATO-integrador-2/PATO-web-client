@@ -54,6 +54,7 @@ const MAP_SIDE_PANEL_SPACE = 320;
 })
 export class MapElementComponent implements OnDestroy {
   locationChange = output<MapLocation>();
+  locationAnchor = output<{ x: number; y: number }>();
   location = input<MapLocation | null>(null);
   @ViewChild('mapContainer', { static: true })
   mapContainer!: ElementRef<HTMLDivElement>;
@@ -178,6 +179,19 @@ export class MapElementComponent implements OnDestroy {
     });
   }
 
+  private updateLocationAnchor(location: L.LatLng): void {
+    if (!this.map) return;
+
+    const emitAnchor = () => {
+      if (!this.map) return;
+      const point = this.map.latLngToContainerPoint(location);
+      this.locationAnchor.emit({ x: point.x, y: point.y });
+    };
+
+    emitAnchor();
+    this.map.once('moveend', emitAnchor);
+  }
+
   private syncColombiaLayers(loc: MapLocation | null): void {
     const isColombia = loc?.pais === 'Colombia';
 
@@ -220,7 +234,7 @@ export class MapElementComponent implements OnDestroy {
           layer.on('mouseover', () => (layer as L.Path).setStyle(REGION_HOVER_STYLE));
           layer.on('mouseout', () => (layer as L.Path).setStyle(this.regionStyle(feature)));
 
-          layer.on('click', () => {
+          layer.on('click', (event: L.LeafletMouseEvent) => {
             this.locationChange.emit({
               pais: 'Colombia',
               region: name,
@@ -229,6 +243,7 @@ export class MapElementComponent implements OnDestroy {
 
             const bounds = (layer as L.Polygon).getBounds();
             this.focusBounds(bounds, 1.2);
+            this.updateLocationAnchor(event.latlng);
           });
         },
       }).addTo(this.map);
@@ -250,7 +265,7 @@ export class MapElementComponent implements OnDestroy {
 
           layer.on('mouseover', () => (layer as L.Path).setStyle(DEPARTMENT_HOVER_STYLE));
           layer.on('mouseout', () => (layer as L.Path).setStyle(this.departmentStyle(feature)));
-          layer.on('click', () => {
+          layer.on('click', (event: L.LeafletMouseEvent) => {
             const code = feature.properties?.['DPTO'] ?? null;
 
             this.locationChange.emit({
@@ -262,6 +277,7 @@ export class MapElementComponent implements OnDestroy {
 
             const bounds = (layer as L.Polygon).getBounds();
             this.focusBounds(bounds, 1.2);
+            this.updateLocationAnchor(event.latlng);
           });
         },
       }).addTo(this.map);
@@ -374,6 +390,7 @@ export class MapElementComponent implements OnDestroy {
 
               const bounds = (layer as L.Polygon).getBounds();
               this.focusBounds(bounds, 1);
+              this.updateLocationAnchor(event.latlng);
 
               // Mantiene el estilo normal, sin selección naranja
               path.setStyle(this.countryStyle(feature));
