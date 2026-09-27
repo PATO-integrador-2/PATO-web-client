@@ -9,7 +9,6 @@ import { ContributionsImpact } from '../../../pages/dashboard-viewer/col-nationa
 import { MpiBossSex } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi-boss-sex/mpi-boss-sex';
 import { isPlatformBrowser } from '@angular/common';
 import { Mpi } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi/mpi';
-import { runInThisContext } from 'node:vm';
 
 @Service()
 export class ColNationalService {
@@ -19,7 +18,7 @@ export class ColNationalService {
     widgets = signal<WidgetItemDash[]>([
         {
             id: 1,
-            label: 'INCIDENCIA IPM',
+            label: 'Incidencia de Pobreza Multidimensional',
             content: Mpi,
             filterFields: ['year'],
             getYearsSignal: () => this.pmiYears(),
