@@ -6,6 +6,16 @@ export interface WidgetItem {
     content: Type<unknown>;
 }
 
+export interface WidgetItemPredict {
+    id: number;
+    label: string;
+    content: Type<unknown>;
+    title?: string;
+    data?: any[];
+
+}
+
+
 export interface WidgetItemDash {
     id: number;
     label: string;

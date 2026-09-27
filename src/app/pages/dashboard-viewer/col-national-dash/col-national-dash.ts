@@ -44,9 +44,9 @@ export class ColNationalDash {
     this.filterModalService.openCardFilter(widget, filters)
       .subscribe((newFilters) => {
         if (newFilters) {
-          // 1. Guarda el estado actualizado
+          // Guarda el estado actualizado
           this.currentFilters[widget.id] = newFilters;
-          // 2. Ejecuta la recarga de datos llamando a la función del propio widget
+          // Ejecuta la recarga de datos llamando a la función del propio widget
           widget.loadData(newFilters);
         }
       });

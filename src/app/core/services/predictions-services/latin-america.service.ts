@@ -98,4 +98,11 @@ export class LatinAmericaService {
         });
 
     }
+
+    private addWidget(type: string, data: string[]) {
+        this.widgets
+
+    }
+
+
 }

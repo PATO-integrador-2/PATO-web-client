@@ -1,4 +1,4 @@
-import { Component, inject, computed, input, effect, PLATFORM_ID, viewChild, ElementRef } from '@angular/core';
+import { Component, inject, computed, input, effect, PLATFORM_ID, viewChild, ElementRef, Input } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Chart } from 'chart.js';
 import { ColNationalService } from '../../../../../core/services/predictions-services/col-national.service';
@@ -11,36 +11,37 @@ import { MpiItem } from '../../../../../interfaces/predictions.interface';
   styleUrl: './mpi.css',
 })
 export class Mpi {
-  private dashboardService = inject(ColNationalService);
   private platformId = inject(PLATFORM_ID);
-
-  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
   private chartInstance?: Chart;
-
-  data = computed(() => this.dashboardService.mpiData());
+  private isBrowser = false;
+  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
+  data = input<MpiItem[]>([]);
 
   constructor() {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+
+    // Reactiva automáticamente cuando los datos son inyectados o restaurados desde localStorage
     effect(() => {
-      const items = this.data();
-      if (this.chartInstance && items && items.length > 0) {
-        this.updateChartData(items);
+      const currentData = this.data();
+      if (this.isBrowser && currentData && currentData.length > 0) {
+        this.updateOrCreateChart(currentData);
       }
     });
   }
 
   ngAfterViewInit() {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!this.isBrowser) return;
 
     setTimeout(() => {
       const canvas = this.chartElement()?.nativeElement;
-      if (canvas && !this.chartInstance) {
-        this.initChart(canvas);
+      const currentData = this.data();
+      if (canvas && !this.chartInstance && currentData.length > 0) {
+        this.initChart(canvas, currentData);
       }
     }, 150);
   }
 
-  private initChart(canvas: HTMLCanvasElement) {
-    const items = this.data();
+  private initChart(canvas: HTMLCanvasElement, items: MpiItem[]) {
     const labels = items.map((item) => item.año);
     const values: number[] = items.map((item) => Number(item.ipm_predicho));
 
@@ -80,18 +81,21 @@ export class Mpi {
 
   }
 
-  private updateChartData(items: MpiItem[]) {
-    if (!this.chartInstance) return;
+  private updateOrCreateChart(items: MpiItem[]) {
+    const canvas = this.chartElement()?.nativeElement;
+    if (!canvas) return;
 
-    // Extraer nombres de dominios para los Labels
-    const labels = items.map(item => item.año);
-
-    // Extraer valores del IPM para las Barras
+    const labels = items.map(item => String(item.año));
     const dataValues = items.map(item => Number(item.ipm_predicho));
 
-    // Actualizar y renderizar la gráfica
-    this.chartInstance.data.labels = labels;
-    this.chartInstance.data.datasets[0].data = dataValues;
-    this.chartInstance.update();
+    // Si la gráfica ya existe se actualizan los datos
+    if (this.chartInstance) {
+      this.chartInstance.data.labels = labels;
+      this.chartInstance.data.datasets[0].data = dataValues;
+      this.chartInstance.update();
+    } else {
+      // Si no existe se crea desde cero
+      this.initChart(canvas, items);
+    }
   }
 }
