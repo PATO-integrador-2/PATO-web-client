@@ -11,7 +11,6 @@
 
     <div class="fields-grid">
 
-            <!-- Campo AÑO (Se muestra solo si la tarjeta lo requiere) -->
             @if (data.filterFields.includes('year')) {
             <mat-form-field appearance="outline" class="filter-field">
                 <mat-label>Año</mat-label>
@@ -23,7 +22,6 @@
             </mat-form-field>
             }
 
-            <!-- Campo DOMINIO (Se muestra solo si la tarjeta lo requiere) -->
             @if (data.filterFields.includes('domain')) {
             <mat-form-field appearance="outline" >
                 <mat-label>Dominio</mat-label>

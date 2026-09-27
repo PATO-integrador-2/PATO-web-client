@@ -11,38 +11,39 @@ import { DeprivationsItem } from '../../../../../interfaces/predictions.interfac
   styleUrl: './deprivations.css',
 })
 export class Deprivations {
-  private dashboardService = inject(ColNationalService);
   private platformId = inject(PLATFORM_ID);
-
-  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
   private chartInstance?: Chart;
-
-  data = computed(() => this.dashboardService.deprivationsData());
+  private isBrowser = false;
+  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
+  data = input<DeprivationsItem[]>([]);
 
   constructor() {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+
+    // Reactiva automáticamente cuando los datos son inyectados o restaurados desde localStorage
     effect(() => {
-      const items = this.data();
-      if (this.chartInstance && items && items.length > 0) {
-        this.updateChartData(items);
+      const currentData = this.data();
+      if (this.isBrowser && currentData && currentData.length > 0) {
+        this.updateOrCreateChart(currentData);
       }
     });
   }
 
   ngAfterViewInit() {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!this.isBrowser) return;
 
     setTimeout(() => {
       const canvas = this.chartElement()?.nativeElement;
-      if (canvas && !this.chartInstance) {
-        this.initChart(canvas);
+      const currentData = this.data();
+      if (canvas && !this.chartInstance && currentData.length > 0) {
+        this.initChart(canvas, currentData);
       }
     }, 150);
   }
-
-  private initChart(canvas: HTMLCanvasElement) {
-    const items = this.data();
-    const labels = items.map((item) => item.year);
-    const values: number[] = items.map((item) => Number(item.ipm_foretold));
+  
+  private initChart(canvas: HTMLCanvasElement, items: DeprivationsItem[]) {
+      const labels = items.map((item) => item.year);
+      const values: number[] = items.map((item) => Number(item.ipm_foretold));
 
     this.chartInstance = new Chart(canvas, {
       type: 'bar',
@@ -80,18 +81,21 @@ export class Deprivations {
 
   }
 
-  private updateChartData(items: DeprivationsItem[]) {
-    if (!this.chartInstance) return;
-
-    // Extraer nombres de dominios para los Labels
-    const labels = items.map(item => item.year);
-
-    // Extraer valores del IPM para las Barras
-    const dataValues = items.map(item => Number(item.ipm_foretold));
-
-    // Actualizar y renderizar la gráfica
-    this.chartInstance.data.labels = labels;
-    this.chartInstance.data.datasets[0].data = dataValues;
-    this.chartInstance.update();
-  }
+  private updateOrCreateChart(items: DeprivationsItem[]) {
+      const canvas = this.chartElement()?.nativeElement;
+      if (!canvas) return;
+  
+      const labels = items.map(item => String(item.year));
+      const dataValues = items.map(item => Number(item.ipm_foretold));
+  
+      // Si la gráfica ya existe se actualizan los datos
+      if (this.chartInstance) {
+        this.chartInstance.data.labels = labels;
+        this.chartInstance.data.datasets[0].data = dataValues;
+        this.chartInstance.update();
+      } else {
+        // Si no existe se crea desde cero
+        this.initChart(canvas, items);
+      }
+    }
 }
