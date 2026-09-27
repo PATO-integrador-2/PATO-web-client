@@ -1,96 +1,193 @@
 <app-navbar></app-navbar>
 
-<div class="dashboard-layout">
+<mat-sidenav-container class="main-container">
+    <mat-drawer-container class="sidebar-container">
+        <mat-drawer mode="side" opened class="custom-sidebar">
+            <div class="sidebar-header">
+                <h3>Añadir predicciones</h3>
+            </div>
 
-    <!-- BARRA LATERAL IZQUIERDA -->
+            <div class="sidebar-body">
+                <mat-accordion>
+                    <!-- PANEL 1: IPM -->
+                    <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title> IPM </mat-panel-title>
+                        </mat-expansion-panel-header>
+
+                        <form [formGroup]="mpiForm" (ngSubmit)="mpiPrediction()" class="filter-section">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Dominio</mat-label>
+                                <mat-select formControlName="domain">
+                                    @for (d of availableDomains(); track d) {
+                                    <mat-option [value]="d">{{ d }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <div class="row-inputs">
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Año inicio</mat-label>
+                                    <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Año fin</mat-label>
+                                    <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                                </mat-form-field>
+                            </div>
+
+                            @if (mpiError()) {
+                            <mat-error class="error-msg">{{ mpiError() }}</mat-error>
+                            }
+
+                            <div class="flex">
+                                <button type="submit" matButton="filled" class="submit-container">Enviar</button>
+                            </div>
+                        </form>
+                    </mat-expansion-panel>
+
+                    <!-- PANEL 2: PRIVACIÓN -->
+                    <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title> Privaciones por hogar </mat-panel-title>
+                        </mat-expansion-panel-header>
+
+                        <form [formGroup]="deprivationForm" (ngSubmit)="deprivationsPrediction()"
+                            class="filter-section">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Variable</mat-label>
+                                <mat-select formControlName="variable">
+                                    @for (v of availableVariables(); track v) {
+                                    <mat-option [value]="v">{{ v }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="compact-field full-width">
+                                <mat-label>Dominio</mat-label>
+                                <mat-select formControlName="domain">
+                                    @for (d of availableDomains(); track d) {
+                                    <mat-option [value]="d">{{ d }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <div class="fields-row">
+                                <mat-form-field class="input-custom" appearance="outline">
+                                    <mat-label>Año inicio</mat-label>
+                                    <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                                </mat-form-field>
+
+                                <mat-form-field class="input-custom" appearance="outline">
+                                    <mat-label>Año fin</mat-label>
+                                    <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                                </mat-form-field>
+                            </div>
+
+                            @if (deprivationError()) {
+                            <mat-error class="error-msg">{{ deprivationError() }}</mat-error>
+                            }
+
+                            <div class="flex">
+                                <button type="submit" matButton="filled" class="submit-container">Enviar</button>
+                            </div>
+                        </form>
+                    </mat-expansion-panel>
+
+                    <!-- PANEL 3: PORCENTAJE -->
+                    <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title> Incidencia de PM según sexo de la persona </mat-panel-title>
+                        </mat-expansion-panel-header>
+
+                        <form [formGroup]="mpiForm" (ngSubmit)="mpiPrediction()" class="filter-section">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Dominio</mat-label>
+                                <mat-select formControlName="domain">
+                                    @for (d of availableDomains(); track d) {
+                                    <mat-option [value]="d">{{ d }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <div class="row-inputs">
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Año inicio</mat-label>
+                                    <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Año fin</mat-label>
+                                    <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                                </mat-form-field>
+                            </div>
+
+                            @if (mpiError()) {
+                            <mat-error class="error-msg">{{ mpiError() }}</mat-error>
+                            }
+
+                            <div class="flex">
+                                <button type="submit" matButton="filled" class="submit-container">Enviar</button>
+                            </div>
+                        </form>
+                    </mat-expansion-panel>
+
+                    <!-- PANEL 4: DIMENSIÓN -->
+                    <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title> Proporción de privaciones personas en situación de PM </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <p>Contenido de dimensión...</p>
+                    </mat-expansion-panel>
+                </mat-accordion>
+            </div>
+
+
+
+
+        </mat-drawer>
+        <mat-drawer-content>
+            <div class="dashboard-layout">
+
+
+                <!-- BARRA LATERAL IZQUIERDA -->
+                <!--
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2>Filtros</h2>
-        </div>
-
-        <div class="filter-group">
-            <span class="filter-title">1</span>
-            <br>
-            <mat-form-field appearance="outline" class="compact-field">
-                <mat-label>Dominio</mat-label>
-                <mat-select [(value)]="domain">
-                    @for (d of availableDomains(); track d) {
-                    <mat-option [value]="d">{{ d }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
-            <div class="fields-row">
-                <mat-form-field class="input-custom" appearance="outline">
-                    <mat-label>Año inicio</mat-label>
-                    <input matInput [formControl]="yearStartControl">
-                </mat-form-field>
-
-                <mat-form-field class="input-custom" appearance="outline">
-                    <mat-label>Año fin</mat-label>
-                    <input matInput [formControl]="yearEndControl">
-                </mat-form-field>
-            </div>
-
-            <div class="flex">
-                <button type="button" matButton="filled" class="submit-container" (click)="pmiPrediction()">Enviar</button>
-            </div>
-
-        </div>
-
-        <div class="filter-group">
-            <span class="filter-title">2</span>
-            <br>
-            <mat-form-field appearance="outline" class="compact-field">
-                <mat-label>Variable</mat-label>
-                <mat-select [(value)]="domain">
-                    @for (d of availableDomains(); track d) {
-                    <mat-option [value]="d">{{ d }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="compact-field">
-                <mat-label>Dominio</mat-label>
-                <mat-select [(value)]="domain">
-                    @for (d of availableDomains(); track d) {
-                    <mat-option [value]="d">{{ d }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
-            <div class="fields-row">
-                <mat-form-field class="input-custom" appearance="outline">
-                    <mat-label>Año inicio</mat-label>
-                    <input matInput [formControl]="yearStartControl">
-                </mat-form-field>
-
-                <mat-form-field class="input-custom" appearance="outline">
-                    <mat-label>Año fin</mat-label>
-                    <input matInput [formControl]="yearEndControl">
-                </mat-form-field>
-            </div>
-
-            <div class="flex">
-                <button type="button" matButton="filled" class="submit-container" (click)="pmiPrediction()">Enviar</button>
-            </div>
-
-        </div>
+        
 
     </aside>
+-->
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="main-content">
-        <header class="dashboard-header">
-            <h1>Panel Multidimensional de Pobreza</h1>
-        </header>
-        <br>
+                <!-- CONTENIDO PRINCIPAL -->
+                <main class="main-content">
+                    <header class="dashboard-header">
+                        <h1>Panel Multidimensional de Pobreza</h1>
+                    </header>
+                    <br>
 
-        <!-- RENDERIZADO DE WIDGETS -->
-        <div class="dashboard-grid">
-            @for (widget of dashboardService.widgets(); track widget.id) {
-            <div class="dashboard-card">
-                <ng-container [ngComponentOutlet]="widget.content" />
+                    <!-- RENDERIZADO DE WIDGETS -->
+
+                    <div class="dashboard-grid">
+                        @for (widget of dashboardService.widgets(); track widget.id) {
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3>{{ widget.title }}</h3>
+                                <button type="button" class="btn-remove"
+                                    (click)="dashboardService.removeWidget(widget.id)">✕</button>
+                            </div>
+
+                            <div class="card-content">
+                                <ng-container *ngComponentOutlet="widget.content; inputs: { data: widget.data }">
+                                </ng-container>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </main>
+
             </div>
-            }
-        </div>
-    </main>
 
-</div>
+        </mat-drawer-content>
+    </mat-drawer-container>
+</mat-sidenav-container>

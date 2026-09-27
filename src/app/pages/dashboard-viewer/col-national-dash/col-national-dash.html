@@ -14,7 +14,7 @@
             @for (widget of dashboardService.widgets(); track widget.id) {
             <div class="dashboard-card">
 
-                <div class="navbar-card">
+                <div class="card-header">
                     <h3>{{ widget.label }}</h3>
 
                     <button  mat-icon-button type="button" class="filter-btn" (click)="onClickFilter(widget)"

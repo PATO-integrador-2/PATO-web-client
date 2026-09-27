@@ -1,0 +1,26 @@
+<aside class="location-panel" aria-label="Información de ubicación">
+  <header class="location-panel__header">
+    <div>
+      <p class="location-panel__eyebrow">Información de ubicación</p>
+      <h2>{{ locationName() }}</h2>
+    </div>
+    <button type="button" class="location-panel__close" aria-label="Cerrar panel" (click)="close.emit()">×</button>
+  </header>
+
+  @if (level() === 'country' && metrics(); as data) {
+    <dl class="location-panel__metrics">
+      <div><dt>IPM Nacional</dt><dd>{{ data.national !== undefined ? (data.national | percent:'1.1-1') : 'No disponible' }}</dd></div>
+      <div><dt>IPM Urbano</dt><dd>{{ data.urban !== undefined ? (data.urban | percent:'1.1-1') : 'No disponible' }}</dd></div>
+      <div><dt>IPM Rural</dt><dd>{{ data.rural !== undefined ? (data.rural | percent:'1.1-1') : 'No disponible' }}</dd></div>
+      <div><dt>Año del IPM más alto</dt><dd>{{ data.highestYear ?? 'No disponible' }}</dd></div>
+      <div><dt>Año del IPM más bajo</dt><dd>{{ data.lowestYear ?? 'No disponible' }}</dd></div>
+    </dl>
+  } @else {
+    <p class="location-panel__unavailable">Aún no disponible para este nivel geográfico.</p>
+  }
+
+  <div class="location-panel__actions">
+    <button type="button" (click)="onHistoryClick()">Ver panel histórico</button>
+    <button type="button" (click)="onPredictionsClick()">Ver predicciones</button>
+  </div>
+</aside>

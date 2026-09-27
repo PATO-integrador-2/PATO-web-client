@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import type { IndicatorDeptItem, NationalPovertyItem } from '../../interfaces/ipm.interface';
+import type { LocationInfoMetrics } from '../../interfaces/map-location';
 
 type MetricMap = ReadonlyMap<string, number>;
 
@@ -80,11 +81,13 @@ export class MapMetricsService {
   private readonly _status = signal<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   private readonly _year = signal<number | null>(null);
   private readonly _countryMetrics = signal<MetricMap>(new Map());
+  private readonly _countryInfo = signal<ReadonlyMap<string, LocationInfoMetrics>>(new Map());
   private readonly _regionMetrics = signal<MetricMap>(new Map());
 
   readonly status = this._status.asReadonly();
   readonly year = this._year.asReadonly();
   readonly countryMetrics = this._countryMetrics.asReadonly();
+  readonly countryInfo = this._countryInfo.asReadonly();
   readonly regionMetrics = this._regionMetrics.asReadonly();
   readonly ready = computed(() => this._status() === 'loaded');
 
@@ -99,18 +102,16 @@ export class MapMetricsService {
       next: ({ countries, departments }) => {
         const countryItems = extractItems<NationalPovertyItem>(countries);
         const departmentItems = extractItems<IndicatorDeptItem>(departments);
-        const countryYear = latestYear(countryItems);
-        const departmentYear = latestYear(departmentItems);
-
-        const countryMetrics = buildCountryMetrics(countryItems, countryYear);
-        const regionMetrics = buildRegionMetrics(departmentItems, departmentYear);
+        const countryMetrics = buildCountryMetrics(countryItems);
+        const countryInfo = buildCountryInfo(countryItems);
+        const regionMetrics = buildRegionMetrics(departmentItems);
         this._countryMetrics.set(countryMetrics);
+        this._countryInfo.set(countryInfo);
         this._regionMetrics.set(regionMetrics);
-        this._year.set(countryYear ?? departmentYear ?? null);
+        this._year.set(null);
         this._status.set('loaded');
         console.info('[MapMetrics] métricas cargadas', {
-          countryYear,
-          departmentYear,
+          period: 'all-years-average',
           countries: countryMetrics.size,
           regions: regionMetrics.size,
         });
@@ -128,41 +129,30 @@ function extractItems<T>(response: T[] | { data?: T[]; content?: T[] }): T[] {
   return response.data ?? response.content ?? [];
 }
 
-function latestYear(items: Array<{ anio: number }>): number | undefined {
-  const years = items
-    .map(item => Number(item.anio))
-    .filter(Number.isFinite);
-  return years.length > 0
-    ? years.reduce((latest, year) => Math.max(latest, year), years[0])
-    : undefined;
-}
-
-function buildCountryMetrics(items: NationalPovertyItem[], year: number | undefined): MetricMap {
-  if (year === undefined) return new Map();
-
-  const metrics = new Map<string, number>();
-  const yearItems = items.filter(item => Number(item.anio) === year);
-  const preferredItems = yearItems.filter(item =>
+function buildCountryMetrics(items: NationalPovertyItem[]): MetricMap {
+  const preferredItems = items.filter(item =>
     normalizeName(item.area_geografica).includes('nacional') &&
     normalizeName(item.tipo_medida_pm).includes('incidencia')
   );
-  const candidateItems = preferredItems.length > 0 ? preferredItems : yearItems;
+  const candidateItems = preferredItems.length > 0 ? preferredItems : items;
+  const valuesByCountry = new Map<string, number[]>();
 
   for (const item of candidateItems) {
     const metric = normalizeMetric(item.valor_porcentaje);
     const country = normalizeCountryName(item.pais);
-    if (metric !== undefined && country) metrics.set(country, metric);
+    if (metric === undefined || !country) continue;
+
+    const values = valuesByCountry.get(country) ?? [];
+    values.push(metric);
+    valuesByCountry.set(country, values);
   }
-  return metrics;
+
+  return averageMetrics(valuesByCountry);
 }
 
-function buildRegionMetrics(items: IndicatorDeptItem[], year: number | undefined): MetricMap {
-  if (year === undefined) return new Map();
-
+function buildRegionMetrics(items: IndicatorDeptItem[]): MetricMap {
   const values = new Map<string, number[]>();
   for (const item of items) {
-    if (Number(item.anio) !== year) continue;
-
     const metric = normalizeMetric(item.ipm);
     const region = normalizeRegionName(item.region);
     if (metric === undefined || !region) continue;
@@ -172,10 +162,52 @@ function buildRegionMetrics(items: IndicatorDeptItem[], year: number | undefined
     values.set(region, regionValues);
   }
 
+  return averageMetrics(values);
+}
+
+function averageMetrics(valuesByKey: Map<string, number[]>): MetricMap {
   return new Map(
-    [...values.entries()].map(([region, regionValues]) => [
-      region,
-      regionValues.reduce((sum, value) => sum + value, 0) / regionValues.length,
+    [...valuesByKey.entries()].map(([key, values]) => [
+      key,
+      values.reduce((sum, value) => sum + value, 0) / values.length,
     ])
   );
+}
+
+function buildCountryInfo(items: NationalPovertyItem[]): ReadonlyMap<string, LocationInfoMetrics> {
+  const valuesByCountry = new Map<string, {
+    national: Array<{ year: number; value: number }>;
+    urban: number[];
+    rural: number[];
+  }>();
+
+  for (const item of items) {
+    const country = normalizeCountryName(item.pais);
+    const metric = normalizeMetric(item.valor_porcentaje);
+    const year = Number(item.anio);
+    if (!country || metric === undefined || !Number.isFinite(year)) continue;
+
+    const values = valuesByCountry.get(country) ?? { national: [], urban: [], rural: [] };
+    const area = normalizeName(item.area_geografica);
+    if (area.includes('nacional')) values.national.push({ year, value: metric });
+    else if (area.includes('urbano')) values.urban.push(metric);
+    else if (area.includes('rural')) values.rural.push(metric);
+    valuesByCountry.set(country, values);
+  }
+
+  return new Map([...valuesByCountry.entries()].map(([country, values]) => {
+    const highest = values.national.reduce((best, current) => current.value > best.value ? current : best, values.national[0]);
+    const lowest = values.national.reduce((best, current) => current.value < best.value ? current : best, values.national[0]);
+    return [country, {
+      national: average(values.national.map(item => item.value)),
+      urban: average(values.urban),
+      rural: average(values.rural),
+      highestYear: highest?.year,
+      lowestYear: lowest?.year,
+    }];
+  }));
+}
+
+function average(values: number[]): number | undefined {
+  return values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : undefined;
 }
