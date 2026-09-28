@@ -105,15 +105,6 @@ body {
 // Dashboard 
 
 
-.chart-container {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 0;
-  /* Crucial para evitar que el canvas crezca indefinidamente */
-  position: relative;
-}
 
 .dashboard-layout {
   padding: 50px, 50px, 50px, 50px;
@@ -193,11 +184,18 @@ mat-toolbar {
   z-index: 1000;
 }
 
-// Dashboard predict
+// Dashboard 
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 1.5rem;
   width: 100%;
   box-sizing: border-box;
 }
@@ -206,40 +204,56 @@ mat-toolbar {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 1rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  height: 380px;
+  height: 420px;
   min-width: 0;
-  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+  /* Previene que el header se aplaste */
 }
 
 .card-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #1e293b;
 }
 
-.card-header p {
-  margin: 4px 0 0 0;
-  font-size: 0.875rem;
-  color: #64748b;
+// Hace que el contenedor de ngComponentOutlet tome todo el espacio 
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.chart-wrapper {
-  position: relative;
+// Forzar al componente Angular instanciado a comportarse como contenedor flex
+.card-content>* {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   width: 100%;
   height: 100%;
-  min-height: 280px;
+  min-height: 0;
+}
+
+// Contenedor del Canvas 
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 260px !important;
 }
 
 .chart-wrapper canvas {
@@ -250,9 +264,29 @@ mat-toolbar {
   height: 100% !important;
 }
 
-/* En pantallas pequeñas, poner los Filtros arriba y las Gráficas abajo */
-@media (max-width: 900px) {
-  .main-container {
-    flex-direction: column;
+// Dashboard histórico
+.dashboard-grid-dash {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 600px), 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-card.card-tall {
+  grid-row: span 2;
+  height: 100%;
+}
+
+
+// En pantallas pequeñas, poner los Filtros arriba y las Gráficas abajo 
+@media (max-width: 600px) {
+  .dashboard-card {
+    height: 380px;
+    min-height: 380px;
+  }
+
+  .dashboard-card.card-tall {
+    grid-row: auto;
   }
 }
