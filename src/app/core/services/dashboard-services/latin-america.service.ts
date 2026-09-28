@@ -11,186 +11,353 @@ export class LatinAmericaService {
     private httpClient = inject(HttpClient);
     private platformId = inject(PLATFORM_ID);
 
-    widgets = signal<WidgetItem[]>([
+    widgets = signal<WidgetItemDash[]>([
         {
             id: 1,
             label: 'Contribución relativa de las privaciones a la pobreza multidimensional',
             content: ContributionDeprivations,
-            
+            filterFields: ['year', 'country'],
+            getYearsSignal: () => this.getContributionYears(),
+            // IMPORTANTE: Asegurar la función flecha para conservar el ámbito (this)
+            getCountriesByYear: (year?: number) => this.getContributionCountriesByYear(year),
+            loadData: (f) => {
+                const selectedYear = f?.year ?? 2024;
+                const selectedCountry = f?.country ?? 'Colombia';
+                this.loadDeprivationContributionData(selectedYear, selectedCountry);
+            }
+
+
         },
         {
             id: 2,
             label: 'Población en situación de pobreza multidimensional (cifras nacionales)',
             content: PopulationPoverty,
-
+            filterFields: ['year', 'area', 'country'],
+            getYearsSignal: () => this.getNationalPovertyYears(),
+            getAreasByYear: (year?: number) => this.getNationalPovertyAreasByYear(year),
+            getCountriesByYearAndArea: (year?: number, area?: string) =>
+                this.getNationalPovertyCountriesByYearAndArea(year, area),
+            loadData: (f) => {
+                const selectedYear = f?.year ?? 2024;
+                const selectedArea = f?.area ?? 'Urban';
+                const selectedCountry = f?.country ?? 'Colombia';
+                this.loadNationalPovertyData(selectedYear, selectedArea, selectedCountry);
+            }
         },
         {
             id: 3,
             label: 'Incidencia de la pobreza multidimensional por grupo de edad y área',
             content: PovertyByAge,
+            filterFields: ['year', 'area', 'country'],
+            getYearsSignal: () => this.getPovertyByAgeYears(),
+            getAreasByYear: (year?: number) => this.getPovertyByAgeAreasByYear(year),
+            getCountriesByYearAndArea: (year?: number, area?: string) =>
+                this.getPovertyByAgeCountriesByYearAndArea(year, area),
+            loadData: (f) => {
+                const selectedYear = f?.year ?? 2024;
+                const selectedArea = f?.area ?? 'Urban';
+                const selectedCountry = f?.country ?? 'Colombia';
+                this.loadPovertyByAgeData(selectedYear, selectedArea, selectedCountry );
+            }
 
         },
 
     ]);
 
     private contribution_url = `${environment.apiAddr}/api/users/deprivations-contribution`;
-    deprivationContributionData = signal<ContributionPovertyItem[]>([]);
-    constributionYears = signal<number[]>([]);
-    constributionCountries = signal<string[]>([]);
+    private rawContributionData = signal<ContributionPovertyItem[]>([]);
+    contributionData = signal<ContributionPovertyItem[]>([]);
 
-    loadDeprivationContributionData(year: number, country: string) {
+    fetchDeprivationContributionData(year?: number, country?: string) {
         if (!isPlatformBrowser(this.platformId)) return;
 
         this.httpClient.get<ContributionPovertyItem[]>(this.contribution_url).subscribe({
             next: (data) => {
                 if (!data || data.length === 0) return;
 
-                // Extraer todos los años
-                const years = [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
-                this.constributionYears.set(years);
+                // Guardar todos los datos recibidos
+                this.rawContributionData.set(data);
 
-                // Extraer los dominios únicos que pertenecen al año seleccionado
-                const domainsForSelectedYear = [
-                    ...new Set(
-                        data
-                            .filter((d) => Number(d.anio) === Number(year))
-                            .map((d) => d.pais?.trim())
-                            .filter(Boolean) as string[]
-                    ),
-                ];
-                this.constributionCountries.set(domainsForSelectedYear);
+                // Determinar el año y el país a mostrar de forma segura
+                const availableYears = this.getContributionYears();
+                const targetYear = year && availableYears.includes(Number(year))
+                    ? Number(year)
+                    : availableYears[0];
 
-                // Filtrar los datos por año y dominio
-                const filteredData = data.filter(
-                    (d) =>
-                        Number(d.anio) === Number(year) &&
-                        d.pais?.toLowerCase().trim() === String(country).toLowerCase().trim()
-                );
+                const availableCountries = this.getContributionCountriesByYear(targetYear);
+                const targetCountry = country && availableCountries.some(c => c.toLowerCase() === country.toLowerCase())
+                    ? country
+                    : availableCountries[0];
 
-                // Si hay coincidencias se guarda la lista, si no, fallback a los primeros datos
-                this.deprivationContributionData.set(filteredData.length > 0 ? filteredData : data);
+                // Filtrar y emitir el resultado inicial
+                this.loadDeprivationContributionData(targetYear, targetCountry);
             },
-
-            error: (err) => console.error('Error al cargar datos IPM:', err),
+            error: (err) => console.error('Error al cargar datos IPM de la API:', err),
         });
     }
 
-    private national_poverty_url = `${environment.apiAddr}/api/users/national-poverty`;
-    nationalPovertyData = signal<NationalPovertyItem[]>([]);
-    nationalPovertyYears = signal<number[]>([]);
-    nationalPovertyAreas = signal<string[]>([]);
-    nationalPovertyCountries = signal<string[]>([]);
+    getContributionYears(): number[] {
+        const data = this.rawContributionData();
+        return [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
+    }
 
-    loadNationalPovertyData(year: number, country: string, area: string) {
+    getContributionCountriesByYear(year?: number | string): string[] {
+        const data = this.rawContributionData();
+        if (!year) return [];
+
+        return [
+            ...new Set(
+                data
+                    .filter((d) => Number(d.anio) === Number(year))
+                    .map((d) => d.pais?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
+
+    loadDeprivationContributionData(year: number, country: string) {
+        const data = this.rawContributionData();
+
+        // Si no se han descargado los datos aún, llamar a la API
+        if (data.length === 0) {
+            this.fetchDeprivationContributionData(year, country);
+            return;
+        }
+
+
+        let filteredData = data.filter(
+            (d) =>
+                Number(d.anio) === Number(year) &&
+                d.pais?.toLowerCase().trim() === String(country).toLowerCase().trim()
+        );
+
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y país disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+            const fallbackYear = data[0].anio;
+            const fallbackCountry = data[0].pais;
+            filteredData = data.filter(
+                (d) => Number(d.anio) === Number(fallbackYear) && d.pais === fallbackCountry
+            );
+        }
+
+        this.contributionData.set(filteredData);
+    }
+
+
+    private national_poverty_url = `${environment.apiAddr}/api/users/national-poverty`;
+    rawNationalPovertyData = signal<NationalPovertyItem[]>([]);
+    nationalPovertyData = signal<NationalPovertyItem[]>([]);
+
+    fetchNationalPovertyData(year?: number,  area?: string, country?: string,) {
         if (!isPlatformBrowser(this.platformId)) return;
 
         this.httpClient.get<NationalPovertyItem[]>(this.national_poverty_url).subscribe({
             next: (data) => {
                 if (!data || data.length === 0) return;
 
-                // Extraer todos los años
-                const years = [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
-                this.nationalPovertyYears.set(years);
+                // Guardar la data completa devuelta por el API
+                this.rawNationalPovertyData.set(data);
 
-                // Extraer las areas que pertenecen al año seleccionado
-                const availableAreas = [
-                    ...new Set(
-                        data
-                            .filter((d) => Number(d.anio) === Number(year))
-                            .map((d) => d.area_geografica?.trim())
-                            .filter(Boolean) as string[]
-                    ),
-                ].sort();
-                this.nationalPovertyAreas.set(availableAreas);
+                // Determinar el año y el país a mostrar de forma segura
+                const availableYears = this.getNationalPovertyYears();
+                const targetYear = year && availableYears.includes(Number(year))
+                    ? Number(year)
+                    : availableYears[0];
 
-                // Extraer los países que pertenecen al área seleccionada
-                const availableCountries = [
-                    ...new Set(
-                        data
-                            .filter(
-                                (d) =>
-                                    Number(d.anio) === Number(year) &&
-                                    d.area_geografica?.toLowerCase().trim() === area?.toLowerCase().trim()
-                            )
-                            .map((d) => d.pais?.trim())
-                            .filter(Boolean) as string[]
-                    ),
-                ].sort();
-                this.nationalPovertyCountries.set(availableCountries);
+                const availableAreas = this.getNationalPovertyAreasByYear(targetYear);
+                const targetArea = area && availableAreas.some(a => a.toLowerCase() === area.toLowerCase())
+                    ? area
+                    : availableAreas[0];
 
-                // Filtrar los datos por año, area y país
-                const filteredData = data.filter(
-                    (d) =>
-                        Number(d.anio) === Number(year) &&
-                        d.area_geografica?.toLowerCase().trim() === area?.toLowerCase().trim() &&
-                        d.pais?.toLowerCase().trim() === country?.toLowerCase().trim()
-                );
+                const availableCountries = this.getNationalPovertyCountriesByYearAndArea(targetYear, targetArea);
+                const targetCountry = country && availableCountries.some(c => c.toLowerCase() === country.toLowerCase())
+                    ? country
+                    : availableCountries[0];
 
-                // Se asignan los datos filtrados finales
-                this.nationalPovertyData.set(filteredData);
+
+                this.loadNationalPovertyData(targetYear, targetArea, targetCountry);
             },
-
-            error: (err) => console.error('Error al cargar datos IPM:', err),
+            error: (err) => console.error('Error al cargar datos de pobreza nacional:', err),
         });
     }
 
-    private poverty_url = `${environment.apiAddr}/api/users/poverty-by-age`;
-    povertyData = signal<PovertyByAgeItem[]>([]);
-    povertyYears = signal<number[]>([]);
-    povertyAreas = signal<string[]>([]);
-    povertyCountries = signal<string[]>([]);
+    // 2. Funciones Auxiliares para los Selectores del Modal
+    getNationalPovertyYears(): number[] {
+        const data = this.rawNationalPovertyData();
+        return [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
+    }
 
-    loadPovertyByAgeData(year: number, country: string, area: string) {
+    getNationalPovertyAreasByYear(year?: number): string[] {
+        const data = this.rawNationalPovertyData();
+        if (!year) return [];
+
+        return [
+            ...new Set(
+                data
+                    .filter((d) => Number(d.anio) === Number(year))
+                    .map((d) => d.area_geografica?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
+
+    getNationalPovertyCountriesByYearAndArea(year?: number, area?: string): string[] {
+        const data = this.rawNationalPovertyData();
+        if (!year || !area) return [];
+
+        return [
+            ...new Set(
+                data
+                    .filter(
+                        (d) =>
+                            Number(d.anio) === Number(year) &&
+                            d.area_geografica?.toLowerCase().trim() === area.toLowerCase().trim()
+                    )
+                    .map((d) => d.pais?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
+
+    // 3. Método de filtrado síncrono (llamado por el modal y al inicio)
+    loadNationalPovertyData(year?: number, area?: string, country?: string, ) {
+        const data = this.rawNationalPovertyData();
+
+        // Si no se han descargado los datos aún, llamar a la API
+        if (!data || data.length === 0) {
+            this.fetchNationalPovertyData(year, area, country);
+            return;
+        }
+
+        // Filtrar según año área y país
+        let filteredData = data.filter(
+            (d) =>
+                Number(d.anio) === Number(year) &&
+                d.area_geografica?.toLowerCase().trim() === String(area).toLowerCase().trim() &&
+                d.pais?.toLowerCase().trim() === String(country).toLowerCase().trim()
+        );
+
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y país disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+            const fallbackYear = data[0].anio;
+            const fallbackArea = data[0].area_geografica;
+            const fallbackCountry = data[0].pais;
+            filteredData = data.filter(
+                (d) =>
+                    Number(d.anio) === Number(fallbackYear) &&
+                    d.area_geografica?.toLowerCase().trim() === fallbackArea.toLowerCase().trim()
+            );
+        }
+
+        this.nationalPovertyData.set(filteredData);
+    }
+
+
+
+    private poverty_by_age_url = `${environment.apiAddr}/api/users/poverty-by-age`;
+    rawpovertyByAgeData = signal<PovertyByAgeItem[]>([]);
+    povertyByAgeData = signal<PovertyByAgeItem[]>([]);
+
+    fetchPovertyByAgeData(year?: number, area?: string, country?: string, ) {
         if (!isPlatformBrowser(this.platformId)) return;
 
-        this.httpClient.get<PovertyByAgeItem[]>(this.poverty_url).subscribe({
+        this.httpClient.get<PovertyByAgeItem[]>(this.poverty_by_age_url).subscribe({
             next: (data) => {
                 if (!data || data.length === 0) return;
 
-                // Extraer todos los años
-                const years = [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
-                this.povertyYears.set(years);
+                // Guardar la data completa devuelta por el API
+                this.rawpovertyByAgeData.set(data);
 
-                // Extraer las areas que pertenecen al año seleccionado
-                const availableAreas = [
-                    ...new Set(
-                        data
-                            .filter((d) => Number(d.anio) === Number(year))
-                            .map((d) => d.area_geografica?.trim())
-                            .filter(Boolean) as string[]
-                    ),
-                ].sort();
-                this.povertyAreas.set(availableAreas);
+                // Determinar el año y el país a mostrar de forma segura
+                const availableYears = this.getPovertyByAgeYears();
+                const targetYear = year && availableYears.includes(Number(year))
+                    ? Number(year)
+                    : availableYears[0];
 
-                // Extraer los países que pertenecen al área seleccionada
-                const availableCountries = [
-                    ...new Set(
-                        data
-                            .filter(
-                                (d) =>
-                                    Number(d.anio) === Number(year) &&
-                                    d.area_geografica?.toLowerCase().trim() === area?.toLowerCase().trim()
-                            )
-                            .map((d) => d.pais?.trim())
-                            .filter(Boolean) as string[]
-                    ),
-                ].sort();
-                this.povertyCountries.set(availableCountries);
+                const availableAreas = this.getPovertyByAgeAreasByYear(targetYear);
+                const targetArea = area && availableAreas.some(a => a.toLowerCase() === area.toLowerCase())
+                    ? area
+                    : availableAreas[0];
 
-                // Filtrar los datos por año, area y país
-                const filteredData = data.filter(
-                    (d) =>
-                        Number(d.anio) === Number(year) &&
-                        d.area_geografica?.toLowerCase().trim() === area?.toLowerCase().trim() &&
-                        d.pais?.toLowerCase().trim() === country?.toLowerCase().trim()
-                );
+                const availableCountries = this.getPovertyByAgeCountriesByYearAndArea(targetYear, targetArea);
+                const targetCountry = country && availableCountries.some(c => c.toLowerCase() === country.toLowerCase())
+                    ? country
+                    : availableCountries[0];
 
-                // Se asignan los datos filtrados finales
-                this.povertyData.set(filteredData);
+
+                this.loadPovertyByAgeData(targetYear, targetArea, targetCountry);
             },
-
-            error: (err) => console.error('Error al cargar datos IPM:', err),
+            error: (err) => console.error('Error al cargar datos de pobreza nacional:', err),
         });
+    }
+
+    getPovertyByAgeYears(): number[] {
+        const data = this.rawpovertyByAgeData();
+        return [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
+    }
+
+    getPovertyByAgeAreasByYear(year?: number): string[] {
+        const data = this.rawpovertyByAgeData();
+        if (!year) return [];
+
+        return [
+            ...new Set(
+                data
+                    .filter((d) => Number(d.anio) === Number(year))
+                    .map((d) => d.area_geografica?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
+
+    getPovertyByAgeCountriesByYearAndArea(year?: number, area?: string): string[] {
+        const data = this.rawpovertyByAgeData();
+        if (!year || !area) return [];
+
+        return [
+            ...new Set(
+                data
+                    .filter(
+                        (d) =>
+                            Number(d.anio) === Number(year) &&
+                            d.area_geografica?.toLowerCase().trim() === area.toLowerCase().trim()
+                    )
+                    .map((d) => d.pais?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
+
+    loadPovertyByAgeData(year?: number, area?: string, country?: string) {
+        const data = this.rawpovertyByAgeData();
+        // Si no se han descargado los datos aún, llamar a la API
+        if (!data || data.length === 0) {
+            this.fetchPovertyByAgeData(year, area, country);
+            return;
+        }
+
+        // Filtrar según año área y país
+        let filteredData = data.filter(
+            (d) =>
+                Number(d.anio) === Number(year) &&
+                d.area_geografica?.toLowerCase().trim() === String(area).toLowerCase().trim() &&
+                d.pais?.toLowerCase().trim() === String(country).toLowerCase().trim()
+        );
+
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y país disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+            const fallbackYear = data[0].anio;
+            const fallbackArea = data[0].area_geografica;
+            const fallbackCountry = data[0].pais;
+            filteredData = data.filter(
+                (d) =>
+                    Number(d.anio) === Number(fallbackYear) &&
+                    d.area_geografica?.toLowerCase().trim() === fallbackArea.toLowerCase().trim() && 
+                    d.pais?.toLowerCase().trim() === fallbackCountry.toLowerCase().trim()
+            );
+        }
+
+        this.povertyByAgeData.set(filteredData);
     }
 
 

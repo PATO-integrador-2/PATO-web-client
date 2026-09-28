@@ -19,13 +19,15 @@ export interface WidgetItemPredict {
 export interface WidgetItemDash {
     id: number;
     label: string;
-    content: Type<unknown>;
-    filterFields: Array<'year' | 'domain' | 'country'>;
+    content: any;
+    filterFields: Array<'year' | 'domain' | 'country' | 'area'>;
     getYearsSignal?: () => number[];
-    getDomainsSignal?: () => string[];
-    loadData: (filters: { year?: number; domain?: string }) => void;
+    getCountriesByYear?: (year?: number) => string[];
+    getAreasByYear?: (year?: number) => string[];
+    getCountriesByYearAndArea?: (year?: number, area?: string) => string[];
+    getDomainsByYear?: (year?: number) => string[];
+    loadData: (filters: any) => void;
 }
-
 // Dashboard 1
 
 export interface PmiApiResponse {

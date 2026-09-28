@@ -1,121 +1,37 @@
 <app-navbar></app-navbar>
+<app-navbar-dashboard></app-navbar-dashboard>
 
 <div class="dashboard-layout">
-
-    <!-- BARRA LATERAL IZQUIERDA -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2>Paneles</h2>
-        </div>
-
-        <app-navbar-dashboard></app-navbar-dashboard><br>
-
-        <div class="sidebar-header">
-            <h2>Filtros</h2>
-        </div>
-
-        <div class="filter-group">
-            <span class="filter-title">Contribución relativa de las privaciones a la PM</span>
-            <br>
-            <div class="fields-row">
-                <mat-form-field appearance="outline" class="compact-field">
-                    <mat-label>Año</mat-label>
-                    <mat-select [(ngModel)]="year">
-                        @for (year of dashboardService.constributionYears(); track year) {
-                        <mat-option [value]="year">{{ year }}</mat-option>
-                        }
-                    </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="compact-field">
-                    <mat-label>País</mat-label>
-                    <mat-select [(ngModel)]="country">
-                        @for (country of dashboardService.constributionCountries(); track country) {
-                        <mat-option [value]="country">{{ country }}</mat-option>
-                        }
-                    </mat-select>
-                </mat-form-field>
-            </div>
-        </div>
-
-        <div class="filter-group">
-            <span class="filter-title">Proporción de privaciones</span>
-            <br>
-            <div class="fields-row">
-                <mat-form-field appearance="outline" class="compact-field">
-                    <mat-label>Año</mat-label>
-                    <mat-select [(ngModel)]="year2">
-                        @for (year of dashboardService.nationalPovertyYears(); track year) {
-                        <mat-option [value]="year">{{ year }}</mat-option>
-                        }
-                    </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="compact-field">
-                    <mat-label>Área geográfica</mat-label>
-                    <mat-select [(ngModel)]="area">
-                        @for (area of dashboardService.nationalPovertyAreas(); track area) {
-                        <mat-option [value]="area">{{ area }}</mat-option>
-                        }
-                    </mat-select>
-                </mat-form-field>
-            </div>
-            <mat-form-field appearance="outline" class="compact-field">
-                <mat-label>País</mat-label>
-                <mat-select [(ngModel)]="country2">
-                    @for (country of dashboardService.nationalPovertyCountries(); track country) {
-                    <mat-option [value]="country">{{ country }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
-        </div>
-
-        <div class="filter-group">
-            <span class="filter-title">Incidencia de la pobreza multidimensional por grupo de edad</span>
-            <br>
-            <div class="fields-row">
-                <mat-form-field appearance="outline" class="compact-field">
-                    <mat-label>Año</mat-label>
-                    <mat-select [(ngModel)]="year3">
-                        @for (year of dashboardService.povertyYears(); track year) {
-                        <mat-option [value]="year">{{ year }}</mat-option>
-                        }
-                    </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="compact-field">
-                    <mat-label>Área geográfica</mat-label>
-                    <mat-select [(ngModel)]="area2">
-                        @for (area of dashboardService.povertyAreas(); track area) {
-                        <mat-option [value]="area">{{ area }}</mat-option>
-                        }
-                    </mat-select>
-                </mat-form-field>
-            </div>
-            <mat-form-field appearance="outline" class="compact-field">
-                <mat-label>País</mat-label>
-                <mat-select [(value)]="country3">
-                    @for (country of dashboardService.povertyCountries(); track country) {
-                    <mat-option [value]="country">{{ country }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
-        </div>
-    </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="main-content">
         <header class="dashboard-header">
             <h1>Panel Multidimensional de Pobreza</h1>
         </header>
-        <br>
+        <br><br>
 
         <!-- RENDERIZADO DE WIDGETS -->
-        <div class="dashboard-grid">
+        <div class="dashboard-grid-dash">
             @for (widget of dashboardService.widgets(); track widget.id) {
-            <div class="dashboard-card">
-                <ng-container [ngComponentOutlet]="widget.content" />
+            <div class="dashboard-card" [class.card-tall]="widget.id === 1">
+
+                <div class="card-header">
+                    <h3>{{ widget.label }}</h3>
+
+                    <button mat-icon-button type="button" class="filter-btn" (click)="onClickFilter(widget)"
+                        aria-label="Filtrar">
+                        <mat-icon>filter_list</mat-icon>
+                    </button>
+                </div><br>
+
+                <div class="card-content">
+                    <ng-container [ngComponentOutlet]="widget.content" />
+                </div>
+
             </div>
             }
         </div>
-        
+
     </main>
 
 </div>

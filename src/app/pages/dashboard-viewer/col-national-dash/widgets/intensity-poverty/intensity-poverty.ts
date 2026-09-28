@@ -42,12 +42,15 @@ export class IntensityPoverty {
     const items = this.data();
     const labels = items.map((item) => item.dominio);
     const values: number[] = items.map((item) => Number(item.porcentaje));
+    const yearVal = items[0]?.anio || '';
+
+
     this.chartInstance = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: labels,
         datasets: [{
-          label: 'IPM (%)',
+          label: `IPM (%) (${yearVal})`,
           data: values,
           backgroundColor: [
             'rgb(255, 99, 133)',

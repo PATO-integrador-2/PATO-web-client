@@ -5,10 +5,10 @@ import { environment } from '../../../../environments/environment.development';
 import { RadarDeprivations } from '../../../pages/dashboard-viewer/col-national-dash/widgets/radar-deprivations/radar-deprivations';
 import { MpiSex } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi-sex/mpi-sex';
 import { IntensityPoverty } from '../../../pages/dashboard-viewer/col-national-dash/widgets/intensity-poverty/intensity-poverty';
-import { ContributionsImpact } from '../../../pages/dashboard-viewer/col-national-dash/widgets/contributions-impact/contributions-impact';
 import { MpiBossSex } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi-boss-sex/mpi-boss-sex';
 import { isPlatformBrowser } from '@angular/common';
 import { Mpi } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi/mpi';
+import { ContributionsImpact } from '../../../pages/dashboard-viewer/col-national-dash/widgets/contributions-impact/contributions-impact';
 
 @Service()
 export class ColNationalService {
@@ -33,7 +33,7 @@ export class ColNationalService {
             content: RadarDeprivations,
             filterFields: ['year', 'domain'],
             getYearsSignal: () => this.deprivationYears(),
-            getDomainsSignal: () => this.deprivationDomains(),
+            getDomainsByYear: () => this.deprivationDomains(),
             loadData: (f) => {
                 const selectedYear = f?.year ?? 2025;
                 const selectedDomain = f?.domain ?? 'Nacional';
@@ -45,7 +45,7 @@ export class ColNationalService {
             label: 'Incidencia de Pobreza Multidimensioanl según sexo de la persona ',
             content: MpiSex,
             filterFields: ['domain'],
-            getDomainsSignal: () => this.mpiSexDomains(),
+            getDomainsByYear: () => this.mpiSexDomains(),
             loadData: (f) => {
                 const selectedDomain = f?.domain ?? 'Cabeceras';
                 this.loadIpmSexData(selectedDomain);
@@ -69,7 +69,7 @@ export class ColNationalService {
             content: ContributionsImpact,
             filterFields: ['year', 'domain'],
             getYearsSignal: () => this.constributionYears(),
-            getDomainsSignal: () => this.constributionDomains(),
+            getDomainsByYear: () => this.constributionDomains(),
             loadData: (f) => {
                 const selectedYear = f?.year ?? 2025;
                 const selectedDomain = f?.domain ?? 'Nacional';
@@ -81,7 +81,7 @@ export class ColNationalService {
             label: 'Incidencia de Pobreza Multidimensioanl según sexo del jefe del hogar',
             content: MpiBossSex,
             filterFields: ['domain'],
-            getDomainsSignal: () => this.mpiSexDomains(),
+            getDomainsByYear: () => this.mpiSexDomains(),
             loadData: (f) => {
                 const selectedDomain = f?.domain ?? 'Cabeceras';
                 this.loadIpmBossSexData(selectedDomain);

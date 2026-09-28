@@ -44,6 +44,8 @@ export class Mpi {
   private initChart(canvas: HTMLCanvasElement, items: MpiItem[]) {
     const labels = items.map((item) => item.año);
     const values: number[] = items.map((item) => Number(item.ipm_predicho));
+    const domainName = items[0]?.dominio || 'Nacional';
+    const yearVal = items[0]?.año || '';
 
     this.chartInstance = new Chart(canvas, {
       type: 'bar',
@@ -51,7 +53,7 @@ export class Mpi {
         labels: labels,
         datasets: [
           {
-            label: 'IPM (%)',
+            label: `IPM (%) - ${domainName} (${yearVal})`,
             data: values,
             backgroundColor: [
               'rgb(255, 99, 133)',
