@@ -8,72 +8,50 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { LatinAmericaService } from '../../../core/services/dashboard-services/latin-america.service';
 import { NavbarDashboard } from '../../../components/navbar-dashboard/navbar-dashboard';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { DashboardFilterService } from '../../../core/services/dashboard-filter.service';
+import { WidgetItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
+
+
+
 
 @Component({
   selector: 'app-latin-america-dash',
-  imports: [FormsModule, Navbar, NavbarDashboard, NgComponentOutlet, MatSelectModule, MatFormFieldModule],
+  imports: [NavbarDashboard, FormsModule, Navbar, NgComponentOutlet, MatSelectModule, MatFormFieldModule, MatIconModule],
   templateUrl: './latin-america-dash.html',
   styleUrl: './latin-america-dash.css',
 })
 export class LatinAmericaDash {
   public dashboardService = inject(LatinAmericaService);
 
-  years = signal<number[]>([2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018,
-    2019, 2020, 2021, 2022, 2023, 2024, 2025]);
-  areas = signal<string[]>(
-    [
-      'Nacional',
-      'Rural',
+  private filterModalService = inject(DashboardFilterService);
 
-    ]
-  );
+  // Estado local para recordar qué valores tiene seleccionados cada tarjeta
+  private currentFilters: Record<string, { year?: number; country?: string; area?: string }> = {
+    'contribution': { year: 2024, country: 'Colombia' },
+    'population': { year: 2024, area: 'Rural', country: 'Colombia' },
+    'poverty': { year: 2024, area: 'Rural', country: 'Colombia' },
+  };
 
-  countries = signal<string[]>(
-    [
-      'Dominican Republic',
-      'Brazil',
-      'Mexico',
-      'Ecuador',
-      'Argentina',
-      'Bolivia (Plurinational State of)',
-      'Paraguay',
-      'Costa Rica',
-      'Uruguay',
-      'Colombia',
-      'Latin America (simple average)',
-      'Peru',
-      'Latin America (weighted average)',
-    ]
-  );
-
-  year = signal<number>(2023);
-  country = signal<string>('Ecuador');
-
-  year2 = signal<number>(2025);
-  area = signal<string>('National');
-  country2 = signal<string>('Colombia');
-
-  year3 = signal<number>(2024);
-  country3 = signal<string>('Colombia');
-  area2 = signal<string>('Rural');
-
-
-  constructor() {
-    effect(() => {
-      const year = this.year();
-      const year2 = this.year2();
-      const year3 = this.year3();
-      const country = this.country();
-      const country2 = this.country2();
-      const country3 = this.country3();
-      const area = this.area();
-      const area2 = this.area2();
-
-      this.dashboardService.loadDeprivationContributionData(year, country)
-      this.dashboardService.loadNationalPovertyData(year2, country2, area);
-      this.dashboardService.loadPovertyByAgeData(year3, country3, area2);
-
+  ngOnInit() {
+    // Carga los datos iniciales ejecutando la función de cada widget
+    this.dashboardService.widgets().forEach((widget) => {
+      widget.loadData(this.currentFilters[widget.id]);
     });
+  }
+
+  onClickFilter(widget: WidgetItemDash) {
+    const filters = this.currentFilters[widget.id];
+
+    this.filterModalService.openCardFilter(widget, filters, )
+      .subscribe((newFilters) => {
+        if (newFilters) {
+          // Guarda el estado actualizado
+          this.currentFilters[widget.id] = newFilters;
+          // Ejecuta la recarga de datos llamando a la función del propio widget
+          widget.loadData(newFilters);
+        }
+      });
   }
 
 }

@@ -15,7 +15,7 @@ import { WidgetItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
 
 @Component({
   selector: 'app-col-national-dash',
-  imports: [FormsModule, Navbar, NgComponentOutlet, MatSelectModule, MatFormFieldModule, MatIconModule],
+  imports: [NavbarDashboard, FormsModule, Navbar, NgComponentOutlet, MatSelectModule, MatFormFieldModule, MatIconModule],
   templateUrl: './col-national-dash.html',
   styleUrl: './col-national-dash.css',
 })
@@ -41,7 +41,7 @@ export class ColNationalDash {
   onClickFilter(widget: WidgetItemDash) {
     const filters = this.currentFilters[widget.id];
 
-    this.filterModalService.openCardFilter(widget, filters)
+    this.filterModalService.openCardFilter(widget, filters, )
       .subscribe((newFilters) => {
         if (newFilters) {
           // Guarda el estado actualizado

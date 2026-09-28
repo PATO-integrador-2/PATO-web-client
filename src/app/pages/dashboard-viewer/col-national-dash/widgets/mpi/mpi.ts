@@ -42,6 +42,7 @@ export class Mpi {
     const items = this.data();
     const labels = items.map((item) => item.dominio);
     const values: number[] = items.map((item) => Number(item.ipm));
+    const yearVal = items[0]?.anio || '';
 
     this.chartInstance = new Chart(canvas, {
       type: 'bar',
@@ -49,7 +50,7 @@ export class Mpi {
         labels: labels,
         datasets: [
           {
-            label: 'IPM (%)',
+            label: `IPM (%) (${yearVal})`,
             data: values,
             backgroundColor: [
               'rgb(255, 99, 133)',
@@ -91,6 +92,7 @@ export class Mpi {
     // Actualizar y renderizar la gráfica
     this.chartInstance.data.labels = labels;
     this.chartInstance.data.datasets[0].data = dataValues;
+    
     this.chartInstance.update();
   }
 

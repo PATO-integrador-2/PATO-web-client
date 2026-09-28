@@ -42,12 +42,15 @@ export class ContributionsImpact {
     const items = this.data();
     const labels = items.map((item) => item.dimension);
     const values: number[] = items.map((item) => Number(item.porcentaje));
+    const domainName = items[0]?.dominio || 'Nacional';
+    const yearVal = items[0]?.anio || '';
+
     this.chartInstance = new Chart(canvas, {
       type: 'pie',
       data: {
         labels: labels,
         datasets: [{
-          label: 'IPM (%)',
+          label: `IPM (%) - ${domainName} (${yearVal})`,
           data: values,
           backgroundColor: [
             'rgb(255, 99, 133)',

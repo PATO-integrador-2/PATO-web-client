@@ -14,45 +14,66 @@ export class ContributionDeprivations {
   private dashboardService = inject(LatinAmericaService);
   private platformId = inject(PLATFORM_ID);
 
-  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
+  // Referencia Signal del canvas en el HTML
+  chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
   private chartInstance?: Chart;
 
-  contributionData = this.dashboardService.deprivationContributionData;
+  // Signal con los datos del servicio
+  data = computed(() => this.dashboardService.contributionData());
 
   constructor() {
+    // Escuchar activamente cuando el Canvas o los Datos cambian
     effect(() => {
-      const items = this.contributionData();
-      if (this.chartInstance && items.length > 0) {
-        this.updateChartData(items);
+      const canvasRef = this.chartCanvas();
+      const items = this.data();
+
+      if (!isPlatformBrowser(this.platformId) || !canvasRef || !items || items.length === 0) {
+        return;
       }
+
+      const canvasEl = canvasRef.nativeElement;
+
+      // Usar setTimeout para asegurar que el navegador ya aplicó las dimensiones al DOM
+      setTimeout(() => {
+        this.renderOrUpdateChart(canvasEl, items);
+      }, 0);
     });
   }
 
-  ngAfterViewInit() {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    setTimeout(() => {
-      const canvas = this.chartElement()?.nativeElement;
-      if (canvas && !this.chartInstance) {
-        this.initChart(canvas);
-      }
-    }, 150);
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      // Disparar la carga inicial de datos desde el backend
+      this.dashboardService.loadDeprivationContributionData(2024, 'Colombia');
+    }
   }
 
-  private initChart(canvas: HTMLCanvasElement) {
-    const items = this.contributionData();
+  ngOnDestroy() {
+    // Destruir la gráfica si el componente se desmonta
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = undefined;
+    }
+  }
+
+  private renderOrUpdateChart(canvas: HTMLCanvasElement, items: ContributionPovertyItem[]) {
+    // Si la instancia ya existe pero el canvas cambió (por reinicio/F5), destruir la vieja
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = undefined;
+    }
+
     const labels = items.map((item) => item.privacion);
     const values = items.map((item) => item.valor_porcentaje);
     const domainName = items[0]?.pais || 'Nacional';
     const yearVal = items[0]?.anio || '';
 
+    // Crear una nueva instancia limpia sobre el canvas actual
     this.chartInstance = new Chart(canvas, {
       type: 'radar',
       data: {
         labels: labels,
         datasets: [
           {
-            label: `Privaciones - ${domainName} (${yearVal})`,
             data: values,
             fill: true,
             backgroundColor: 'rgba(212, 111, 162, 0.25)',
@@ -70,12 +91,7 @@ export class ContributionDeprivations {
         responsive: true,
         maintainAspectRatio: false,
         layout: {
-          padding: {
-            left: 60,
-            right: 60,
-            top: 20,
-            bottom: 20
-          }
+          padding: { left: 50, right: 50, top: 20, bottom: 20 }
         },
         scales: {
           r: {
@@ -101,17 +117,4 @@ export class ContributionDeprivations {
     });
   }
 
-  private updateChartData(items: ContributionPovertyItem[]) {
-    if (!this.chartInstance) return;
-
-    this.chartInstance.data.labels = items.map((item) => item.privacion);
-    this.chartInstance.data.datasets[0].data = items.map((item) => item.valor_porcentaje);
-    this.chartInstance.data.datasets[0].label = `Privaciones - ${items[0]?.pais} (${items[0]?.anio})`;
-
-    this.chartInstance.update();
-  }
-
-  ngOnDestroy() {
-    this.chartInstance?.destroy();
-  }
 }

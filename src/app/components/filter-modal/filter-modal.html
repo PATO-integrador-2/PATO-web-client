@@ -11,27 +11,40 @@
 
     <div class="fields-grid">
 
-            @if (data.filterFields.includes('year')) {
-            <mat-form-field appearance="outline" class="filter-field">
-                <mat-label>Año</mat-label>
-                <mat-select [(ngModel)]="selectedFilters.year">
-                    @for (year of data.availableYears; track year) {
-                    <mat-option [value]="year">{{ year }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
-            }
+        <!-- Desplegable de Año -->
+        @if (data.filterFields?.includes('year')) {
+        <mat-form-field appearance="outline">
+            <mat-label>Año</mat-label>
+            <mat-select [(ngModel)]="selectedFilters.year" (selectionChange)="onYearChange()">
+                @for (year of availableYears; track year) {
+                <mat-option [value]="year">{{ year }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        }
 
-            @if (data.filterFields.includes('domain')) {
-            <mat-form-field appearance="outline" >
-                <mat-label>Dominio</mat-label>
-                <mat-select [(ngModel)]="selectedFilters.domain">
-                    @for (domain of data.availableDomains; track domain) {
-                    <mat-option [value]="domain">{{ domain }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
-            }
+        @if (data.filterFields.includes('area')) {
+        <mat-form-field appearance="outline">
+            <mat-label>Area</mat-label>
+            <mat-select [(ngModel)]="selectedFilters.area">
+                @for (area of availableAreas; track area) {
+                <mat-option [value]="area">{{ area }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        }
+
+        <!-- Desplegable de País -->
+        @if (data.filterFields?.includes('country')) {
+        <mat-form-field appearance="outline">
+            <mat-label>País</mat-label>
+            <mat-select [(ngModel)]="selectedFilters.country">
+                @for (country of availableCountries; track country) {
+                <mat-option [value]="country">{{ country }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        }
 
     </div>
 
