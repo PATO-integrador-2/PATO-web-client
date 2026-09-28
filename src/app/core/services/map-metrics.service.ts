@@ -2,10 +2,29 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
-import type { IndicatorDeptItem, NationalPovertyItem } from '../../interfaces/ipm.interface';
+import type { NationalPovertyItem } from '../../interfaces/ipm.interface';
 import type { LocationInfoMetrics } from '../../interfaces/map-location';
 
 type MetricMap = ReadonlyMap<string, number>;
+
+export interface DepartmentMetricItem {
+  anio: number;
+  region: string;
+  departamento: string;
+  ipm: number | string;
+}
+
+export interface GeographicMetricMaps {
+  departments: MetricMap;
+  regions: MetricMap;
+  departmentYears: ReadonlyMap<string, YearRange>;
+  regionYears: ReadonlyMap<string, YearRange>;
+}
+
+export interface YearRange {
+  highestYear?: number;
+  lowestYear?: number;
+}
 
 export function normalizeMetric(value: number | string | undefined): number | undefined {
   const numericValue = typeof value === 'string'
@@ -18,6 +37,8 @@ export function normalizeMetric(value: number | string | undefined): number | un
 
 export function normalizeName(value: string | undefined): string {
   return (value ?? '')
+    .replace(/Ã‘/g, 'Ñ')
+    .replace(/Ã±/g, 'ñ')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim()
@@ -69,7 +90,39 @@ export function normalizeCountryName(value: string | undefined): string {
 }
 
 export function normalizeRegionName(value: string | undefined): string {
-  return normalizeName(value).replace(/^region\s+/, '');
+  const normalized = normalizeName(value)
+    .replace(/^region\s+/, '')
+    .replace(/\s+-\s+/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (normalized === 'amazonia' || normalized === 'orinoquia') return 'orinoquia-amazonia';
+  return normalized;
+}
+
+const DEPARTMENT_ALIASES: Record<string, string> = {
+  bogota: 'santafe de bogota dc',
+  'bogota dc': 'santafe de bogota dc',
+  'bogota d c': 'santafe de bogota dc',
+  'san andres': 'archipielago de san andres providencia y santa catalina',
+  'san andres y providencia': 'archipielago de san andres providencia y santa catalina',
+  'archipielago de san andres providencia y santa catalina': 'archipielago de san andres providencia y santa catalina',
+};
+
+export function normalizeDepartmentName(value: string | undefined): string {
+  const normalized = normalizeName(value)
+    .replace(/[.,]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return DEPARTMENT_ALIASES[normalized] ?? normalized;
+}
+
+function buildYearRange(valuesByYear: Map<number, number[]>): YearRange {
+  const yearlyValues = [...valuesByYear.entries()]
+    .map(([year, values]) => ({ year, value: average(values)! }))
+    .filter(item => item.value !== undefined);
+  const highest = yearlyValues.reduce((best, current) => current.value > best.value ? current : best, yearlyValues[0]);
+  const lowest = yearlyValues.reduce((best, current) => current.value < best.value ? current : best, yearlyValues[0]);
+  return { highestYear: highest?.year, lowestYear: lowest?.year };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -82,13 +135,19 @@ export class MapMetricsService {
   private readonly _year = signal<number | null>(null);
   private readonly _countryMetrics = signal<MetricMap>(new Map());
   private readonly _countryInfo = signal<ReadonlyMap<string, LocationInfoMetrics>>(new Map());
+  private readonly _departmentMetrics = signal<MetricMap>(new Map());
   private readonly _regionMetrics = signal<MetricMap>(new Map());
+  private readonly _departmentYears = signal<ReadonlyMap<string, YearRange>>(new Map());
+  private readonly _regionYears = signal<ReadonlyMap<string, YearRange>>(new Map());
 
   readonly status = this._status.asReadonly();
   readonly year = this._year.asReadonly();
   readonly countryMetrics = this._countryMetrics.asReadonly();
   readonly countryInfo = this._countryInfo.asReadonly();
+  readonly departmentMetrics = this._departmentMetrics.asReadonly();
   readonly regionMetrics = this._regionMetrics.asReadonly();
+  readonly departmentYears = this._departmentYears.asReadonly();
+  readonly regionYears = this._regionYears.asReadonly();
   readonly ready = computed(() => this._status() === 'loaded');
 
   load(): void {
@@ -97,23 +156,27 @@ export class MapMetricsService {
 
     forkJoin({
       countries: this.http.get<NationalPovertyItem[]>(this.nationalPovertyUrl),
-      departments: this.http.get<IndicatorDeptItem[]>(this.departmentPovertyUrl),
+      departments: this.http.get<DepartmentMetricItem[]>(this.departmentPovertyUrl),
     }).subscribe({
       next: ({ countries, departments }) => {
         const countryItems = extractItems<NationalPovertyItem>(countries);
-        const departmentItems = extractItems<IndicatorDeptItem>(departments);
+        const departmentItems = extractItems<DepartmentMetricItem>(departments);
         const countryMetrics = buildCountryMetrics(countryItems);
-        const countryInfo = buildCountryInfo(countryItems);
-        const regionMetrics = buildRegionMetrics(departmentItems);
+        const countryInfo = buildCountryInfo(countryItems, countryMetrics);
+        const geographicMetrics = buildGeographicMetrics(departmentItems);
         this._countryMetrics.set(countryMetrics);
         this._countryInfo.set(countryInfo);
-        this._regionMetrics.set(regionMetrics);
+        this._departmentMetrics.set(geographicMetrics.departments);
+        this._regionMetrics.set(geographicMetrics.regions);
+        this._departmentYears.set(geographicMetrics.departmentYears);
+        this._regionYears.set(geographicMetrics.regionYears);
         this._year.set(null);
         this._status.set('loaded');
         console.info('[MapMetrics] métricas cargadas', {
           period: 'all-years-average',
           countries: countryMetrics.size,
-          regions: regionMetrics.size,
+          regions: geographicMetrics.regions.size,
+          departments: geographicMetrics.departments.size,
         });
       },
       error: (error) => {
@@ -150,19 +213,62 @@ function buildCountryMetrics(items: NationalPovertyItem[]): MetricMap {
   return averageMetrics(valuesByCountry);
 }
 
-function buildRegionMetrics(items: IndicatorDeptItem[]): MetricMap {
-  const values = new Map<string, number[]>();
+export function buildGeographicMetrics(items: DepartmentMetricItem[]): GeographicMetricMaps {
+  const departmentValues = new Map<string, { region: string; values: number[]; valuesByYear: Map<number, number[]> }>();
   for (const item of items) {
     const metric = normalizeMetric(item.ipm);
+    const department = normalizeDepartmentName(item.departamento);
     const region = normalizeRegionName(item.region);
-    if (metric === undefined || !region) continue;
+    const year = Number(item.anio);
+    if (metric === undefined || !department || !region || !Number.isFinite(year)) continue;
 
-    const regionValues = values.get(region) ?? [];
-    regionValues.push(metric);
-    values.set(region, regionValues);
+    const departmentEntry: { region: string; values: number[]; valuesByYear: Map<number, number[]> } = departmentValues.get(department) ?? {
+      region,
+      values: [],
+      valuesByYear: new Map(),
+    };
+    departmentEntry.values.push(metric);
+    const yearValues = departmentEntry.valuesByYear.get(year) ?? [];
+    yearValues.push(metric);
+    departmentEntry.valuesByYear.set(year, yearValues);
+    departmentValues.set(department, departmentEntry);
   }
 
-  return averageMetrics(values);
+  const departmentMetrics = new Map(
+    [...departmentValues.entries()].map(([department, entry]) => [
+      department,
+      average(entry.values)!,
+    ])
+  );
+  const regionValues = new Map<string, number[]>();
+  const departmentYears = new Map<string, YearRange>();
+  for (const [department, { region, values, valuesByYear }] of departmentValues.entries()) {
+    const regionDepartments = regionValues.get(region) ?? [];
+    regionDepartments.push(average(values)!);
+    regionValues.set(region, regionDepartments);
+    departmentYears.set(department, buildYearRange(valuesByYear));
+  }
+
+  const regionYearValues = new Map<string, Map<number, number[]>>();
+  for (const { region, valuesByYear } of departmentValues.values()) {
+    const years = regionYearValues.get(region) ?? new Map<number, number[]>();
+    for (const [year, values] of valuesByYear.entries()) {
+      const yearValues = years.get(year) ?? [];
+      yearValues.push(average(values)!);
+      years.set(year, yearValues);
+    }
+    regionYearValues.set(region, years);
+  }
+
+  return {
+    departments: departmentMetrics,
+    regions: averageMetrics(regionValues),
+    departmentYears,
+    regionYears: new Map([...regionYearValues.entries()].map(([region, valuesByYear]) => [
+      region,
+      buildYearRange(valuesByYear),
+    ])),
+  };
 }
 
 function averageMetrics(valuesByKey: Map<string, number[]>): MetricMap {
@@ -174,7 +280,10 @@ function averageMetrics(valuesByKey: Map<string, number[]>): MetricMap {
   );
 }
 
-function buildCountryInfo(items: NationalPovertyItem[]): ReadonlyMap<string, LocationInfoMetrics> {
+export function buildCountryInfo(
+  items: NationalPovertyItem[],
+  nationalFallback: MetricMap = new Map(),
+): ReadonlyMap<string, LocationInfoMetrics> {
   const valuesByCountry = new Map<string, {
     national: Array<{ year: number; value: number }>;
     urban: number[];
@@ -187,11 +296,25 @@ function buildCountryInfo(items: NationalPovertyItem[]): ReadonlyMap<string, Loc
     const year = Number(item.anio);
     if (!country || metric === undefined || !Number.isFinite(year)) continue;
 
-    const values = valuesByCountry.get(country) ?? { national: [], urban: [], rural: [] };
-    const area = normalizeName(item.area_geografica);
-    if (area.includes('nacional')) values.national.push({ year, value: metric });
-    else if (area.includes('urbano')) values.urban.push(metric);
-    else if (area.includes('rural')) values.rural.push(metric);
+    const values = valuesByCountry.get(country) ?? {
+      national: [],
+      urban: [],
+      rural: [],
+    };
+    const geographicArea = normalizeName(item.area_geografica);
+    const measure = normalizeName(item.tipo_medida_pm);
+    const area = `${geographicArea} ${measure}`;
+    const isUrban = area.includes('urban');
+    const isRural = area.includes('rural');
+    const isNational = geographicArea.includes('nacional') || geographicArea === 'total' || measure.includes('nacional');
+
+    if (isNational || (!isUrban && !isRural)) {
+      values.national.push({ year, value: metric });
+    } else if (isUrban) {
+      values.urban.push(metric);
+    } else if (isRural) {
+      values.rural.push(metric);
+    }
     valuesByCountry.set(country, values);
   }
 
@@ -199,7 +322,7 @@ function buildCountryInfo(items: NationalPovertyItem[]): ReadonlyMap<string, Loc
     const highest = values.national.reduce((best, current) => current.value > best.value ? current : best, values.national[0]);
     const lowest = values.national.reduce((best, current) => current.value < best.value ? current : best, values.national[0]);
     return [country, {
-      national: average(values.national.map(item => item.value)),
+      national: average(values.national.map(item => item.value)) ?? nationalFallback.get(country),
       urban: average(values.urban),
       rural: average(values.rural),
       highestYear: highest?.year,

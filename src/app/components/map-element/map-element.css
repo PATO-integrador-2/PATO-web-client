@@ -17,7 +17,7 @@
   z-index: 1000;
   right: 16px;
   bottom: 24px;
-  width: 156px;
+  width: 210px;
   padding: 10px 12px;
   border: 1px solid rgba(100, 116, 139, 0.35);
   border-radius: 6px;
@@ -36,7 +36,7 @@
 .map-legend__gradient {
   height: 10px;
   border-radius: 2px;
-  background: linear-gradient(90deg, #2e7d32 0%, #f5c442 50%, #c62828 100%);
+  background: linear-gradient(90deg, #16803d 0%, #facc15 20%, #f97316 40%, #dc2626 60%, #991b1b 100%);
 }
 
 .map-legend__labels {
@@ -44,6 +44,34 @@
   justify-content: space-between;
   margin-top: 4px;
 }
+
+.map-legend__conditions {
+  display: grid;
+  gap: 4px;
+  margin-top: 9px;
+  color: #475569;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.map-legend__conditions span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.map-legend__swatch {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+}
+
+.map-legend__swatch--green { background: #16803d; }
+.map-legend__swatch--yellow { background: #facc15; }
+.map-legend__swatch--orange { background: #f97316; }
+.map-legend__swatch--red { background: #dc2626; }
+.map-legend__swatch--gray { background: #d1d5db; }
 
 .map-legend__note {
   margin-top: 7px;

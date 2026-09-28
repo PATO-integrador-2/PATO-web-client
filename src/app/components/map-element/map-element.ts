@@ -11,6 +11,7 @@ import { LocationService } from '../../core/services/location.service';
 import {
   MapMetricsService,
   normalizeCountryName,
+  normalizeDepartmentName,
   normalizeRegionName,
 } from '../../core/services/map-metrics.service';
 
@@ -29,12 +30,15 @@ export function metricColor(value: number | undefined): string {
 
   const normalized = Math.min(1, Math.max(0, value));
   const stops = [
-    { at: 0, color: [46, 125, 50] },
-    { at: 0.5, color: [245, 196, 66] },
-    { at: 1, color: [198, 40, 40] },
+    { at: 0, color: [22, 128, 61] },
+    { at: 0.2, color: [250, 204, 21] },
+    { at: 0.4, color: [249, 115, 22] },
+    { at: 0.6, color: [220, 38, 38] },
+    { at: 1, color: [153, 27, 27] },
   ];
-  const start = normalized <= 0.5 ? stops[0] : stops[1];
-  const end = normalized <= 0.5 ? stops[1] : stops[2];
+  const endIndex = stops.findIndex(stop => normalized < stop.at);
+  const end = endIndex === -1 ? stops[stops.length - 1] : stops[endIndex];
+  const start = endIndex <= 0 ? stops[0] : stops[endIndex - 1];
   const ratio = (normalized - start.at) / (end.at - start.at);
   const channels = start.color.map((channel, index) =>
     Math.round(channel + (end.color[index] - channel) * ratio)
@@ -293,15 +297,11 @@ export class MapElementComponent implements OnDestroy {
   }
 
   private departmentStyle(feature: Feature | undefined): typeof DEPARTMENT_BASE_STYLE {
-    const code = feature?.properties?.['DPTO'];
-    const regionName = this.locationService.departmentFeatures()
-      .find(department => department.code === code)?.regionName;
+    const name = feature?.properties?.[dptName];
 
     return {
       ...DEPARTMENT_BASE_STYLE,
-      fillColor: metricColor(
-        regionName ? this.mapMetricsService.regionMetrics().get(normalizeRegionName(regionName)) : undefined
-      ),
+      fillColor: metricColor(this.mapMetricsService.departmentMetrics().get(normalizeDepartmentName(name))),
     };
   }
 
