@@ -7,6 +7,8 @@ export interface MapLocation {
 export type LocationInfoLevel = 'country' | 'region' | 'department';
 
 export interface LocationInfoMetrics {
+  primaryLabel?: string;
+  primaryValue?: number;
   national?: number;
   urban?: number;
   rural?: number;
