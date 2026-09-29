@@ -11,13 +11,15 @@ import { WidgetItemDash } from '../../interfaces/ipm.interface';
 
 export interface FilterModalData {
   title: string;
-  filterFields: Array<'year' | 'domain' | 'country' | 'area'>;
+  filterFields: Array<'year' | 'domain' | 'country' | 'area' | 'region' | 'dept'>;
   widget: WidgetItemDash;
   currentFilters?: {
     year?: number;
     domain?: string;
     country?: string;
     area?: string;
+    region?: string;
+    dept?: string;
   };
 }
 
@@ -36,12 +38,16 @@ export class FilterModal {
     domain?: string;
     country?: string;
     area?: string;
+    region?: string;
+    dept?: string;
   };
 
   availableYears: number[] = [];
   availableCountries: string[] = [];
   availableAreas: string[] = [];
   availableDomains: string[] = [];
+  availableRegions: string[] = [];
+  availableDepts: string[] = [];
 
   ngOnInit() {
     this.selectedFilters = {
@@ -49,6 +55,8 @@ export class FilterModal {
       domain: this.data.currentFilters?.domain,
       country: this.data.currentFilters?.country,
       area: this.data.currentFilters?.area,
+      region: this.data.currentFilters?.region,
+      dept: this.data.currentFilters?.dept,
     };
 
     if (this.data.widget?.getYearsSignal) {
@@ -61,6 +69,7 @@ export class FilterModal {
 
     // Cargar Áreas y Países en cascada al iniciar
     this.updateAreasAndCountries();
+    this.updateRegionsAndDepts();
   }
 
   onYearChange() {
@@ -69,6 +78,10 @@ export class FilterModal {
 
   onAreaChange() {
     this.updateCountries();
+  }
+
+  onRegionChange() {
+    this.updateDepts();
   }
 
   private updateAreasAndCountries() {
@@ -98,6 +111,36 @@ export class FilterModal {
 
     if (!this.availableCountries.includes(this.selectedFilters.country || '')) {
       this.selectedFilters.country = this.availableCountries[0] || '';
+    }
+  }
+
+  private updateRegionsAndDepts() {
+    // 1. Cargar regiones
+    if (this.data.widget?.getRegionsByYear && this.selectedFilters.year) {
+      this.availableRegions = this.data.widget.getRegionsByYear(this.selectedFilters.year);
+      if (!this.availableRegions.includes(this.selectedFilters.region || '')) {
+        this.selectedFilters.region = this.availableRegions[0] || '';
+      }
+    }
+
+    // 2. Cargar Países según el Año y Área seleccionados
+    this.updateDepts();
+  }
+
+  private updateDepts() {
+    if (!this.selectedFilters.year) return;
+
+    if (this.data.widget?.getDeptsByYearAndRegion && this.selectedFilters.region) {
+      this.availableDepts = this.data.widget.getDeptsByYearAndRegion(
+        this.selectedFilters.year,
+        this.selectedFilters.region
+      );
+    } else if (this.data.widget?.getDeptsByYear) {
+      this.availableDepts = this.data.widget.getDeptsByYear(this.selectedFilters.year);
+    }
+
+    if (!this.availableDepts.includes(this.selectedFilters.dept || '')) {
+      this.selectedFilters.dept = this.availableDepts[0] || '';
     }
   }
 

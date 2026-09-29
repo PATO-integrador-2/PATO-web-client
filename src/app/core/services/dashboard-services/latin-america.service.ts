@@ -18,7 +18,6 @@ export class LatinAmericaService {
             content: ContributionDeprivations,
             filterFields: ['year', 'country'],
             getYearsSignal: () => this.getContributionYears(),
-            // IMPORTANTE: Asegurar la función flecha para conservar el ámbito (this)
             getCountriesByYear: (year?: number) => this.getContributionCountriesByYear(year),
             loadData: (f) => {
                 const selectedYear = f?.year ?? 2024;

@@ -6,41 +6,59 @@ import { Navbar } from '../../../components/navbar/navbar';
 import { isPlatformBrowser } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { ColDeptService } from '../../../core/services/dashboard-services/col-dept.service';
+import { LatinAmericaService } from '../../../core/services/dashboard-services/latin-america.service';
 import { NavbarDashboard } from '../../../components/navbar-dashboard/navbar-dashboard';
+import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { DashboardFilterService } from '../../../core/services/dashboard-filter.service';
+import { WidgetItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
+import { ColDeptService } from '../../../core/services/dashboard-services/col-dept.service';
+
 
 @Component({
   selector: 'app-col-dept-dash',
-  imports: [Navbar, NavbarDashboard, NgComponentOutlet, MatSelectModule, MatFormFieldModule],
+  imports: [MatIconModule, Navbar, NavbarDashboard, NgComponentOutlet, MatSelectModule, MatFormFieldModule],
   templateUrl: './col-dept-dash.html',
   styleUrl: './col-dept-dash.css',
 })
 export class ColDeptDash {
   public dashboardService = inject(ColDeptService);
+  private filterModalService = inject(DashboardFilterService);
 
-  year = signal<number>(2023);
-  region = signal<string>('Caribe');
-  dept = signal<string>('Arauca');
+  // Estado local para recordar qué valores tiene seleccionados cada tarjeta
+  private currentFilters: Record<string, { year?: number; country?: string; area?: string }> = {
+    'indicators': { year: 2024, country: 'Colombia' },
+  };
 
   private route = inject(ActivatedRoute);
 
-  constructor() {
+  ngOnInit() {
     const params = this.route.snapshot.queryParamMap;
-    this.year.set(Number(params.get('year')) || 2023);
-    this.region.set(params.get('region') || 'Caribe');
-    this.dept.set(params.get('department') || 'Arauca');
+    const year = Number(params.get('year')) || 2024;
+    const country = params.get('country') || 'Colombia';
+    Object.values(this.currentFilters).forEach(filters => {
+      filters.year = year;
+      filters.country = country;
+    });
+
+    // Carga los datos iniciales ejecutando la función de cada widget
+    this.dashboardService.widgets().forEach((widget) => {
+      widget.loadData(this.currentFilters[widget.id]);
+    });
   }
 
-  ngOnInit() {
-    effect(() => {
-      const year = this.year();
-      const region = this.region();
-      const dept= this.dept();
+  onClickFilter(widget: WidgetItemDash) {
+    const filters = this.currentFilters[widget.id];
 
-      this.dashboardService.loadNationalPovertyData(year, region, dept);
-
-    })
+    this.filterModalService.openCardFilter(widget, filters, )
+      .subscribe((newFilters) => {
+        if (newFilters) {
+          // Guarda el estado actualizado
+          this.currentFilters[widget.id] = newFilters;
+          // Ejecuta la recarga de datos llamando a la función del propio widget
+          widget.loadData(newFilters);
+        }
+      });
   }
 }
 
-export { ColDeptDash as ColDept };

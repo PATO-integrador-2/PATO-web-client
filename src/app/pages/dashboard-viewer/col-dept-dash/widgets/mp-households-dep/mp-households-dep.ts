@@ -1,7 +1,6 @@
 import { Component, inject, computed, input, effect, PLATFORM_ID, viewChild, ElementRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Chart } from 'chart.js';
-import { LatinAmericaService } from '../../../../../core/services/dashboard-services/latin-america.service';
 import { ColDeptService } from '../../../../../core/services/dashboard-services/col-dept.service';
 import { IndicatorDeptItem } from '../../../../../interfaces/ipm.interface';
 
@@ -15,32 +14,45 @@ export class MPHouseholdsDep {
   private dashboardService = inject(ColDeptService);
   private platformId = inject(PLATFORM_ID);
 
-  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
+  chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
   private chartInstance?: Chart;
 
-  populationData = this.dashboardService.indicatorsDeptData;
+  data = computed(() => this.dashboardService.indicatorsData());
 
   constructor() {
+    // Escuchar activamente cuando el Canvas o los Datos cambian
     effect(() => {
-      const items = this.populationData();
-      if (this.chartInstance && items && items.length > 0) {
-        // Pasa el primer registro del arreglo de departamentos
-        this.updateChartData(items[0]);
+      const canvasRef = this.chartCanvas();
+      const items = this.data();
+
+      if (!isPlatformBrowser(this.platformId) || !canvasRef || !items || items.length === 0) {
+        return;
       }
+
+      const canvasEl = canvasRef.nativeElement;
+
+      // Usar setTimeout para asegurar que el navegador ya aplicó las dimensiones al DOM
+      setTimeout(() => {
+        this.renderOrUpdateChart(canvasEl, items);
+      }, 0);
     });
   }
 
-  ngAfterViewInit() {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    setTimeout(() => {
-      const canvas = this.chartElement()?.nativeElement;
-      const items = this.populationData();
-      if (canvas && !this.chartInstance && items && items.length > 0) {
-        this.initChart(canvas, items[0]);
-      }
-    }, 150);
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      // Disparar la carga inicial de datos desde el backend
+      this.dashboardService.loadIndicatorsData(2024, 'Orinoquía', 'Arauca');
+    }
   }
+
+  ngOnDestroy() {
+    // Destruir la gráfica si el componente se desmonta
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = undefined;
+    }
+  }
+
 
   // Método auxiliar para evitar duplicar el mapeo de los 14 indicadores
   private getPrivationsMap(item: IndicatorDeptItem) {
@@ -62,8 +74,14 @@ export class MPHouseholdsDep {
     ];
   }
 
-  private initChart(canvas: HTMLCanvasElement, item: IndicatorDeptItem) {
-    const privationsMap = this.getPrivationsMap(item);
+  private renderOrUpdateChart(canvas: HTMLCanvasElement, items: IndicatorDeptItem[]) {
+    // Si la instancia ya existe pero el canvas cambió destruir la vieja
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = undefined;
+    }
+
+    const privationsMap = this.getPrivationsMap(items[0]);
 
     this.chartInstance = new Chart(canvas, {
       type: 'bar',
@@ -71,7 +89,7 @@ export class MPHouseholdsDep {
         labels: privationsMap.map(p => p.label),
         datasets: [
           {
-            label: `Porcentaje de privación - ${item.departamento} (${item.anio})`,
+            label: `Porcentaje de privación - ${items[0].region} - ${items[0].departamento} (${items[0].anio})`,
             data: privationsMap.map(p => p.value),
             backgroundColor: [
               'rgb(255, 99, 133)',
@@ -113,16 +131,5 @@ export class MPHouseholdsDep {
     });
   }
 
-  private updateChartData(item: IndicatorDeptItem): void {
-    if (!this.chartInstance) return;
 
-    const privationsMap = this.getPrivationsMap(item);
-
-    // Actualiza etiquetas, dataset y título dinámicamente al cambiar el departamento
-    this.chartInstance.data.labels = privationsMap.map(p => p.label);
-    this.chartInstance.data.datasets[0].label = `Porcentaje de privación - ${item.departamento} (${item.anio})`;
-    this.chartInstance.data.datasets[0].data = privationsMap.map(p => p.value);
-    
-    this.chartInstance.update();
-  }
 }

@@ -13,9 +13,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { DashboardFilterService } from '../../../core/services/dashboard-filter.service';
 import { WidgetItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
 
-
-
-
 @Component({
   selector: 'app-latin-america-dash',
   imports: [NavbarDashboard, FormsModule, Navbar, NgComponentOutlet, MatSelectModule, MatFormFieldModule, MatIconModule],
@@ -24,7 +21,6 @@ import { WidgetItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
 })
 export class LatinAmericaDash {
   public dashboardService = inject(LatinAmericaService);
-
   private filterModalService = inject(DashboardFilterService);
 
   // Estado local para recordar qué valores tiene seleccionados cada tarjeta
