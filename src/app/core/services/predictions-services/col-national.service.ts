@@ -159,7 +159,7 @@ export class ColNationalService {
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     label: 'Percentage',
-                    title: `Porcentaje de privaciones (${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
+                    title: `Porcentaje de privaciones de ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
                     content: Mpi,
                     data: chartData
                 }
@@ -194,7 +194,7 @@ export class ColNationalService {
                 const labels = validResponses[0].data.map(item => String(item.year));
 
                 const datasets = validResponses.map((res, i) => ({
-                    label: `${dimensions[i]} (${domain})`,
+                    label: `${dimensions[i]}`,
                     data: res.data.map(item => Number(item.percentage_contribution))
                 }));
 
@@ -236,7 +236,7 @@ export class ColNationalService {
                 const labels = validResponses[0].data.map(item => String(item.year));
 
                 const datasets = validResponses.map((res, i) => ({
-                    label: `${domains[i]} (${sex})`,
+                    label: `${domains[i]}`,
                     data: res.data.map(item => Number(item.predicted_percentage))
                 }));
 
@@ -245,7 +245,7 @@ export class ColNationalService {
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     label: 'IncidenceBySex',
-                    title: `Incidencia de Pobreza Multidimensioanl según sexo de la persona (${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
+                    title: `Incidencia de Pobreza Multidimensioanl ${sex}: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
                     content: Mpi,
                     data: chartData
                 }
@@ -279,7 +279,7 @@ export class ColNationalService {
                 const labels = validResponses[0].data.map(item => String(item.year));
 
                 const datasets = validResponses.map((res, i) => ({
-                    label: `${domains[i]} (${sex})`,
+                    label: `${domains[i]}`,
                     data: res.data.map(item => Number(item.predicted_percentage))
                 }));
 
@@ -288,7 +288,7 @@ export class ColNationalService {
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     label: 'IncidenceByHeadSex',
-                    title: `Incidencia de Pobreza Multidimensioanl según sexo del jefe del hogar (${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
+                    title: `Incidencia de Pobreza Multidimensioanl ${sex}: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
                     content: Mpi,
                     data: chartData
                 }
