@@ -67,3 +67,41 @@ body {
     height: calc(100vh - 64px) !important;
     width: 100%;
 }
+
+.sidebar-tab-toggle {
+    position: fixed;
+    top: 50%;
+    left: 350px;
+    /* Coincide con el borde del sidebar abierto */
+    transform: translateY(-50%);
+    width: 20px;
+    height: 80px;
+    background-color: #dfb3ab;
+    color: #000000;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 3px 0 6px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    /* Asegura que quede por encima de todo */
+    padding: 0;
+    transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.2s ease;
+
+    &:hover {
+        background-color: #fcded8;
+    }
+
+    /* Cuando el sidebar está cerrado, la pestaña queda fijada a la orilla izquierda */
+    &.is-closed {
+        left: 0;
+    }
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+}

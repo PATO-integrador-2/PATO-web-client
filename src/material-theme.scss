@@ -57,7 +57,12 @@ body {
 
   @include mat.form-field-overrides((outlined-focus-label-text-color: #33adb1,
       outlined-focus-outline-color: #33adb1,
-      outlined-container-shape: 14px));
+      outlined-container-shape: 14px,
+      container-height: 40px, ));
+
+  .mat-mdc-form-field {
+    @include mat.form-field-density(-3);
+  }
 
   @include mat.button-overrides((filled-container-color: #D6A79F,
       filled-label-text-color: black,
@@ -102,11 +107,11 @@ body {
 
 // Modal
 .title-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 20px 0px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 20px 0px 20px;
 }
 
 // Dashboard 
@@ -198,9 +203,9 @@ mat-toolbar {
   color: #1e293b;
 }
 
-.dashboard-grid {
+.dashboard-grid-predict {
   display: grid;
-  grid-template-columns: repeat( minmax(min(100%, 420px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 600px), 1fr));
   gap: 1.5rem;
   width: 100%;
   box-sizing: border-box;

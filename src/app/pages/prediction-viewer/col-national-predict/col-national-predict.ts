@@ -9,124 +9,193 @@ import { ColNationalService } from '../../../core/services/predictions-services/
 import { MatInputModule } from '@angular/material/input';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import {MatSidenavModule} from '@angular/material/sidenav';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatDividerModule } from '@angular/material/divider';
-import {MatExpansionModule} from '@angular/material/expansion';
-import {MatGridListModule} from '@angular/material/grid-list';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatGridListModule } from '@angular/material/grid-list';
+import {MatIconModule} from '@angular/material/icon';
 
 @Component({
   selector: 'app-col-national',
-  imports: [MatGridListModule, MatExpansionModule, MatSidenavModule, Navbar, MatDividerModule, NgComponentOutlet, MatSelectModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, MatButtonModule ],
+  imports: [MatIconModule, MatGridListModule, MatExpansionModule, MatSidenavModule, Navbar, MatDividerModule, NgComponentOutlet, MatSelectModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, MatButtonModule],
   templateUrl: './col-national-predict.html',
   styleUrl: './col-national-predict.css',
 })
 export class ColNationalPredict {
   public dashboardService = inject(ColNationalService);
-  // Panel de sidebar
   readonly panelOpenState = signal(false);
-  errorMessage = signal('');
 
-  yearStartControl = new FormControl<number | string>('', [
-    Validators.required,
-    Validators.pattern('^[0-9]{4}$'),
-    Validators.min(2000),
-    Validators.max(2100)
+  availableDomains = signal<string[]>([
+    'Cabecera', 'Cabeceras', 'Caribe', 'Central',
+    'Centros poblados y rural disperso', 'Bogotá (Cabecera)',
+    'Nacional', 'Oriental', 'Orinoquía - Amazonia', 'Pacífica'
   ]);
 
-  yearEndControl = new FormControl<number | string>('', [
-    Validators.required,
-    Validators.pattern('^[0-9]{4}$'),
-    Validators.min(2000),
-    Validators.max(2100)
+  availableVariables = signal<string[]>([
+    'Analfabetismo', 'Bajo logro educativo',
+    'Barreras a servicios para cuidado de la primera infancia',
+    'Barreras de acceso a servicios de salud', 'Desempleo de larga duración',
+    'Hacinamiento crítico', 'Inadecuada eliminación de excretas',
+    'Inasistencia escolar', 'Material inadecuado de pisos',
+    'Material inadecuado de paredes exteriores', 'Rezago escolar',
+    'Sin acceso a fuente de agua mejorada', 'Sin aseguramiento en salud',
+    'Trabajo infantil', 'Trabajo informal'
   ]);
 
-  availableDomains = signal<string[]>(
-    [
-      'Cabecera',
-      'Cabeceras',
-      'Caribe',
-      'Central',
-      'Centros poblados y rural disperso',
-      'Bogotá (Cabecera)',
-      'Nacional',
-      'Oriental',
-      'Orinoquía - Amazonia',
-      'Pacífica'
-    ]
-  );
+  availableDimensions = signal<string[]>([
+    'Niñez y juventud', 'Salud', 'Trabajo',
+    'Educación', 'Vivienda' 
+  ]);
 
-  availableVariables = signal<string[]>(
-    [
-      'Analfabetismo',
-      'Bajo logro educativo',
-      'Barreras a servicios para cuidado de la primera infancia',
-      'Barreras de acceso a servicios de salud',
-      'Desempleo de larga duración',
-      'Hacinamiento crítico',
-      'Inadecuada eliminación de excretas',
-      'Inasistencia escolar',
-      'Material inadecuado de pisos',
-      'Material inadecuado de paredes exteriores',
-      'Rezago escolar',
-      'Sin acceso a fuente de agua mejorada',
-      'Sin aseguramiento en salud',
-      'Trabajo infantil',
-      'Trabajo informal'
-    ]
-  );
+  availableSexes = signal<string[]>([
+    'Hombre', 'Mujer'
+  ]);
 
-  domain = signal<string>('Nacional');
-  variable = signal<string>('Trabajo informal');
-  begin_year = signal<number>(2010);
-  years = signal<number>(5);
-
-  // Mensajes de error independientes por panel
   mpiError = signal<string>('');
   deprivationError = signal<string>('');
+  percentageError = signal<string>('');
+  dimensionError = signal<string>('');
+  incidenceBySexError = signal<string>('');
+  incidenceByHeadSexError = signal<string>('');
 
-  // Formulario 1: IPM (Dominio + Años)
+  // Formulario IPM con múltiples dominios (Máx. 5)
   mpiForm = new FormGroup({
-    domain: new FormControl<string>('Nacional', { nonNullable: true }),
-    yearStart: new FormControl<string>('', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
-    yearEnd: new FormControl<string>('', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
+    domains: new FormControl<string[]>(['Nacional'], {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(5)]
+    }),
+    yearStart: new FormControl<string>('2026', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
+    yearEnd: new FormControl<string>('2030', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
   });
 
-  // Formulario 2: Privación (Variable + Dominio + Años)
+  // Formulario Privaciones con múltiples variables (Máx. 5)
   deprivationForm = new FormGroup({
-    variable: new FormControl<string>('Trabajo informal', { nonNullable: true }),
+    variables: new FormControl<string[]>(['Trabajo informal'], {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(5)]
+    }),
     domain: new FormControl<string>('Nacional', { nonNullable: true }),
-    yearStart: new FormControl<string>('', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
-    yearEnd: new FormControl<string>('', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
+    yearStart: new FormControl<string>('2026', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
+    yearEnd: new FormControl<string>('2030', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
   });
 
-  // Métodos de disparo
+  // Formulario Privaciones con múltiples variables (Máx. 5)
+  percentageForm = new FormGroup({
+    domains: new FormControl<string[]>(['Cabecera'], {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(5)]
+    }),
+    yearStart: new FormControl<string>('2026', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
+    yearEnd: new FormControl<string>('2030', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
+  });
+
+  // Formulario Dimensiones con múltiples variables (Máx. 5)
+  dimensionForm = new FormGroup({
+    dimensions: new FormControl<string[]>(['Salud'], {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(5)]
+    }),
+    domain: new FormControl<string>('Nacional', { nonNullable: true }),
+    yearStart: new FormControl<string>('2026', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
+    yearEnd: new FormControl<string>('2030', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
+  });
+
+  // Formulario de incidencia por sexo 
+  incidenceBySexForm = new FormGroup({
+    domains: new FormControl<string[]>(['Central'], {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(5)]
+    }),
+    sex: new FormControl<string>('Mujer', { nonNullable: true }),
+    yearStart: new FormControl<string>('2026', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
+    yearEnd: new FormControl<string>('2030', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
+  });
+
+  // Formulario de incidencia por sexo de jefe del hogar
+  incidenceByHeadSexForm = new FormGroup({
+    domains: new FormControl<string[]>(['Caribe'], {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(5)]
+    }),
+    sex: new FormControl<string>('Hombre', { nonNullable: true }),
+    yearStart: new FormControl<string>('2026', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
+    yearEnd: new FormControl<string>('2030', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
+  });
+
   mpiPrediction() {
     this.mpiError.set('');
     if (!this.validateForm(this.mpiForm, this.mpiError)) return;
 
-    const { domain, yearStart, yearEnd } = this.mpiForm.getRawValue();
+    const { domains, yearStart, yearEnd } = this.mpiForm.getRawValue();
     const start = Number(yearStart);
     const diffYears = Number(yearEnd) - start;
 
-    this.dashboardService.predictMpi(domain, start, diffYears);
+    this.dashboardService.predictMpiMulti(domains, start, diffYears);
   }
 
   deprivationsPrediction() {
     this.deprivationError.set('');
     if (!this.validateForm(this.deprivationForm, this.deprivationError)) return;
 
-    const { variable, domain, yearStart, yearEnd } = this.deprivationForm.getRawValue();
+    const { variables, domain, yearStart, yearEnd } = this.deprivationForm.getRawValue();
     const start = Number(yearStart);
     const diffYears = Number(yearEnd) - start;
 
-    this.dashboardService.predictDeprivations(variable, domain, start, diffYears);
+    this.dashboardService.predictDeprivationsMulti(variables, domain, start, diffYears);
   }
 
-  // Validador reutilizable para cualquier formulario de rango de años
+  percentagePrediction() {
+    this.percentageError.set('');
+    if (!this.validateForm(this.percentageForm, this.percentageError)) return;
+
+    const { domains, yearStart, yearEnd } = this.percentageForm.getRawValue();
+    const start = Number(yearStart);
+    const diffYears = Number(yearEnd) - start;
+
+    this.dashboardService.predictPercentageMulti(domains, start, diffYears);
+  }
+
+  dimensionsPrediction() {
+    this.dimensionError.set('');
+    if (!this.validateForm(this.dimensionForm, this.dimensionError)) return;
+
+    const { dimensions, domain, yearStart, yearEnd } = this.dimensionForm.getRawValue();
+    const start = Number(yearStart);
+    const diffYears = Number(yearEnd) - start;
+
+    this.dashboardService.predictDimensionsMulti(dimensions, domain, start, diffYears);
+  }
+
+  incidenceBySexPrediction() {
+    this.incidenceBySexError.set('');
+    if (!this.validateForm(this.incidenceBySexForm, this.incidenceBySexError)) return;
+
+    const { domains, sex, yearStart, yearEnd } = this.incidenceBySexForm.getRawValue();
+    const start = Number(yearStart);
+    const diffYears = Number(yearEnd) - start;
+
+    this.dashboardService.predictIncidenceBySexMulti(domains, sex, start, diffYears);
+  }
+
+  incidenceByHeadSexPrediction() {
+    this.incidenceByHeadSexError.set('');
+    if (!this.validateForm(this.incidenceByHeadSexForm, this.incidenceByHeadSexError)) return;
+
+    const { domains, sex, yearStart, yearEnd } = this.incidenceByHeadSexForm.getRawValue();
+    const start = Number(yearStart);
+    const diffYears = Number(yearEnd) - start;
+
+    this.dashboardService.predictIncidenceByHeadSexMulti(domains, sex, start, diffYears);
+  }
+
   private validateForm(form: FormGroup, errorSignal: ReturnType<typeof signal<string>>): boolean {
     if (form.invalid) {
       form.markAllAsTouched();
-      errorSignal.set('Ingresa años válidos entre 2000 y 2100');
+      if (form.get('domains')?.hasError('maxlength') || form.get('variables')?.hasError('maxlength')) {
+        errorSignal.set('Puedes seleccionar máximo 5 elementos para comparar');
+      } else {
+        errorSignal.set('Ingresa datos válidos en todos los campos');
+      }
       return false;
     }
 
@@ -139,6 +208,14 @@ export class ColNationalPredict {
     }
 
     return true;
+  }
+
+  // Sidebar
+  sidebarOpen = signal<boolean>(true);
+
+  // Método para alternar el estado
+  toggleSidebar() {
+    this.sidebarOpen.update(open => !open);
   }
 
 }
