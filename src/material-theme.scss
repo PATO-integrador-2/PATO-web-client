@@ -270,8 +270,8 @@ mat-toolbar {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
 }
 
 // Dashboard histórico
@@ -296,6 +296,6 @@ mat-toolbar {
   }
 
   .dashboard-card.card-tall {
-    grid-row: auto;
+    grid-row: 500px;
   }
 }

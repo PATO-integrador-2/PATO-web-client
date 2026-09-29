@@ -54,17 +54,6 @@ export class ColNationalService {
         },
         {
             id: 4,
-            label: 'Proporción de privaciones entre las personas en situación de Pobreza Multidimensional',
-            content: IntensityPoverty,
-            filterFields: ['year'],
-            getYearsSignal: () => this.intensityYears(),
-            loadData: (f) => {
-                const selectedYear = f?.year ?? 2025;
-                this.loadIntensityPovertyData(selectedYear);
-            }
-        },
-        {
-            id: 5,
             label: 'Contribuciones a la incidencia Ajustada del IPM',
             content: ContributionsImpact,
             filterFields: ['year', 'domain'],
@@ -76,6 +65,18 @@ export class ColNationalService {
                 this.loadContributionsImpact(selectedDomain, selectedYear);
             }
         },
+        {
+            id: 5,
+            label: 'Proporción de privaciones entre las personas en situación de Pobreza Multidimensional',
+            content: IntensityPoverty,
+            filterFields: ['year'],
+            getYearsSignal: () => this.intensityYears(),
+            loadData: (f) => {
+                const selectedYear = f?.year ?? 2025;
+                this.loadIntensityPovertyData(selectedYear);
+            }
+        },
+        
         {
             id: 6,
             label: 'Incidencia de Pobreza Multidimensioanl según sexo del jefe del hogar',
