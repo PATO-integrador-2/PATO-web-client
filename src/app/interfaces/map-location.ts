@@ -12,6 +12,7 @@ export interface LocationInfoMetrics {
   national?: number;
   urban?: number;
   rural?: number;
+  latestYear?: number;
   highestYear?: number;
   lowestYear?: number;
 }

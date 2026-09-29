@@ -1,4 +1,5 @@
 import { Component, inject, signal, effect } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { NgComponentOutlet } from '@angular/common';
 import { Widget } from '../../../components/widget/widget';
 import { Navbar } from '../../../components/navbar/navbar';
@@ -33,7 +34,17 @@ export class LatinAmericaDash {
     'poverty': { year: 2024, area: 'Rural', country: 'Colombia' },
   };
 
+  private route = inject(ActivatedRoute);
+
   ngOnInit() {
+    const params = this.route.snapshot.queryParamMap;
+    const year = Number(params.get('year')) || 2024;
+    const country = params.get('country') || 'Colombia';
+    Object.values(this.currentFilters).forEach(filters => {
+      filters.year = year;
+      filters.country = country;
+    });
+
     // Carga los datos iniciales ejecutando la función de cada widget
     this.dashboardService.widgets().forEach((widget) => {
       widget.loadData(this.currentFilters[widget.id]);

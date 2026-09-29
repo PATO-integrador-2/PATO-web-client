@@ -14,6 +14,7 @@ import {
   normalizeDepartmentName,
   normalizeRegionName,
 } from '../../core/services/map-metrics.service';
+import { computed, signal } from '@angular/core';
 
 
 const DEFAULT_VIEW = { center: [4.5709, -74.2973] as L.LatLngExpression, zoom: 6 };
@@ -47,7 +48,7 @@ export function metricColor(value: number | undefined): string {
   return `rgb(${channels.join(', ')})`;
 }
 
-type ColombiaViewLevel = 'regions' | 'departments';
+type ColombiaViewLevel = 'countries' | 'regions' | 'departments';
 const MAP_SIDE_PANEL_SPACE = 320;
 
 @Component({
@@ -58,6 +59,7 @@ const MAP_SIDE_PANEL_SPACE = 320;
 })
 export class MapElementComponent implements OnDestroy {
   locationChange = output<MapLocation>();
+  colombiaLevelChange = output<void>();
   locationAnchor = output<{ x: number; y: number }>();
   location = input<MapLocation | null>(null);
   @ViewChild('mapContainer', { static: true })
@@ -66,13 +68,27 @@ export class MapElementComponent implements OnDestroy {
   private map: L.Map | undefined;
   private leaflet: typeof import('leaflet') | undefined;
   private countriesLayer: L.GeoJSON | undefined;
+  private colombiaCountryLayer: L.GeoJSON | undefined;
   private regionsLayer: L.GeoJSON | undefined;
   private departmentsLayer: L.GeoJSON | undefined;
   colombiaLevel: ColombiaViewLevel = 'regions';
   private countriesGeojson: FeatureCollection | undefined;
+  private countriesLayerLoaded = signal(false);
   private countriesRequestId = 0;
   private regionsRequestId = 0;
   private departmentsRequestId = 0;
+
+  readonly isLoading = computed(() => {
+    const locationStatus = this.locationService.status();
+    const metricsStatus = this.mapMetricsService.status();
+    const hasError = locationStatus === 'error' || metricsStatus === 'error';
+
+    return !hasError && (
+      locationStatus !== 'loaded' ||
+      metricsStatus !== 'loaded' ||
+      !this.countriesLayerLoaded()
+    );
+  });
 
   constructor(
     private injector: Injector,
@@ -192,7 +208,6 @@ export class MapElementComponent implements OnDestroy {
       this.locationAnchor.emit({ x: point.x, y: point.y });
     };
 
-    emitAnchor();
     this.map.once('moveend', emitAnchor);
   }
 
@@ -209,6 +224,14 @@ export class MapElementComponent implements OnDestroy {
     }
     
     this.removeCountriesLayer();
+    if (this.colombiaLevel === 'countries') {
+      this.removeRegionsLayer();
+      this.removeDepartmentsLayer();
+      this.showColombiaCountryLayer();
+      return;
+    }
+
+    this.removeColombiaCountryLayer();
     const wantsDepartmentLevel = !!loc?.departamento || this.colombiaLevel === 'departments';
 
     if (wantsDepartmentLevel) {
@@ -220,6 +243,38 @@ export class MapElementComponent implements OnDestroy {
       this.showRegionsLayer();
       this.refreshRegionsLayer();
     }
+  }
+
+  private showColombiaCountryLayer(): void {
+    if (this.colombiaCountryLayer || !this.map || !this.leaflet) return;
+
+    const addLayer = (geojson: FeatureCollection) => {
+      if (!this.map || this.colombiaCountryLayer) return;
+      const colombia = geojson.features.filter(feature => feature.properties?.['name'] === 'Colombia');
+      this.colombiaCountryLayer = this.leaflet!.geoJSON({ type: 'FeatureCollection', features: colombia } as any, {
+        style: (feature) => this.countryStyle(feature as Feature | undefined),
+      }).addTo(this.map);
+    };
+
+    if (this.countriesGeojson) {
+      addLayer(this.countriesGeojson);
+      return;
+    }
+
+    const requestId = ++this.countriesRequestId;
+    this.geoDataService.getCountries().subscribe({
+      next: (geojson) => {
+        if (requestId !== this.countriesRequestId) return;
+        this.countriesGeojson = geojson;
+        addLayer(geojson);
+      },
+      error: (error) => console.error('Error cargando el contorno de Colombia', error),
+    });
+  }
+
+  private removeColombiaCountryLayer(): void {
+    this.colombiaCountryLayer?.remove();
+    this.colombiaCountryLayer = undefined;
   }
 
   private showRegionsLayer(): void {
@@ -298,10 +353,16 @@ export class MapElementComponent implements OnDestroy {
 
   private departmentStyle(feature: Feature | undefined): typeof DEPARTMENT_BASE_STYLE {
     const name = feature?.properties?.[dptName];
+    const departmentKey = normalizeDepartmentName(name);
+    const departmentMetric = this.mapMetricsService.departmentMetrics().get(departmentKey);
+    const regionName = this.locationService.departmentFeatures()
+      .find(department => normalizeDepartmentName(department.name) === departmentKey)?.regionName;
 
     return {
       ...DEPARTMENT_BASE_STYLE,
-      fillColor: metricColor(this.mapMetricsService.departmentMetrics().get(normalizeDepartmentName(name))),
+      fillColor: metricColor(
+        departmentMetric ?? this.mapMetricsService.regionMetrics().get(normalizeRegionName(regionName ?? undefined))
+      ),
     };
   }
 
@@ -405,6 +466,7 @@ export class MapElementComponent implements OnDestroy {
             });
           },
         }).addTo(this.map);
+        this.countriesLayerLoaded.set(true);
       },
 
       error: (error) => {
@@ -430,10 +492,11 @@ export class MapElementComponent implements OnDestroy {
   }
 
   goBackToLatinAmerica(): void {
-    this.colombiaLevel = 'regions';
+    this.colombiaLevel = 'countries';
     this.locationChange.emit({ pais: null, region: null, departamento: null });
     this.removeRegionsLayer();
     this.removeDepartmentsLayer();
+    this.removeColombiaCountryLayer();
     this.showCountriesLayer();
     this.map?.flyTo(DEFAULT_VIEW.center, DEFAULT_VIEW.zoom, { duration: 1.2 });
   }
@@ -442,17 +505,24 @@ export class MapElementComponent implements OnDestroy {
     const location = this.location();
     if (location?.pais !== 'Colombia' || this.colombiaLevel === level) return;
 
+    this.colombiaLevelChange.emit();
     this.colombiaLevel = level;
     this.locationChange.emit({
       pais: 'Colombia',
-      region: location.region,
-      departamento: level === 'regions' ? null : location.departamento,
+      region: level === 'regions' ? location.region : null,
+      departamento: level === 'departments' ? location.departamento : null,
     });
 
-    if (level === 'regions') {
+    if (level === 'countries') {
+      this.removeRegionsLayer();
+      this.removeDepartmentsLayer();
+      this.showColombiaCountryLayer();
+    } else if (level === 'regions') {
+      this.removeColombiaCountryLayer();
       this.removeDepartmentsLayer();
       this.showRegionsLayer();
     } else {
+      this.removeColombiaCountryLayer();
       this.removeRegionsLayer();
       this.showDepartmentsLayer();
     }

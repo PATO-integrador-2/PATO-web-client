@@ -12,6 +12,7 @@ import { ColNationalDash } from './pages/dashboard-viewer/col-national-dash/col-
 import { ColNationalPredict } from './pages/prediction-viewer/col-national-predict/col-national-predict';
 import { LatinAmericaPredict } from './pages/prediction-viewer/latin-america-predict/latin-america-predict';
 import { LatinAmericaDash } from './pages/dashboard-viewer/latin-america-dash/latin-america-dash';
+import { ColDeptDash } from './pages/dashboard-viewer/col-dept-dash/col-dept-dash';
 
 export const routes: Routes = [
   {path: '', redirectTo: 'login', pathMatch: 'full'},
@@ -25,7 +26,7 @@ export const routes: Routes = [
 
   // Rutas protegidas por authGuard
   { path: 'col-national-dash', component: ColNationalDash, canActivate: [authGuard]},
-  //{ path: 'col-dept-dash', component: ColDept, canActivate: [authGuard]},
+  { path: 'col-dept-dash', component: ColDeptDash, canActivate: [authGuard]},
   { path: 'latin-dash', component: LatinAmericaDash, canActivate: [authGuard]},
   { path: 'col-national-predict', component: ColNationalPredict, canActivate: [authGuard]},
   { path: 'latin-predict', component: LatinAmericaPredict, canActivate: [authGuard]},

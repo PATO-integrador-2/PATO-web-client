@@ -25,21 +25,22 @@
 .map-viewer-main app-location-info-panel {
 	position: absolute;
 	z-index: 1100;
-	top: 0;
-	left: 0;
+	top: calc(50% - 24px);
+	right: 24px;
+	left: auto;
 	width: min(340px, calc(100% - 48px));
 	max-height: calc(100% - 48px);
-	transform: translate(24px, -50%);
+	transform: translateY(-50%);
 	animation: location-panel-enter 180ms ease-out;
 }
 
 @keyframes location-panel-enter {
-	from { transform: translateX(100%); opacity: 0; }
-	to { transform: translateX(0); opacity: 1; }
+	from { transform: translate(100%, -50%); opacity: 0; }
+	to { transform: translate(0, -50%); opacity: 1; }
 }
 
 @media (max-width: 640px) {
-	app-location-info-panel {
+	.map-viewer-main app-location-info-panel {
 		top: auto;
 		right: 12px;
 		bottom: 12px;

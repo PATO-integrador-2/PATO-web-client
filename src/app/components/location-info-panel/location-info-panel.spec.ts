@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LocationInfoPanel } from './location-info-panel';
+import { provideRouter } from '@angular/router';
 
 describe('LocationInfoPanel', () => {
   let component: LocationInfoPanel;
@@ -9,11 +10,13 @@ describe('LocationInfoPanel', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LocationInfoPanel],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LocationInfoPanel);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('locationName', 'Colombia');
+    fixture.componentRef.setInput('location', { pais: 'Colombia', region: null, departamento: null });
     fixture.componentRef.setInput('level', 'country');
     fixture.componentRef.setInput('metrics', {
       national: 0.35,

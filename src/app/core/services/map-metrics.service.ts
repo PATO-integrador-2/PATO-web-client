@@ -103,6 +103,7 @@ const DEPARTMENT_ALIASES: Record<string, string> = {
   bogota: 'santafe de bogota dc',
   'bogota dc': 'santafe de bogota dc',
   'bogota d c': 'santafe de bogota dc',
+  'santafe de bogota d c': 'santafe de bogota dc',
   'san andres': 'archipielago de san andres providencia y santa catalina',
   'san andres y providencia': 'archipielago de san andres providencia y santa catalina',
   'archipielago de san andres providencia y santa catalina': 'archipielago de san andres providencia y santa catalina',
@@ -170,7 +171,11 @@ export class MapMetricsService {
         this._regionMetrics.set(geographicMetrics.regions);
         this._departmentYears.set(geographicMetrics.departmentYears);
         this._regionYears.set(geographicMetrics.regionYears);
-        this._year.set(null);
+        const latestYear = [...countryItems, ...departmentItems]
+          .map(item => Number(item.anio))
+          .filter(year => Number.isFinite(year))
+          .reduce((latest, year) => Math.max(latest, year), 0);
+        this._year.set(latestYear || null);
         this._status.set('loaded');
         console.info('[MapMetrics] métricas cargadas', {
           period: 'all-years-average',
