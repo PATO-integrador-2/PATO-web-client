@@ -1,4 +1,5 @@
 import { Component, inject, signal, effect } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { NgComponentOutlet } from '@angular/common';
 import { Widget } from '../../../components/widget/widget';
 import { Navbar } from '../../../components/navbar/navbar';
@@ -21,7 +22,16 @@ export class ColDeptDash {
   region = signal<string>('Caribe');
   dept = signal<string>('Arauca');
 
+  private route = inject(ActivatedRoute);
+
   constructor() {
+    const params = this.route.snapshot.queryParamMap;
+    this.year.set(Number(params.get('year')) || 2023);
+    this.region.set(params.get('region') || 'Caribe');
+    this.dept.set(params.get('department') || 'Arauca');
+  }
+
+  ngOnInit() {
     effect(() => {
       const year = this.year();
       const region = this.region();
@@ -32,3 +42,5 @@ export class ColDeptDash {
     })
   }
 }
+
+export { ColDeptDash as ColDept };

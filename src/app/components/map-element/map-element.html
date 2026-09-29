@@ -1,8 +1,16 @@
 <div #mapContainer class="map-container"></div>
 
+@if (isLoading()) {
+	<div class="map-loading" role="status" aria-live="polite" aria-label="Cargando mapa">
+		<div class="map-loading__spinner" aria-hidden="true"></div>
+		<span>Cargando mapa...</span>
+	</div>
+}
+
 <div class="map-actions" aria-label="Controles del mapa">
 	@if (location()?.pais === 'Colombia') {
 		<div class="level-control" role="group" aria-label="Nivel geográfico">
+			<button type="button" [class.is-active]="colombiaLevel === 'countries'" (click)="setColombiaLevel('countries')">País</button>
 			<button type="button" [class.is-active]="colombiaLevel === 'regions'" (click)="setColombiaLevel('regions')">Región</button>
 			<button type="button" [class.is-active]="colombiaLevel === 'departments'" (click)="setColombiaLevel('departments')">Departamento</button>
 		</div>

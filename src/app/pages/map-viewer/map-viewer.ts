@@ -22,6 +22,7 @@ export class MapViewer {
   currentLocation = signal<MapLocation | null>(null);
   panelOpen = signal(false);
   panelPosition = signal<{ x: number; y: number } | null>(null);
+  private preservePanelOnLocationChange = false;
   private readonly mapMetricsService = inject(MapMetricsService);
   private readonly locationService = inject(LocationService);
 
@@ -52,11 +53,18 @@ export class MapViewer {
         .get(normalizeDepartmentName(department?.name ?? location.departamento));
       const years = this.mapMetricsService.departmentYears()
         .get(normalizeDepartmentName(department?.name ?? location.departamento));
+      const regionMetric = department?.regionName
+        ? this.mapMetricsService.regionMetrics().get(normalizeRegionName(department.regionName))
+        : undefined;
+      const regionYears = department?.regionName
+        ? this.mapMetricsService.regionYears().get(normalizeRegionName(department.regionName))
+        : undefined;
       return {
         primaryLabel: 'IPM Departamento',
-        primaryValue: metric,
-        highestYear: years?.highestYear,
-        lowestYear: years?.lowestYear,
+        primaryValue: metric ?? regionMetric,
+        latestYear: this.mapMetricsService.year() ?? undefined,
+        highestYear: years?.highestYear ?? regionYears?.highestYear,
+        lowestYear: years?.lowestYear ?? regionYears?.lowestYear,
       };
     }
 
@@ -68,21 +76,30 @@ export class MapViewer {
       return {
         primaryLabel: 'IPM Región',
         primaryValue: metric,
+        latestYear: this.mapMetricsService.year() ?? undefined,
         highestYear: years?.highestYear,
         lowestYear: years?.lowestYear,
       };
     }
 
-    return this.mapMetricsService.countryInfo().get(normalizeCountryName(location.pais)) ?? null;
+    const countryInfo = this.mapMetricsService.countryInfo().get(normalizeCountryName(location.pais));
+    return countryInfo ? { ...countryInfo, latestYear: this.mapMetricsService.year() ?? undefined } : null;
   });
 
   onMapLocationChange(location: MapLocation): void {
+    const preservePanel = this.preservePanelOnLocationChange;
+    this.preservePanelOnLocationChange = false;
     this.currentLocation.set(location);
-    this.panelOpen.set(!!location.pais || !!location.region || !!location.departamento);
+    if (!preservePanel) this.panelOpen.set(false);
+  }
+
+  onColombiaLevelChange(): void {
+    this.preservePanelOnLocationChange = this.panelOpen();
   }
 
   onLocationAnchorChange(position: { x: number; y: number }): void {
     this.panelPosition.set(position);
+    this.panelOpen.set(!!this.currentLocation()?.pais);
   }
 
   closeLocationPanel(): void {
