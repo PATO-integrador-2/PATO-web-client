@@ -1,28 +1,30 @@
 import { Service, signal, inject, PLATFORM_ID, Type } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { WidgetItem, WidgetItemPredict } from '../../../interfaces/ipm.interface';
 import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
-import { DeprivationsItem, DimensionItem, MpiItem, PercentageItem } from '../../../interfaces/predictions.interface';
 import { Mpi } from '../../../pages/prediction-viewer/col-national-predict/widgets/mpi/mpi';
-import { IncidenceByHeadSexItem, IncidenceBySexItem } from '../../../interfaces/predictions.interface';
-import { Percentage } from '../../../pages/prediction-viewer/col-national-predict/widgets/percentage/percentage';
-import { Deprivations } from '../../../pages/prediction-viewer/col-national-predict/widgets/deprivations/deprivations';
-import { Dimension } from '../../../pages/prediction-viewer/col-national-predict/widgets/dimension/dimension';
-import { IncidenceBySex } from '../../../pages/prediction-viewer/col-national-predict/widgets/incidence-by-sex/incidence-by-sex';
-import { IncidenceByHeadSex } from '../../../pages/prediction-viewer/col-national-predict/widgets/incidence-by-head-sex/incidence-by-head-sex';
+
+import {
+    MpiItem,
+    DeprivationsItem,
+    PercentageItem,
+    MultiChartData,
+    WidgetItemPredict,
+    StoredWidget,
+    DimensionItem,
+    IncidenceBySexItem,
+    IncidenceByHeadSexItem
+} from '../../../interfaces/predictions.interface';
+import { forkJoin } from 'rxjs';
 
 const COMPONENT_MAP: Record<string, Type<unknown>> = {
     Mpi: Mpi,
-    Deprivations: Deprivations
-}
-
-interface StoredWidget {
-    id: number;
-    type: string;
-    title: string;
-    data: any[];
-}
+    Deprivations: Mpi,
+    Percentage: Mpi,
+    Dimension: Mpi,
+    IncidenceBySex: Mpi,
+    IncidenceByHeadSex: Mpi,
+};
 
 const STORAGE_KEY = 'col_national_dashboard_widgets';
 
@@ -35,224 +37,286 @@ export class ColNationalService {
     widgets = signal<WidgetItemPredict[]>([]);
 
     constructor() {
-        // Al inicializar el servicio en el navegador, restaurar los widgets guardados
         if (this.isBrowser) {
             this.loadWidgetsFromStorage();
         }
     }
 
+    // 1. PREDICCIÓN IPM 
     private mpi_url = `${environment.apiAddr}/api/users/predictions/ipm`;
-    mpiData = signal<MpiItem[]>([]);
 
-    predictMpi(domain: string, begin_year: number, years: number) {
-        if (!isPlatformBrowser(this.platformId)) return;
+    predictMpiMulti(domains: string[], begin_year: number, years: number) {
+        if (!this.isBrowser || domains.length === 0) return;
 
-        const payload = {
-            domain: domain,
-            begin_year: begin_year,
-            years: years
+        const requests = domains.map(domain => {
+            const payload = { domain, begin_year, years };
+            return this.httpClient.post<{ data: MpiItem[] }>(
+                this.mpi_url,
+                payload
+            );
+        });
 
-        };
+        forkJoin(requests).subscribe({
+            next: (responses) => {
+                const validResponses = responses.filter(r => r && r.data && r.data.length > 0);
+                if (validResponses.length === 0) return;
 
-        this.httpClient.post<{ data: MpiItem[] }>(this.mpi_url, payload).subscribe({
-            next: (response) => {
-                if (!response || !response.data || response.data.length === 0) return;
+                // Extraer los años del primer llamado
+                const labels = validResponses[0].data.map(item => String(item.año));
+
+                // Mapear cada dominio a un dataset
+                const datasets = validResponses.map((res, i) => ({
+                    label: domains[i],
+                    data: res.data.map(item => Number(item.ipm_predicho))
+                }));
+
+                const chartData: MultiChartData = { labels, datasets };
 
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     label: 'Mpi',
-                    title: `Predicción IPM (${domain} - ${begin_year} a ${begin_year + years})`,
+                    title: `IPM: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
                     content: Mpi,
-                    data: response.data
+                    data: chartData
                 };
 
-                // Agregar widget a la lista
                 this.widgets.update(current => [...current, newWidget]);
-
-                // Guardar widgets en el localStorage
                 this.saveWidgetsToStorage();
             },
-            error: (err) => console.error('Error al cargar datos IPM:', err),
+            error: (err) => console.error('Error al consultar IPM:', err)
         });
-
     }
 
-
+    // 2. PREDICCIÓN PRIVACIONES
     private deprivations_url = `${environment.apiAddr}/api/users/predictions/privacion`;
-    deprivationsData = signal<DeprivationsItem[]>([]);
+    predictDeprivationsMulti(variables: string[], domain: string, begin_year: number, years: number) {
+        if (!this.isBrowser || variables.length === 0) return;
 
-    predictDeprivations(variable: string, domain: string, begin_year: number, years: number) {
-        if (!isPlatformBrowser(this.platformId)) return;
+        const requests = variables.map(variable => {
+            const payload = { variable, domain, begin_year, years };
+            return this.httpClient.post<{ data: DeprivationsItem[] }>(
+                this.deprivations_url,
+                payload
+            );
+        });
 
-        const payload = {
-            variable: variable,
-            domain: domain,
-            begin_year: begin_year,
-            years: years
+        forkJoin(requests).subscribe({
+            next: (responses) => {
+                const validResponses = responses.filter(r => r && r.data && r.data.length > 0);
+                if (validResponses.length === 0) return;
 
-        };
+                const labels = validResponses[0].data.map(item => String(item.year));
 
-        this.httpClient.post<any>(this.deprivations_url, payload).subscribe({
-            next: (response) => {
-                if (!response || !response.data || response.data.length === 0) return;
+                const datasets = validResponses.map((res, i) => ({
+                    label: `${variables[i]}`,
+                    data: res.data.map(item => Number(item.ipm_foretold))
+                }));
+
+                const chartData: MultiChartData = { labels, datasets };
 
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     label: 'Deprivations',
-                    title: `Predicción privaciones (${domain} - ${begin_year} a ${begin_year + years})`,
+                    title: `Privaciones (${domain}): ${variables.join(', ')}`,
                     content: Mpi,
-                    data: response.data
+                    data: chartData
                 };
 
-                // Agregar widget a la lista
                 this.widgets.update(current => [...current, newWidget]);
-
-                // Guardar widgets en el localStorage
                 this.saveWidgetsToStorage();
-
             },
-            error: (err) => console.error('Error al cargar privaciones:', err),
+            error: (err) => console.error('Error al consultar privaciones:', err)
         });
     }
 
-    private percentage_url = `${environment.apiAddr}/api/users/predictions/dimension`;
-    percentageData = signal<PercentageItem[]>([]);
+    // 3. PREDICCIÓN PORCENTAJE
+    private percentage_url = `${environment.apiAddr}/api/users/predictions/porcentaje`;
+    predictPercentageMulti(domains: string[], begin_year: number, years: number) {
+        if (!this.isBrowser || domains.length === 0) return;
 
-    predictPercentage(domain: string, begin_year: string, years: number) {
-        if (!isPlatformBrowser(this.platformId)) return;
-
-        const payload = {
-            domain: domain,
-            begin_year: begin_year,
-            years: years
-
-        };
-
-        this.httpClient.post<any>(this.percentage_url, payload).subscribe({
-            next: (response) => {
-                if (!response || !response.data || response.data.length === 0) return;
-
-                this.percentageData.set(response.data);
-            },
-            error: (err) => console.error('Error al cargar datos IPM:', err),
+        const requests = domains.map(domain => {
+            const payload = { domain, begin_year, years };
+            return this.httpClient.post<{ data: PercentageItem[] }>(
+                this.percentage_url,
+                payload
+            );
         });
 
-    }
+        forkJoin(requests).subscribe({
+            next: (responses) => {
+                const validResponses = responses.filter(r => r && r.data && r.data.length > 0);
+                if (validResponses.length === 0) return;
 
-    private dimension_url = `${environment.apiAddr}/api/users/dimension-contribution`;
-    dimensionData = signal<DimensionItem[]>([]);
+                const labels = validResponses[0].data.map(item => String(item.año));
 
-    predictDimension(dimension: string, domain: string, begin_year: string, years: number) {
-        if (!isPlatformBrowser(this.platformId)) return;
+                const datasets = validResponses.map((res, i) => ({
+                    label: `${domains[i]}`,
+                    data: res.data.map(item => Number(item.porcentaje_privaciones))
+                }));
 
-        const payload = {
-            dimension: dimension,
-            domain: domain,
-            begin_year: begin_year,
-            years: years
+                const chartData: MultiChartData = { labels, datasets };
 
-        };
+                const newWidget: WidgetItemPredict = {
+                    id: Date.now(),
+                    label: 'Percentage',
+                    title: `Porcentaje de privaciones de ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
+                    content: Mpi,
+                    data: chartData
+                }
 
-
-        this.httpClient.post<any>(this.dimension_url, payload).subscribe({
-            next: (response) => {
-                if (!response || !response.data || response.data.length === 0) return;
-
-                this.dimensionData.set(response.data);
-
+                this.widgets.update(current => [...current, newWidget]);
+                this.saveWidgetsToStorage();
             },
 
-            error: (err) => console.error('Error al cargar contribuciones:', err),
+            error: (err) => console.error('Error al consultar privaciones:', err)
+        })
+    }
 
+    // 4. PREDICCIÓN DIMENSIÓN
+    private dimension_url = `${environment.apiAddr}/api/users/predictions/dimension`;
+
+    predictDimensionsMulti(dimensions: string[], domain: string, begin_year: number, years: number) {
+        if (!this.isBrowser || dimensions.length === 0) return;
+
+        const requests = dimensions.map(dimension => {
+            const payload = { dimension, domain, begin_year, years };
+            return this.httpClient.post<{ data: DimensionItem[] }>(
+                this.dimension_url,
+                payload
+            );
         });
-    }
 
+        forkJoin(requests).subscribe({
+            next: (responses) => {
+                const validResponses = responses.filter(r => r && r.data && r.data.length > 0);
+                if (validResponses.length === 0) return;
 
-    private incidence_by_sex_url = `${environment.apiAddr}/api/users/incidence_by_sex`;
-    incidenceBySexData = signal<IncidenceBySexItem[]>([]);
+                const labels = validResponses[0].data.map(item => String(item.year));
 
-    predictionIncidenceBySex(domain: string, sex: string, begin_year: string, years: string) {
-        if (!isPlatformBrowser(this.platformId)) return;
+                const datasets = validResponses.map((res, i) => ({
+                    label: `${dimensions[i]}`,
+                    data: res.data.map(item => Number(item.percentage_contribution))
+                }));
 
-        const payload = {
-            domain: domain,
-            sex: sex,
-            begin_year: begin_year,
-            years: years
+                const chartData: MultiChartData = { labels, datasets };
 
-        };
+                const newWidget: WidgetItemPredict = {
+                    id: Date.now(),
+                    label: 'Dimension',
+                    title: `Predicción de contribución a la incidencia Ajustada del IPM por dimensión (${domain}): ${dimensions.join(', ')}`,
+                    content: Mpi,
+                    data: chartData
+                };
 
-        this.httpClient.post<any>(this.incidence_by_sex_url, payload).subscribe({
-            next: (response) => {
-                if (!response || !response.data || response.data.length === 0) return;
-
-                this.incidenceBySexData.set(response.data);
-
+                this.widgets.update(current => [...current, newWidget]);
+                this.saveWidgetsToStorage();
             },
-
-            error: (err) => console.error('Error al cargar datos IPM:', err),
-        });
-    }
-
-    private incidence_by_head_sex_url = `${environment.apiAddr}/api/users/incidence_by_head_sex`;
-    incidenceByHeadSexData = signal<IncidenceByHeadSexItem[]>([]);
-
-    predictionIncidenceByHeadSex(domain: string, sex: string, begin_year: string, years: string) {
-        if (!isPlatformBrowser(this.platformId)) return;
-
-        const payload = {
-            domain: domain,
-            sex: sex,
-            begin_year: begin_year,
-            years: years
-
-        };
-
-        this.httpClient.post<any>(this.incidence_by_head_sex_url, payload).subscribe({
-            next: (response) => {
-                if (!response || !response.data || response.data.length === 0) return;
-
-                this.incidenceByHeadSexData.set(response.data);
-
-            },
-
-            error: (err) => console.error('Error al cargar datos IPM:', err),
+            error: (err) => console.error('Error al consultar privaciones:', err)
         });
     }
 
-    private addWidget(type: string, data: string[]) {
-        if (type === 'mpi') {
+    // 5. PREDICCIÓN INCIDENCIA POR SEXO
+    private incidence_by_sex_url = `${environment.apiAddr}/api/users/predictions/incidence_by_sex`;
+    predictIncidenceBySexMulti(domains: string[], sex: string, begin_year: number, years: number) {
+        if (!this.isBrowser || domains.length === 0) return;
 
+        const requests = domains.map(domain => {
+            const payload = { domain, sex, begin_year, years };
+            return this.httpClient.post<{ data: IncidenceBySexItem[] }>(
+                this.incidence_by_sex_url,
+                payload
+            );
+        });
 
-        }
+        forkJoin(requests).subscribe({
+            next: (responses) => {
+                const validResponses = responses.filter(r => r && r.data && r.data.length > 0);
+                if (validResponses.length === 0) return;
 
+                const labels = validResponses[0].data.map(item => String(item.year));
+
+                const datasets = validResponses.map((res, i) => ({
+                    label: `${domains[i]}`,
+                    data: res.data.map(item => Number(item.predicted_percentage))
+                }));
+
+                const chartData: MultiChartData = { labels, datasets };
+
+                const newWidget: WidgetItemPredict = {
+                    id: Date.now(),
+                    label: 'IncidenceBySex',
+                    title: `Incidencia de Pobreza Multidimensioanl ${sex}: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
+                    content: Mpi,
+                    data: chartData
+                }
+
+                this.widgets.update(current => [...current, newWidget]);
+                this.saveWidgetsToStorage();
+            },
+
+            error: (err) => console.error('Error al consultar privaciones:', err)
+        })
     }
 
-    // Eliminar un widget específico
+    // 6. PREDICCIÓN INCIDENCIA POR SEXO JEFE DE HOGAR
+    private incidence_by_head_sex_url = `${environment.apiAddr}/api/users/predictions/incidence_by_head_sex`;
+    predictIncidenceByHeadSexMulti(domains: string[], sex: string, begin_year: number, years: number) {
+        if (!this.isBrowser || domains.length === 0) return;
+
+        const requests = domains.map(domain => {
+            const payload = { domain, sex, begin_year, years };
+            return this.httpClient.post<{ data: IncidenceByHeadSexItem[] }>(
+                this.incidence_by_head_sex_url,
+                payload
+            );
+        });
+
+        forkJoin(requests).subscribe({
+            next: (responses) => {
+                const validResponses = responses.filter(r => r && r.data && r.data.length > 0);
+                if (validResponses.length === 0) return;
+
+                const labels = validResponses[0].data.map(item => String(item.year));
+
+                const datasets = validResponses.map((res, i) => ({
+                    label: `${domains[i]}`,
+                    data: res.data.map(item => Number(item.predicted_percentage))
+                }));
+
+                const chartData: MultiChartData = { labels, datasets };
+
+                const newWidget: WidgetItemPredict = {
+                    id: Date.now(),
+                    label: 'IncidenceByHeadSex',
+                    title: `Incidencia de Pobreza Multidimensioanl ${sex}: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
+                    content: Mpi,
+                    data: chartData
+                }
+
+                this.widgets.update(current => [...current, newWidget]);
+                this.saveWidgetsToStorage();
+            },
+
+            error: (err) => console.error('Error al consultar privaciones:', err)
+        })
+    }
+
+
+    // ELIMINAR WIDGET
     removeWidget(id: number) {
         this.widgets.update(current => current.filter(w => w.id !== id));
         this.saveWidgetsToStorage();
     }
 
-    // Limpiar todos los widgets
-    clearAllWidgets() {
-        this.widgets.set([]);
-        if (this.isBrowser) {
-            localStorage.removeItem(STORAGE_KEY);
-        }
-    }
-
-    // Métodos de Persistencia en LocalStorage
-
+    // PERSISTENCIA EN LOCALSTORAGE
     private saveWidgetsToStorage() {
         if (!this.isBrowser) return;
 
-        // Convertir el arreglo de WidgetItemPredict a un formato serializable (sin referencias a clases Angular)
         const storedData: StoredWidget[] = this.widgets().map(w => ({
             id: w.id,
             type: w.label,
-            title: w.title || '',
-            data: w.data || []
+            title: w.title,
+            data: w.data
         }));
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(storedData));
@@ -265,9 +329,8 @@ export class ColNationalService {
 
             const parsed: StoredWidget[] = JSON.parse(saved);
 
-            // Reconstruir la lista de componentes vinculando de nuevo la clase del componente (content)
             const restoredWidgets: WidgetItemPredict[] = parsed
-                .filter(item => COMPONENT_MAP[item.type]) // Asegurar que el tipo existe
+                .filter(item => COMPONENT_MAP[item.type])
                 .map(item => ({
                     id: item.id,
                     label: item.type,

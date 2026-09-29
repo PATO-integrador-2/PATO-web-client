@@ -1,8 +1,12 @@
 <app-navbar></app-navbar>
 
 <mat-sidenav-container class="main-container">
+    <button type="button" class="sidebar-tab-toggle" [class.is-closed]="!sidebarOpen()" (click)="toggleSidebar()"
+        [attr.aria-label]="sidebarOpen() ? 'Cerrar menú' : 'Abrir menú'">
+        <mat-icon>{{ sidebarOpen() ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+    </button>
     <mat-drawer-container class="sidebar-container">
-        <mat-drawer mode="side" opened class="custom-sidebar">
+        <mat-drawer mode="side" [opened]="sidebarOpen()" class="custom-sidebar">
             <div class="sidebar-header">
                 <h3>Añadir predicciones</h3>
             </div>
@@ -17,8 +21,8 @@
 
                         <form [formGroup]="mpiForm" (ngSubmit)="mpiPrediction()" class="filter-section">
                             <mat-form-field appearance="outline" class="full-width">
-                                <mat-label>Dominio</mat-label>
-                                <mat-select formControlName="domain">
+                                <mat-label>Dominios (Máx 5)</mat-label>
+                                <mat-select formControlName="domains" multiple>
                                     @for (d of availableDomains(); track d) {
                                     <mat-option [value]="d">{{ d }}</mat-option>
                                     }
@@ -42,33 +46,35 @@
                             }
 
                             <div class="flex">
-                                <button type="submit" matButton="filled" class="submit-container">Enviar</button>
+                                <button type="submit" matButton="filled" class="submit-container">Añadir
+                                    Gráfica</button>
                             </div>
                         </form>
                     </mat-expansion-panel>
 
-                    <!-- PANEL 2: PRIVACIÓN -->
+                    <!-- PANEL 2: PRIVACIONES  -->
                     <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
                         <mat-expansion-panel-header>
-                            <mat-panel-title> Privaciones por hogar </mat-panel-title>
+                            <mat-panel-title> Privaciones por hogar según variable </mat-panel-title>
                         </mat-expansion-panel-header>
 
                         <form [formGroup]="deprivationForm" (ngSubmit)="deprivationsPrediction()"
                             class="filter-section">
-                            <mat-form-field appearance="outline" class="full-width">
-                                <mat-label>Variable</mat-label>
-                                <mat-select formControlName="variable">
-                                    @for (v of availableVariables(); track v) {
-                                    <mat-option [value]="v">{{ v }}</mat-option>
-                                    }
-                                </mat-select>
-                            </mat-form-field>
 
                             <mat-form-field appearance="outline" class="compact-field full-width">
                                 <mat-label>Dominio</mat-label>
                                 <mat-select formControlName="domain">
                                     @for (d of availableDomains(); track d) {
                                     <mat-option [value]="d">{{ d }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Variables (Máx 5)</mat-label>
+                                <mat-select formControlName="variables" multiple>
+                                    @for (v of availableVariables(); track v) {
+                                    <mat-option [value]="v">{{ v }}</mat-option>
                                     }
                                 </mat-select>
                             </mat-form-field>
@@ -90,21 +96,23 @@
                             }
 
                             <div class="flex">
-                                <button type="submit" matButton="filled" class="submit-container">Enviar</button>
+                                <button type="submit" matButton="filled" class="submit-container">Añadir
+                                    Gráfica</button>
                             </div>
                         </form>
                     </mat-expansion-panel>
 
-                    <!-- PANEL 3: PORCENTAJE -->
+                    <!-- PANEL 3: PORCENTAJE DE PRIVACIONES -->
                     <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
                         <mat-expansion-panel-header>
-                            <mat-panel-title> Incidencia de PM según sexo de la persona </mat-panel-title>
+                            <mat-panel-title> Proporción privaciones en personas en Pobreza Multidimensional
+                            </mat-panel-title>
                         </mat-expansion-panel-header>
 
-                        <form [formGroup]="mpiForm" (ngSubmit)="mpiPrediction()" class="filter-section">
+                        <form [formGroup]="percentageForm" (ngSubmit)="percentagePrediction()" class="filter-section">
                             <mat-form-field appearance="outline" class="full-width">
-                                <mat-label>Dominio</mat-label>
-                                <mat-select formControlName="domain">
+                                <mat-label>Dominios (Máx 5)</mat-label>
+                                <mat-select formControlName="domains" multiple>
                                     @for (d of availableDomains(); track d) {
                                     <mat-option [value]="d">{{ d }}</mat-option>
                                     }
@@ -123,23 +131,165 @@
                                 </mat-form-field>
                             </div>
 
-                            @if (mpiError()) {
-                            <mat-error class="error-msg">{{ mpiError() }}</mat-error>
+                            @if (percentageError()) {
+                            <mat-error class="error-msg">{{ percentageError() }}</mat-error>
                             }
 
                             <div class="flex">
-                                <button type="submit" matButton="filled" class="submit-container">Enviar</button>
+                                <button type="submit" matButton="filled" class="submit-container">Añadir
+                                    Gráfica</button>
                             </div>
                         </form>
                     </mat-expansion-panel>
 
-                    <!-- PANEL 4: DIMENSIÓN -->
+                    <!-- PANEL 4: CONTRIBUCIÓN A LA INCIDENCIA AJUSTADA DEL IPM POR DIMENSIÓN -->
                     <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
                         <mat-expansion-panel-header>
-                            <mat-panel-title> Proporción de privaciones personas en situación de PM </mat-panel-title>
+                            <mat-panel-title> Contribución a la incidencia Ajustada del IPM por dimensión
+                            </mat-panel-title>
                         </mat-expansion-panel-header>
-                        <p>Contenido de dimensión...</p>
+
+                        <form [formGroup]="dimensionForm" (ngSubmit)="dimensionsPrediction()" class="filter-section">
+
+                            <mat-form-field appearance="outline" class="compact-field full-width">
+                                <mat-label>Dominio</mat-label>
+                                <mat-select formControlName="domain">
+                                    @for (d of availableDomains(); track d) {
+                                    <mat-option [value]="d">{{ d }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Dimensiones (Máx 5)</mat-label>
+                                <mat-select formControlName="dimensions" multiple>
+                                    @for (d of availableDimensions(); track d) {
+                                    <mat-option [value]="d">{{ d }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <div class="fields-row">
+                                <mat-form-field class="input-custom" appearance="outline">
+                                    <mat-label>Año inicio</mat-label>
+                                    <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                                </mat-form-field>
+
+                                <mat-form-field class="input-custom" appearance="outline">
+                                    <mat-label>Año fin</mat-label>
+                                    <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                                </mat-form-field>
+                            </div>
+
+                            @if (dimensionError()) {
+                            <mat-error class="error-msg">{{ dimensionError() }}</mat-error>
+                            }
+
+                            <div class="flex">
+                                <button type="submit" matButton="filled" class="submit-container">Añadir
+                                    Gráfica</button>
+                            </div>
+                        </form>
                     </mat-expansion-panel>
+
+                    <!-- PANEL 5: PREDICCIÓN DE INCIDENCIA POR SEXO -->
+                    <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title> IPM según sexo del jefe del hogar </mat-panel-title>
+                        </mat-expansion-panel-header>
+
+                        <form [formGroup]="incidenceBySexForm" (ngSubmit)="incidenceBySexPrediction()"
+                            class="filter-section">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Dominios (Máx 5)</mat-label>
+                                <mat-select formControlName="domains" multiple>
+                                    @for (d of availableDomains(); track d) {
+                                    <mat-option [value]="d">{{ d }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="compact-field full-width">
+                                <mat-label>Sexo</mat-label>
+                                <mat-select formControlName="sex">
+                                    @for (s of availableSexes(); track s) {
+                                    <mat-option [value]="s">{{ s }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <div class="row-inputs">
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Año inicio</mat-label>
+                                    <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Año fin</mat-label>
+                                    <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                                </mat-form-field>
+                            </div>
+
+                            @if (incidenceBySexError()) {
+                            <mat-error class="error-msg">{{ incidenceBySexError() }}</mat-error>
+                            }
+
+                            <div class="flex">
+                                <button type="submit" matButton="filled" class="submit-container">Añadir
+                                    Gráfica</button>
+                            </div>
+                        </form>
+                    </mat-expansion-panel>
+
+                    <!-- PANEL 5: PREDICCIÓN DE INCIDENCIA POR SEXO DE JEFE DE HOGAR-->
+                    <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title> IPM según sexo del jefe del hogar </mat-panel-title>
+                        </mat-expansion-panel-header>
+
+                        <form [formGroup]="incidenceByHeadSexForm" (ngSubmit)="incidenceByHeadSexPrediction()"
+                            class="filter-section">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Dominios (Máx 5)</mat-label>
+                                <mat-select formControlName="domains" multiple>
+                                    @for (d of availableDomains(); track d) {
+                                    <mat-option [value]="d">{{ d }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="compact-field full-width">
+                                <mat-label>Sexo</mat-label>
+                                <mat-select formControlName="sex">
+                                    @for (s of availableSexes(); track s) {
+                                    <mat-option [value]="s">{{ s }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <div class="row-inputs">
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Año inicio</mat-label>
+                                    <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Año fin</mat-label>
+                                    <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                                </mat-form-field>
+                            </div>
+
+                            @if (incidenceByHeadSexError()) {
+                            <mat-error class="error-msg">{{ incidenceByHeadSexError() }}</mat-error>
+                            }
+
+                            <div class="flex">
+                                <button type="submit" matButton="filled" class="submit-container">Añadir
+                                    Gráfica</button>
+                            </div>
+                        </form>
+                    </mat-expansion-panel>
+
                 </mat-accordion>
             </div>
 
@@ -150,25 +300,15 @@
         <mat-drawer-content>
             <div class="dashboard-layout">
 
-
-                <!-- BARRA LATERAL IZQUIERDA -->
-                <!--
-    <aside class="sidebar">
-        
-
-    </aside>
--->
-
                 <!-- CONTENIDO PRINCIPAL -->
                 <main class="main-content">
                     <header class="dashboard-header">
-                        <h1>Panel Multidimensional de Pobreza</h1>
+                        <h1>Panel de Predicciones Multidimensional de Pobreza</h1>
                     </header>
                     <br>
 
                     <!-- RENDERIZADO DE WIDGETS -->
-
-                    <div class="dashboard-grid">
+                    <div class="dashboard-grid-predict">
                         @for (widget of dashboardService.widgets(); track widget.id) {
                         <div class="dashboard-card">
                             <div class="card-header">

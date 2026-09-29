@@ -2,7 +2,7 @@ import { Component, inject, computed, input, effect, PLATFORM_ID, viewChild, Ele
 import { isPlatformBrowser } from '@angular/common';
 import { Chart } from 'chart.js';
 import { ColNationalService } from '../../../../../core/services/predictions-services/col-national.service';
-import { MpiItem } from '../../../../../interfaces/predictions.interface';
+import { MpiItem, MultiChartData } from '../../../../../interfaces/predictions.interface';
 
 @Component({
   selector: 'app-mpi',
@@ -14,16 +14,24 @@ export class Mpi {
   private platformId = inject(PLATFORM_ID);
   private chartInstance?: Chart;
   private isBrowser = false;
+
   chartElement = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
-  data = input<MpiItem[]>([]);
+  data = input<MultiChartData>({ labels: [], datasets: [] });
+
+  private palette = [
+    'rgb(54, 162, 235)',  // Azul
+    'rgb(255, 99, 132)',  // Rojo
+    'rgb(255, 206, 86)',  // Amarillo
+    'rgb(75, 192, 192)',  // Verde agua
+    'rgb(153, 102, 255)'  // Morado
+  ];
 
   constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
 
-    // Reactiva automáticamente cuando los datos son inyectados o restaurados desde localStorage
     effect(() => {
       const currentData = this.data();
-      if (this.isBrowser && currentData && currentData.length > 0) {
+      if (this.isBrowser && currentData && currentData.labels?.length > 0) {
         this.updateOrCreateChart(currentData);
       }
     });
@@ -35,69 +43,59 @@ export class Mpi {
     setTimeout(() => {
       const canvas = this.chartElement()?.nativeElement;
       const currentData = this.data();
-      if (canvas && !this.chartInstance && currentData.length > 0) {
+      if (canvas && !this.chartInstance && currentData.labels?.length > 0) {
         this.initChart(canvas, currentData);
       }
     }, 150);
   }
 
-  private initChart(canvas: HTMLCanvasElement, items: MpiItem[]) {
-    const labels = items.map((item) => item.año);
-    const values: number[] = items.map((item) => Number(item.ipm_predicho));
-    const domainName = items[0]?.dominio || 'Nacional';
-    const yearVal = items[0]?.año || '';
+  private initChart(canvas: HTMLCanvasElement, chartData: MultiChartData) {
+    const formattedDatasets = chartData.datasets.map((ds, index) => ({
+      label: ds.label,
+      data: ds.data,
+      backgroundColor: this.palette[index % this.palette.length],
+      borderColor: this.palette[index % this.palette.length],
+      borderWidth: 1,
+      borderRadius: 4
+    }));
 
     this.chartInstance = new Chart(canvas, {
       type: 'bar',
       data: {
-        labels: labels,
-        datasets: [
-          {
-            label: `IPM (%) - ${domainName} (${yearVal})`,
-            data: values,
-            backgroundColor: [
-              'rgb(255, 99, 133)',
-              'rgb(255, 160, 64)',
-              'rgb(255, 204, 86)',
-              'rgb(75, 192, 192)',
-              'rgb(54, 163, 235)',
-              'rgb(153, 102, 255)',
-              'rgb(201, 203, 207)'
-            ],
-            borderRadius: 6
-          }
-        ]
+        labels: chartData.labels,
+        datasets: formattedDatasets
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top' }
+        },
         scales: {
-          y: {
-            beginAtZero: true,
-            title: { display: true, text: 'IPM (%)' },
-          },
+          y: { beginAtZero: true, title: { display: true, text: 'Valor (%)' } },
           x: { title: { display: true, text: 'Años' } }
         }
       }
     });
-
   }
 
-  private updateOrCreateChart(items: MpiItem[]) {
+  private updateOrCreateChart(chartData: MultiChartData) {
     const canvas = this.chartElement()?.nativeElement;
     if (!canvas) return;
 
-    const labels = items.map(item => String(item.año));
-    const dataValues = items.map(item => Number(item.ipm_predicho));
-
-    // Si la gráfica ya existe se actualizan los datos
     if (this.chartInstance) {
-      this.chartInstance.data.labels = labels;
-      this.chartInstance.data.datasets[0].data = dataValues;
+      this.chartInstance.data.labels = chartData.labels;
+      this.chartInstance.data.datasets = chartData.datasets.map((ds, index) => ({
+        label: ds.label,
+        data: ds.data,
+        backgroundColor: this.palette[index % this.palette.length],
+        borderColor: this.palette[index % this.palette.length],
+        borderWidth: 1,
+        borderRadius: 4
+      }));
       this.chartInstance.update();
     } else {
-      // Si no existe se crea desde cero
-      this.initChart(canvas, items);
+      this.initChart(canvas, chartData);
     }
   }
 }

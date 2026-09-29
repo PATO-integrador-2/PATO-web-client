@@ -1,24 +1,24 @@
 // VISTA 1
 
-export interface MpiItem{
+export interface MpiItem {
     año: string,
     dominio: string,
     ipm_predicho: number
 }
 
-export interface DeprivationsItem{
+export interface DeprivationsItem {
     year: number,
     variable: string,
     domain: string,
     ipm_foretold: number
 }
-export interface PercentageItem{
+export interface PercentageItem {
     año: string,
     dominio: string,
     porcentaje_privaciones: number
 }
 
-export interface DimensionItem{
+export interface DimensionItem {
     year: string,
     dimension: string,
     domain: string,
@@ -26,7 +26,7 @@ export interface DimensionItem{
 
 }
 
-export interface IncidenceBySexItem{
+export interface IncidenceBySexItem {
     year: number,
     sex: string,
     domain: string,
@@ -34,17 +34,45 @@ export interface IncidenceBySexItem{
 
 }
 
-export interface IncidenceByHeadSexItem{
+export interface IncidenceByHeadSexItem {
     year: number,
     sex: string,
     domain: string,
     predicted_percentage: number
 
+}
+
+
+// Estructura de un Dataset unificado para Chart.js
+export interface ChartDataset {
+    label: string;
+    data: number[];
+}
+
+// Estructura de datos consumida por los componentes de gráfica
+export interface MultiChartData {
+    labels: string[];
+    datasets: ChartDataset[];
+}
+
+export interface WidgetItemPredict {
+    id: number;
+    label: string;
+    title: string;
+    content: any;
+    data: MultiChartData;
+}
+
+export interface StoredWidget {
+    id: number;
+    type: string;
+    title: string;
+    data: MultiChartData;
 }
 
 // VISTA 3
 
-export interface ContributionLatamItem{
+export interface ContributionLatamItem {
     year: number,
     privation: string,
     country: string,
@@ -52,7 +80,7 @@ export interface ContributionLatamItem{
 
 }
 
-export interface NationalPovertyItem{
+export interface NationalPovertyItem {
     year: number,
     country: string,
     area: string,
@@ -61,7 +89,7 @@ export interface NationalPovertyItem{
 
 }
 
-export interface PovertyByAgeItem{
+export interface PovertyByAgeItem {
     year: number,
     country: string,
     area: string,

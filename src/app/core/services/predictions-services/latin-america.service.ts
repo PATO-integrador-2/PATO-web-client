@@ -4,8 +4,6 @@ import { WidgetItem } from '../../../interfaces/ipm.interface';
 import { ContributionLatamItem, NationalPovertyItem, PovertyByAgeItem } from '../../../interfaces/predictions.interface';
 import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
-import { Deprivations } from '../../../pages/prediction-viewer/col-national-predict/widgets/deprivations/deprivations';
-import { Percentage } from '../../../pages/prediction-viewer/col-national-predict/widgets/percentage/percentage';
 import { ContributionLatam } from '../../../pages/prediction-viewer/latin-america-predict/widgets/contribution-latam/contribution-latam';
 
 
@@ -16,8 +14,6 @@ export class LatinAmericaService {
 
     widgets = signal<WidgetItem[]>([
         { id: 1, label: 'INCIDENCIA IPM', content: ContributionLatam},
-        { id: 2, label: 'Predicción de porcentaje de privaciones entre las personas en situación de Pobreza Multidimensional', content: Percentage },
-        { id: 3, label: 'Predicción de privación por hogar según variable', content: Deprivations },
 
     ]);
 

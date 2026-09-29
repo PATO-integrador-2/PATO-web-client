@@ -4,27 +4,27 @@
 
 mat-toolbar {
     background-color: #d6ada6;
-    padding: 0 !important; /* Elimina padding interno de la toolbar para que los botones lleguen al borde */
+    padding: 0 !important; 
     height: 40px !important;
     min-height: 40px !important;
 }
 
 .nav-container {
     display: flex;
-    width: 100%;       /* Ocupa todo el ancho de la toolbar */
-    height: 100%;      /* Ocupa todo el alto de la toolbar */
+    width: 100%;   
+    height: 100%;    
     gap: 0;
 
     a[mat-button] {
-        flex: 1;              /* Hace que cada botón crezca de manera equitativa */
-        height: 100%;         /* Hace que ocupe todo el alto del contenedor */
-        border-radius: 0;     /* Quita bordes redondeados si deseas un bloque rectangular completo */
+        flex: 1;          
+        height: 100%;        
+        border-radius: 0;    
         display: flex;
         justify-content: center;
         align-items: center;
 
         color: black;
-        background-color: #d6ada6;
+        background-color: #dfb3ab;
         font-family: 'Rubik', sans-serif
     }
 
