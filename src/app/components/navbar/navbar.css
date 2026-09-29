@@ -13,7 +13,9 @@ mat-toolbar {
     a[mat-button] {
         color: white;
         background-color: #325754;
-        font-family: 'Rubik', sans-serif
+        font-family: 'Rubik', sans-;
+        border-radius: 20px;
+        padding: 8px 18px;
     }
 
     a[mat-button]:hover {

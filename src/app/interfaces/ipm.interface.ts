@@ -15,17 +15,18 @@ export interface WidgetItemPredict {
 
 }
 
-
 export interface WidgetItemDash {
     id: number;
     label: string;
     content: any;
-    filterFields: Array<'year' | 'domain' | 'country' | 'area'>;
+    filterFields: Array<'year' | 'domain' | 'country' | 'area' | 'region' | 'dept'>;
     getYearsSignal?: () => number[];
     getCountriesByYear?: (year?: number) => string[];
     getAreasByYear?: (year?: number) => string[];
     getCountriesByYearAndArea?: (year?: number, area?: string) => string[];
     getDomainsByYear?: (year?: number) => string[];
+    getRegionsByYear?: (year?: number) => string[];
+    getDeptsByYearAndRegion?: (year?: number, region?: string) => string[];
     loadData: (filters: any) => void;
 }
 // Dashboard 1
