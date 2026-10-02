@@ -121,3 +121,62 @@ mat-card-content {
 .forgot-password-link:hover {
     text-decoration: underline;
 }
+
+.account-copy-compact,
+.portrait-footer {
+    display: none;
+}
+
+@media (max-width: 1023px) {
+    :host {
+        display: block;
+        min-height: 100vh;
+        background: #f5f4f8;
+    }
+
+    .card-container {
+        height: auto;
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+        padding: 88px clamp(16px, 6vw, 32px) 56px;
+    }
+
+    mat-card {
+        height: auto;
+        border: 0;
+        box-shadow: none;
+        background: transparent;
+    }
+
+    mat-card-content {
+        flex: 0 0 auto;
+        justify-content: flex-start;
+    }
+
+    .custom-card-header {
+        margin-bottom: 1.25rem;
+    }
+
+    .login-title {
+        font-size: 1.75rem;
+    }
+
+    .portrait-footer {
+        display: block;
+        padding: 0 16px 20px;
+        color: #6b7280;
+        font-size: 0.75rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 399px) {
+    .account-copy-full {
+        display: none;
+    }
+
+    .account-copy-compact {
+        display: inline;
+    }
+}

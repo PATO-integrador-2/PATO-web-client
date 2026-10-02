@@ -6,3 +6,34 @@ nav{
 nav img{
   margin: 10%;
 }
+
+@media (max-width: 1023px) {
+  nav {
+    min-height: 184px;
+    padding-top: 32px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    background-color: #f5f4f8;
+  }
+
+  .main-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .item-in-mainc {
+    width: 200px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  nav img {
+    width: 200px;
+    height: auto;
+    margin: 0;
+  }
+}
