@@ -10,13 +10,15 @@ import { MatActionList } from "@angular/material/list";
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AccountRecoveryService } from '../../core/services/account-recovery.service';
+import { NavbarPrelogin } from '../../components/navbar-prelogin/navbar-prelogin';
 
 
 @Component({
   selector: 'app-find-account',
   standalone: true,
-  imports: [CommonModule, FormsModule, OtpInput, MatCardModule, MatButtonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
-  templateUrl: './account-recovery.html'
+  imports: [CommonModule, FormsModule, OtpInput, MatCardModule, MatButtonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NavbarPrelogin],
+  templateUrl: './account-recovery.html',
+  styleUrl: './account-recovery.css'
 })
 export class FindAccount {
   private recoveryService = inject(AccountRecoveryService);

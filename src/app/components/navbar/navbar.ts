@@ -17,6 +17,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class Navbar {
   readonly animal = signal(' ');
+  readonly menuOpen = signal(false);
   readonly name = model(' ');
   readonly editProfile = inject(MatDialog);
   private authService = inject(AuthService);
@@ -30,6 +31,15 @@ export class Navbar {
   }
 
   logout(): void {
+    this.closeMenu();
     this.authService.logout();
+  }
+
+  toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
+
+  closeMenu(): void {
+    this.menuOpen.set(false);
   }
 }

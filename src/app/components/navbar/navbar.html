@@ -3,6 +3,11 @@
 <mat-toolbar>
     <img src="white_logo.webp" alt="Logo" width="80px">
 
+    <button class="mobile-menu-button" matIconButton type="button" aria-label="Abrir menú"
+        [attr.aria-expanded]="menuOpen()" (click)="toggleMenu()">
+        <mat-icon>{{ menuOpen() ? 'close' : 'menu' }}</mat-icon>
+    </button>
+
     <span class="spacer"></span>
 
     <div class="nav-container">
@@ -15,7 +20,7 @@
 
     <span class="spacer"></span>
 
-    <button matIconButton [matMenuTriggerFor]="menu">
+    <button class="desktop-account-button" matIconButton [matMenuTriggerFor]="menu">
         <div class="account-icon">
             <mat-icon class="navbar-icon" aria-label="Account icon" fontIcon="account_circle"></mat-icon>
         </div>
@@ -26,5 +31,34 @@
         <button mat-menu-item (click)="logout()">Cerrar sesión</button>
     </mat-menu>
 </mat-toolbar>
+
+@if (menuOpen()) {
+<button class="sidebar-backdrop" type="button" aria-label="Cerrar menú" (click)="closeMenu()"></button>
+<aside class="mobile-sidebar" aria-label="Menú principal">
+    <div class="mobile-sidebar-header">
+        <span>Menú</span>
+        <button matIconButton type="button" aria-label="Cerrar menú" (click)="closeMenu()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <nav class="mobile-sidebar-links">
+        <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+            routerLink="/map-viewer" (click)="closeMenu()">Mapa</a>
+        <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+            routerLink="/chat-bot" (click)="closeMenu()">ChatBOT</a>
+        <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+            routerLink="/col-national-dash" (click)="closeMenu()">Panel histórico</a>
+        <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+            routerLink="/col-national-predict" (click)="closeMenu()">Predicciones</a>
+    </nav>
+
+    <div class="mobile-sidebar-account">
+        <span>Cuenta</span>
+        <button mat-button type="button" (click)="openEditProfile(); closeMenu()">Datos personales</button>
+        <button mat-button type="button" (click)="logout()">Cerrar sesión</button>
+    </div>
+</aside>
+}
 </div>
 
