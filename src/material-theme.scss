@@ -66,12 +66,13 @@ body {
 
   @include mat.button-overrides((filled-container-color: #D6A79F,
       filled-label-text-color: black,
-      filled-container-shape: var(--mat-sys-corner-full),
+      filled-container-shape: var(--mat-sys-corner-full)
+
     ));
 
   @include mat.snack-bar-overrides((button-color: rgb(53, 187, 192),
       container-color: white,
-      supporting-text-color: black,
+      supporting-text-color: black
     ));
 
 }

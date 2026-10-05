@@ -1,70 +1,74 @@
-<app-navbar-prelogin></app-navbar-prelogin>
-<div class="main-container flex min-h-screen">
-  <div class="flex-1/2 border-r-2 border-gray-200"></div>
-  <div class="flex-1 border-l-0 flex items-center justify-around p-3">
-    <div class="w-full max-w-sm">
-      <h2 class="text-2xl font-bold mb-6">Registrar cuenta</h2>
-      <form class="flex flex-col gap-8">
-        <mat-form-field appearance="outline" class="campo-password py-2 text-sm focus:outline-none focus:ring-2">
+<mat-drawer-container class="main-container" autosize>
+  <mat-drawer mode="side" opened position="end" opened class="custom-sidebar">
+
+    <div class="sidebar-body">
+      <div class="header">
+        <h2 class="title">Registrar cuenta</h2>
+        <p>
+          Una cuenta de PATO te permite acceder a todas las funcinalidades que ofrecemos.
+        </p>
+      </div>
+
+      <form>
+        <mat-form-field class="input-custom" appearance="outline">
           <mat-label>Nombre de usuario</mat-label>
-          <input
-            matInput
-            placeholder="Saravia"
-            [value]="usernameCampo()"
-            (input)="usernameCampo.set(txtUsername.value)"
-            #txtUsername
-            required
-          />
+          <input matInput placeholder="Saravia" [value]="usernameCampo()" (input)="usernameCampo.set(txtUsername.value)"
+            #txtUsername required />
         </mat-form-field>
-        <mat-form-field appearance="outline" class="campo-password py-2 text-sm focus:outline-none focus:ring-2">
+
+        <mat-form-field class="input-custom" appearance="outline">
           <mat-label>Email</mat-label>
           <input matInput type="email" [formControl]="emailControl" required />
 
           @if (emailControl.hasError('required')) {
           <mat-error>Es obligatorio llenar el campo</mat-error>
           }
-
           @if (emailControl.hasError('email')) {
           <mat-error>Introduce un correo válido</mat-error>
           }
         </mat-form-field>
-        <mat-form-field appearance="outline" class="campo-password">
+
+        <mat-form-field class="input-custom" appearance="outline">
           <mat-label>Contraseña</mat-label>
           <input matInput [type]="hide() ? 'password' : 'text'" [formControl]="newPassword" />
-        <button matIconButton matSuffix type="button" (click)="clickEvent($event)" [attr.aria-label]="'Hide password'"
+          <button matIconButton matSuffix type="button" (click)="clickEvent($event)" [attr.aria-label]="'Hide password'"
             [attr.aria-pressed]="hide()">
             <mat-icon>{{hide() ? 'visibility_off' : 'visibility'}}</mat-icon>
-        </button>
-        @if (newPassword.invalid && (newPassword.dirty || newPassword.touched)) {
-        <mat-error>{{ errorMessage() }}</mat-error>
-        }
+          </button>
+          @if (newPassword.invalid && (newPassword.dirty || newPassword.touched)) {
+          <mat-error>{{ errorMessage() }}</mat-error>
+          }
         </mat-form-field>
-        <mat-form-field appearance="outline" class="campo-password py-2 text-sm focus:outline-none focus:ring-2">
+
+        <mat-form-field class="input-custom" appearance="outline">
           <mat-label>Repetir contraseña</mat-label>
           <input matInput [type]="hide2() ? 'password' : 'text'" [formControl]="confirmPassword" />
-        <button matIconButton matSuffix type="button"(click)="clickEvent2($event)" [attr.aria-label]="'Hide password2'"
-            [attr.aria-pressed]="hide2()">
+          <button matIconButton matSuffix type="button" (click)="clickEvent2($event)"
+            [attr.aria-label]="'Hide password2'" [attr.aria-pressed]="hide2()">
             <mat-icon>{{hide2() ? 'visibility_off' : 'visibility'}}</mat-icon>
-        </button>
+          </button>
         </mat-form-field>
-        <label class="flex items-center gap-2 text-sm text-gray-500">
-          <input
-            [checked]="checkBox()"
-            (change)="checkBox.set(booleanValueCheckbox.checked)"
-            #booleanValueCheckbox
-            type="checkbox" class="accent-purple-500">
-          Acepto <a (click)="abrirModal()" class="text-teal-500">terminos y condiciones</a>
+
+        <label class="flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
+          <input [checked]="checkBox()" (change)="checkBox.set(booleanValueCheckbox.checked)" #booleanValueCheckbox
+            type="checkbox" class="accent-purple-500" />
+          Acepto <a (click)="abrirModal()" class="link">términos y
+            condiciones</a>
         </label>
-        <button
-          (click)="registrarCuenta()"
-          type="button"
-          class="bg-teal-400 hover:bg-teal-500 text-black font-semibold rounded-full py-2 mt-2 transition">
+
+        <button (click)="registrarCuenta()" type="button" matButton="filled" class="submit-container">
           Registrar cuenta
         </button>
-        <a routerLink="/" class="text-center text-sm font-semibold text-black mt-1">Iniciar sesión</a>
+
+        <button routerLink="/" type="button" matButton="filled" class="login-container">
+          Ya tengo una cuenta
+        </button>
+
       </form>
     </div>
-  </div>
-</div>
+  </mat-drawer>
 
-<footer class="portrait-footer">placeholder for animation / image</footer>
+  <mat-drawer-content class="main-content p-6">
+    <img src="assets/img/pe.png">
+  </mat-drawer-content>
+</mat-drawer-container>

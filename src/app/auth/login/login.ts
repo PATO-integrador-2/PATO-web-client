@@ -7,28 +7,28 @@ import { MatFormFieldModule, MatFormFieldControl } from '@angular/material/form-
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { NavbarPrelogin } from '../../components/navbar-prelogin/navbar-prelogin';
 import { Route, Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { error } from 'console';
 import { AuthService } from '../../core/services/auth.service';
+import {MatSidenavModule} from '@angular/material/sidenav';
 
 @Component({
   selector: 'app-login',
   imports: [
+    MatSidenavModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatToolbarModule,
     ReactiveFormsModule,
-    NavbarPrelogin,
     MatIconModule,
     RouterLink
   ],
   templateUrl: './login.html',
-  styleUrl: './login.scss',
+  styleUrl: './login.css',
 })
 export class Login {
   private router = inject(Router);
