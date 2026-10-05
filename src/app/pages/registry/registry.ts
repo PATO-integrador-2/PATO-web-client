@@ -1,5 +1,4 @@
 import { Component, signal, computed, inject } from '@angular/core';
-import { NavbarPrelogin } from '../../components/navbar-prelogin/navbar-prelogin';
 import { Router, RouterLink } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
@@ -13,11 +12,14 @@ import { RegistryService } from '../../core/services/registry.service';
 import { merge } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatInputModule } from '@angular/material/input';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-registry',
   imports: [
-    NavbarPrelogin,
+    MatSidenavModule,
+    MatButtonModule,
     MatFormField,
     MatLabel,
     MatInput,
