@@ -62,6 +62,8 @@ export class MapElementComponent implements OnDestroy {
   colombiaLevelChange = output<void>();
   locationAnchor = output<{ x: number; y: number }>();
   location = input<MapLocation | null>(null);
+  locationPanelOpen = input(false);
+  legendOpen = signal(false);
   @ViewChild('mapContainer', { static: true })
   mapContainer!: ElementRef<HTMLDivElement>;
 
@@ -122,6 +124,10 @@ export class MapElementComponent implements OnDestroy {
     this.regionsRequestId++;
     this.departmentsRequestId++;
     this.map?.remove();
+  }
+
+  toggleLegend(): void {
+    this.legendOpen.update(isOpen => !isOpen);
   }
 
   private initMap(): void {

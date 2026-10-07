@@ -5,6 +5,7 @@
     <main class="map-viewer-main">
       <app-map-element
         [location]="currentLocation()"
+        [locationPanelOpen]="panelOpen()"
         (locationChange)="onMapLocationChange($event)"
         (colombiaLevelChange)="onColombiaLevelChange()"
         (locationAnchor)="onLocationAnchorChange($event)">
