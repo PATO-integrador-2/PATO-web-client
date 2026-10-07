@@ -1,8 +1,7 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
-import { Widget } from '../../../components/widget/widget';
 import { Navbar } from '../../../components/navbar/navbar';
-import { isPlatformBrowser } from '@angular/common';
+import { NavbarPredictions } from '../../../components/navbar-predictions/navbar-predictions';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { ColNationalService } from '../../../core/services/predictions-services/col-national.service';
@@ -13,11 +12,11 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatGridListModule } from '@angular/material/grid-list';
-import {MatIconModule} from '@angular/material/icon';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-col-national',
-  imports: [MatIconModule, MatGridListModule, MatExpansionModule, MatSidenavModule, Navbar, MatDividerModule, NgComponentOutlet, MatSelectModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, MatButtonModule],
+  imports: [NavbarPredictions, MatIconModule, MatGridListModule, MatExpansionModule, MatSidenavModule, Navbar, MatDividerModule, NgComponentOutlet, MatSelectModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, MatButtonModule],
   templateUrl: './col-national-predict.html',
   styleUrl: './col-national-predict.css',
 })

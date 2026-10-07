@@ -57,7 +57,6 @@ export interface MultiChartData {
 
 export interface WidgetItemPredict {
     id: number;
-    label: string;
     title: string;
     content: any;
     data: MultiChartData;
@@ -65,7 +64,6 @@ export interface WidgetItemPredict {
 
 export interface StoredWidget {
     id: number;
-    type: string;
     title: string;
     data: MultiChartData;
 }

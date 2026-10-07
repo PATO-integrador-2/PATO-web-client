@@ -1,31 +1,3 @@
-.sidenav-container {
-    height: calc(100vh - 64px);
-    border: none !important;
-}
-
-.custom-sidebar {
-    width: 350px;
-    border-right: 1px solid #e0e0e0 !important;
-    background-color: #ffffff;
-}
-
-.sidebar-header {
-    padding: 20px 20px 10px 20px;
-}
-
-.sidebar-header h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #333;
-}
-
-.sidebar-body {
-    padding: 0 20px 20px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
 
 .filter-section h3 {
     margin: 12px 0 8px 0;
@@ -52,39 +24,4 @@
 .main-container {
     height: calc(100vh - 64px) !important;
     width: 100%;
-}
-
-.sidebar-tab-toggle {
-    position: fixed;
-    top: 50%;
-    left: 350px;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 80px;
-    background-color: #dfb3ab;
-    color: #000000;
-    border: none;
-    border-radius: 0 8px 8px 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 3px 0 6px rgba(0, 0, 0, 0.2);
-    z-index: 9999;
-    padding: 0;
-    transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.2s ease;
-
-    &:hover {
-        background-color: #fcded8;
-    }
-
-    &.is-closed {
-        left: 0;
-    }
-
-    mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-    }
 }

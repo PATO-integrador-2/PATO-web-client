@@ -108,7 +108,7 @@ p {
   overflow-y: auto;
 }
 
-/*
+
 @media (max-width: 1023px) {
   :host {
     display: block;
@@ -148,5 +148,3 @@ p {
     text-align: center;
   }
 }
-
-*/

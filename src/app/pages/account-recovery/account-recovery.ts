@@ -1,7 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { OtpInput } from '../../components/otp-input/otp-input';
 import { MatCardModule } from '@angular/material/card';
 import { RegistryService } from '../../core/services/registry.service';
 import { Router } from '@angular/router';
@@ -16,9 +15,8 @@ import { NavbarPrelogin } from '../../components/navbar-prelogin/navbar-prelogin
 @Component({
   selector: 'app-find-account',
   standalone: true,
-  imports: [CommonModule, FormsModule, OtpInput, MatCardModule, MatButtonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NavbarPrelogin],
-  templateUrl: './account-recovery.html',
-  styleUrl: './account-recovery.css'
+  imports: [CommonModule, FormsModule, MatCardModule, MatButtonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
+  templateUrl: './account-recovery.html'
 })
 export class FindAccount {
   private recoveryService = inject(AccountRecoveryService);
