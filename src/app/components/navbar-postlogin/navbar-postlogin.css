@@ -32,3 +32,65 @@ nav img {
 .user{
   margin-left: 10rem;
 }
+
+@media (max-width: 1023px) {
+  nav {
+    padding: 0.4rem 0.5rem;
+  }
+
+  nav .main-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  nav .item-in-mainc:first-child {
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: center;
+  }
+
+  nav img {
+    display: block;
+    width: 86px;
+    height: auto;
+    margin: 0;
+  }
+
+  nav .flex {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .a-class {
+    width: auto;
+    flex: 0 1 auto;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0.35rem 0.45rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    background-color: transparent;
+    color: #115e59;
+    text-align: center;
+  }
+
+  .a-class:hover,
+  .active {
+    background-color: #ffffff;
+    color: #115e59;
+  }
+
+  .user {
+    margin: 0;
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    color: #115e59;
+  }
+}

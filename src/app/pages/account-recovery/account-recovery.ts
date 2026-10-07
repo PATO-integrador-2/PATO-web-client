@@ -9,6 +9,7 @@ import { MatActionList } from "@angular/material/list";
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AccountRecoveryService } from '../../core/services/account-recovery.service';
+import { NavbarPrelogin } from '../../components/navbar-prelogin/navbar-prelogin';
 
 
 @Component({
