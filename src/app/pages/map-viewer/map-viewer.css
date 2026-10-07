@@ -48,5 +48,11 @@
 		width: auto;
 		max-height: min(62%, 430px);
 		transform: none;
+		animation: location-panel-enter-mobile 180ms ease-out;
 	}
+}
+
+@keyframes location-panel-enter-mobile {
+	from { transform: translateY(100%); opacity: 0; }
+	to { transform: translateY(0); opacity: 1; }
 }

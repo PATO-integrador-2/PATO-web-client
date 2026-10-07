@@ -21,22 +21,40 @@
 	</button>
 </div>
 
-<div class="map-legend" aria-label="Leyenda de incidencia IPM">
-	<div class="map-legend__title">Incidencia IPM</div>
-	<div class="map-legend__gradient"></div>
-	<div class="map-legend__labels">
-		<span>0%</span>
-		<span>20%</span>
-		<span>40%</span>
-		<span>60%</span>
-		<span>100%</span>
+<div
+	class="map-legend"
+	[class.map-legend--open]="legendOpen()"
+	[class.map-legend--location-open]="locationPanelOpen()"
+	aria-label="Leyenda de incidencia IPM">
+	<button
+		type="button"
+		class="map-legend__toggle"
+		[attr.aria-expanded]="legendOpen()"
+		[attr.aria-label]="legendOpen() ? 'Cerrar leyenda' : 'Abrir leyenda'"
+		aria-controls="map-legend-content"
+		(click)="toggleLegend()">
+		<svg class="map-legend__toggle-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+			<path d="M14 7L9 12L14 17" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+		</svg>
+	</button>
+
+	<div id="map-legend-content" class="map-legend__content">
+		<div class="map-legend__title">Incidencia IPM</div>
+		<div class="map-legend__gradient"></div>
+		<div class="map-legend__labels">
+			<span>0%</span>
+			<span>20%</span>
+			<span>40%</span>
+			<span>60%</span>
+			<span>100%</span>
+		</div>
+		<div class="map-legend__conditions">
+			<span><i class="map-legend__swatch map-legend__swatch--green"></i>Verde: menor a 20%</span>
+			<span><i class="map-legend__swatch map-legend__swatch--yellow"></i>Amarillo: 20% a 40%</span>
+			<span><i class="map-legend__swatch map-legend__swatch--orange"></i>Naranja: 40% a 60%</span>
+			<span><i class="map-legend__swatch map-legend__swatch--red"></i>Rojo: mayor a 60%</span>
+			<span><i class="map-legend__swatch map-legend__swatch--gray"></i>Gris: sin datos</span>
+		</div>
+		<div class="map-legend__note">Periodo: Promedio histórico</div>
 	</div>
-	<div class="map-legend__conditions">
-		<span><i class="map-legend__swatch map-legend__swatch--green"></i>Verde: menor a 20%</span>
-		<span><i class="map-legend__swatch map-legend__swatch--yellow"></i>Amarillo: 20% a 40%</span>
-		<span><i class="map-legend__swatch map-legend__swatch--orange"></i>Naranja: 40% a 60%</span>
-		<span><i class="map-legend__swatch map-legend__swatch--red"></i>Rojo: mayor a 60%</span>
-		<span><i class="map-legend__swatch map-legend__swatch--gray"></i>Gris: sin datos</span>
-	</div>
-	<div class="map-legend__note">Periodo: Promedio histórico</div>
 </div>

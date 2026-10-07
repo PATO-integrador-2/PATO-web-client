@@ -15,7 +15,7 @@ import { NavbarPrelogin } from '../../components/navbar-prelogin/navbar-prelogin
 @Component({
   selector: 'app-find-account',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatCardModule, MatButtonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, FormsModule, MatCardModule, MatButtonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NavbarPrelogin],
   templateUrl: './account-recovery.html'
 })
 export class FindAccount {
