@@ -1,1 +1,223 @@
-<p>latin-america works!</p>
+<app-navbar></app-navbar>
+
+<app-navbar-predictions></app-navbar-predictions>
+
+<button type="button" class="sidebar-tab-toggle" [class.is-closed]="!sidebarOpen()" (click)="toggleSidebar()"
+    [attr.aria-label]="sidebarOpen() ? 'Cerrar menú' : 'Abrir menú'">
+    <mat-icon>{{ sidebarOpen() ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+</button>
+<mat-drawer-container class="main-container-predict" autosize>
+    <mat-drawer mode="side" [opened]="sidebarOpen()" class="custom-sidebar-predict">
+
+        <div class="sidebar-header">
+            <h3>Añadir predicciones</h3>
+        </div>
+
+        <div class="sidebar-body-predict">
+
+            <mat-accordion>
+                <!-- PANEL 1: CONTRIBUCIÓN -->
+                <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title> Contribución relativa de privaciones </mat-panel-title>
+                    </mat-expansion-panel-header>
+
+                    <form [formGroup]="contributionLatamForm" (ngSubmit)="contributionLatamPrediction()"
+                        class="filter-section">
+
+                        <mat-form-field appearance="outline" class="compact-field full-width">
+                            <mat-label>País</mat-label>
+                            <mat-select formControlName="country">
+                                @for (c of availableCountries(); track c) {
+                                <mat-option [value]="c">{{ c }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Privaciones (Máx 5)</mat-label>
+                            <mat-select formControlName="deprivations" multiple>
+                                @for (d of availableDeprivations(); track d) {
+                                <mat-option [value]="d">{{ d }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <div class="row-inputs">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Año inicio</mat-label>
+                                <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Año fin</mat-label>
+                                <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                            </mat-form-field>
+                        </div>
+
+                        @if (contributionLatamError()) {
+                        <mat-error class="error-msg">{{ contributionLatamError() }}</mat-error>
+                        }
+
+                        <div class="flex">
+                            <button type="submit" matButton="filled" class="submit-container">Añadir
+                                Gráfica</button>
+                        </div>
+                    </form>
+                </mat-expansion-panel>
+
+                <!-- PANEL 2: POBREZA NACIONAL -->
+                <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title> Población en situación de pobreza multidimensional </mat-panel-title>
+                    </mat-expansion-panel-header>
+
+                    <form [formGroup]="nationalPovertyForm" (ngSubmit)="nationalPovertyPrediction()"
+                        class="filter-section">
+
+                        <mat-form-field appearance="outline" class="compact-field full-width">
+                            <mat-label>País</mat-label>
+                            <mat-select formControlName="country">
+                                @for (c of availableCountries(); track c) {
+                                <mat-option [value]="c">{{ c }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Areas (Máx 3)</mat-label>
+                            <mat-select formControlName="areas" multiple>
+                                @for (a of availableAreas(); track a) {
+                                <mat-option [value]="a">{{ a }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="compact-field full-width">
+                            <mat-label>Medida</mat-label>
+                            <mat-select formControlName="measure">
+                                @for (m of availableMeasures(); track m) {
+                                <mat-option [value]="m">{{ m }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <div class="row-inputs">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Año inicio</mat-label>
+                                <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Año fin</mat-label>
+                                <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                            </mat-form-field>
+                        </div>
+
+                        @if (nationalPovertyError()) {
+                        <mat-error class="error-msg">{{ nationalPovertyError() }}</mat-error>
+                        }
+
+                        <div class="flex">
+                            <button type="submit" matButton="filled" class="submit-container">Añadir
+                                Gráfica</button>
+                        </div>
+                    </form>
+                </mat-expansion-panel>
+
+                <!-- PANEL 2: POBREZA POR RANGO DE EDAD -->
+                <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title> Población en situación de pobreza multidimensional </mat-panel-title>
+                    </mat-expansion-panel-header>
+
+                    <form [formGroup]="povertyByAgeForm" (ngSubmit)="povertyByAgePrediction()" class="filter-section">
+
+                        <mat-form-field appearance="outline" class="compact-field full-width">
+                            <mat-label>País</mat-label>
+                            <mat-select formControlName="country">
+                                @for (c of availableCountries(); track c) {
+                                <mat-option [value]="c">{{ c }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Area</mat-label>
+                            <mat-select formControlName="area">
+                                @for (a of availableAreas(); track a) {
+                                <mat-option [value]="a">{{ a }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="compact-field full-width">
+                            <mat-label>Rangos de edad</mat-label>
+                            <mat-select formControlName="age_ranges" multiple>
+                                @for (a of availableAgeRanges(); track a) {
+                                <mat-option [value]="a">{{ a }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <div class="row-inputs">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Año inicio</mat-label>
+                                <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Año fin</mat-label>
+                                <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                            </mat-form-field>
+                        </div>
+
+                        @if (nationalPovertyError()) {
+                        <mat-error class="error-msg">{{ nationalPovertyError() }}</mat-error>
+                        }
+
+                        <div class="flex">
+                            <button type="submit" matButton="filled" class="submit-container">Añadir
+                                Gráfica</button>
+                        </div>
+                    </form>
+                </mat-expansion-panel>
+
+            </mat-accordion>
+        </div>
+
+
+    </mat-drawer>
+
+    <mat-drawer-content>
+        <div class="dashboard-layout">
+
+            <!-- CONTENIDO PRINCIPAL -->
+            <main class="main-content">
+                <header class="dashboard-header">
+                    <h1>Panel de Predicciones Multidimensional de Pobreza Latinoamérica</h1>
+                </header>
+                <br>
+
+                <!-- RENDERIZADO DE WIDGETS -->
+                <div class="dashboard-grid-predict">
+                    @for (widget of dashboardService.widgets(); track widget.id) {
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>{{ widget.title }}</h3>
+                            <button type="button" class="btn-remove"
+                                (click)="dashboardService.removeWidget(widget.id)">✕</button>
+                        </div>
+
+                        <div class="card-content">
+                            <ng-container *ngComponentOutlet="widget.content; inputs: { data: widget.data }">
+                            </ng-container>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </main>
+
+        </div>
+    </mat-drawer-content>
+</mat-drawer-container>

@@ -1,8 +1,7 @@
-import { Component, inject, computed, input, effect, PLATFORM_ID, viewChild, ElementRef, Input } from '@angular/core';
+import { Component, inject, input, effect, PLATFORM_ID, viewChild, ElementRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Chart } from 'chart.js';
-import { ColNationalService } from '../../../../../core/services/predictions-services/col-national.service';
-import { MpiItem, MultiChartData } from '../../../../../interfaces/predictions.interface';
+import { MultiChartData } from '../../../../../interfaces/predictions.interface';
 
 @Component({
   selector: 'app-mpi',
@@ -19,11 +18,11 @@ export class Mpi {
   data = input<MultiChartData>({ labels: [], datasets: [] });
 
   private palette = [
-    'rgb(54, 162, 235)',  // Azul
-    'rgb(255, 99, 132)',  // Rojo
-    'rgb(255, 206, 86)',  // Amarillo
-    'rgb(75, 192, 192)',  // Verde agua
-    'rgb(153, 102, 255)'  // Morado
+    'rgb(54, 162, 235)', 
+    'rgb(255, 99, 132)', 
+    'rgb(255, 206, 86)', 
+    'rgb(75, 192, 192)',  
+    'rgb(153, 102, 255)' 
   ];
 
   constructor() {

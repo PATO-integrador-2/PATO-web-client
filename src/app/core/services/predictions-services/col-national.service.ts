@@ -15,6 +15,7 @@ import {
     IncidenceBySexItem,
     IncidenceByHeadSexItem
 } from '../../../interfaces/predictions.interface';
+
 import { forkJoin } from 'rxjs';
 
 const COMPONENT_MAP: Record<string, Type<unknown>> = {
@@ -26,7 +27,7 @@ const COMPONENT_MAP: Record<string, Type<unknown>> = {
     IncidenceByHeadSex: Mpi,
 };
 
-const STORAGE_KEY = 'col_national_dashboard_widgets';
+const STORAGE_KEY = 'col_national_predictions_widgets';
 
 @Service()
 export class ColNationalService {
@@ -74,7 +75,6 @@ export class ColNationalService {
 
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
-                    label: 'Mpi',
                     title: `IPM: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
                     content: Mpi,
                     data: chartData
@@ -116,7 +116,6 @@ export class ColNationalService {
 
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
-                    label: 'Deprivations',
                     title: `Privaciones (${domain}): ${variables.join(', ')}`,
                     content: Mpi,
                     data: chartData
@@ -158,7 +157,6 @@ export class ColNationalService {
 
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
-                    label: 'Percentage',
                     title: `Porcentaje de privaciones de ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
                     content: Mpi,
                     data: chartData
@@ -202,7 +200,6 @@ export class ColNationalService {
 
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
-                    label: 'Dimension',
                     title: `Predicción de contribución a la incidencia Ajustada del IPM por dimensión (${domain}): ${dimensions.join(', ')}`,
                     content: Mpi,
                     data: chartData
@@ -244,7 +241,6 @@ export class ColNationalService {
 
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
-                    label: 'IncidenceBySex',
                     title: `Incidencia de Pobreza Multidimensioanl ${sex}: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
                     content: Mpi,
                     data: chartData
@@ -287,7 +283,6 @@ export class ColNationalService {
 
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
-                    label: 'IncidenceByHeadSex',
                     title: `Incidencia de Pobreza Multidimensioanl ${sex}: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
                     content: Mpi,
                     data: chartData
@@ -314,7 +309,6 @@ export class ColNationalService {
 
         const storedData: StoredWidget[] = this.widgets().map(w => ({
             id: w.id,
-            type: w.label,
             title: w.title,
             data: w.data
         }));
@@ -330,12 +324,10 @@ export class ColNationalService {
             const parsed: StoredWidget[] = JSON.parse(saved);
 
             const restoredWidgets: WidgetItemPredict[] = parsed
-                .filter(item => COMPONENT_MAP[item.type])
                 .map(item => ({
                     id: item.id,
-                    label: item.type,
                     title: item.title,
-                    content: COMPONENT_MAP[item.type],
+                    content: Mpi,
                     data: item.data
                 }));
 

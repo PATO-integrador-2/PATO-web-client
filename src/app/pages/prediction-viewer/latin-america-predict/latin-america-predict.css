@@ -1,0 +1,14 @@
+/* Layout de inputs */
+.full-width {
+    width: 100%;
+}
+
+.row-inputs {
+    display: flex;
+    gap: 12px;
+}
+
+.row-inputs mat-form-field {
+    flex: 1;
+    width: 50%;
+}

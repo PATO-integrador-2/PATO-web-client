@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PovertyByAge } from './poverty-by-age';
+import { NavbarPredictions } from './navbar-predictions';
 
-describe('PovertyByAge', () => {
-  let component: PovertyByAge;
-  let fixture: ComponentFixture<PovertyByAge>;
+describe('NavbarPredictions', () => {
+  let component: NavbarPredictions;
+  let fixture: ComponentFixture<NavbarPredictions>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PovertyByAge],
+      imports: [NavbarPredictions],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PovertyByAge);
+    fixture = TestBed.createComponent(NavbarPredictions);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

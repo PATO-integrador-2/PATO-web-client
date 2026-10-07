@@ -1,17 +1,18 @@
 <app-navbar></app-navbar>
 
-<mat-sidenav-container class="main-container">
+<app-navbar-predictions></app-navbar-predictions>
+
     <button type="button" class="sidebar-tab-toggle" [class.is-closed]="!sidebarOpen()" (click)="toggleSidebar()"
         [attr.aria-label]="sidebarOpen() ? 'Cerrar menú' : 'Abrir menú'">
         <mat-icon>{{ sidebarOpen() ? 'chevron_left' : 'chevron_right' }}</mat-icon>
     </button>
-    <mat-drawer-container class="sidebar-container">
-        <mat-drawer mode="side" [opened]="sidebarOpen()" class="custom-sidebar">
+    <mat-drawer-container class="main-container-predict">
+        <mat-drawer mode="side" [opened]="sidebarOpen()" class="custom-sidebar-predict">
             <div class="sidebar-header">
                 <h3>Añadir predicciones</h3>
             </div>
 
-            <div class="sidebar-body">
+            <div class="sidebar-body-predict">
                 <mat-accordion>
                     <!-- PANEL 1: IPM -->
                     <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
@@ -303,7 +304,7 @@
                 <!-- CONTENIDO PRINCIPAL -->
                 <main class="main-content">
                     <header class="dashboard-header">
-                        <h1>Panel de Predicciones Multidimensional de Pobreza</h1>
+                        <h1>Panel de Predicciones Multidimensional de Pobreza Nacional</h1>
                     </header>
                     <br>
 
@@ -330,4 +331,3 @@
 
         </mat-drawer-content>
     </mat-drawer-container>
-</mat-sidenav-container>
