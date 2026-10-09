@@ -2,11 +2,21 @@
     flex: 1;
 }
 
+:host {
+    display: block;
+    height: 40px;
+}
+
 mat-toolbar {
     background-color: #d6ada6;
     padding: 0 !important; 
     height: 40px !important;
     min-height: 40px !important;
+    position: fixed;
+    top: 64px;
+    right: 0;
+    left: 0;
+    z-index: 999;
 }
 
 .nav-container {
@@ -38,4 +48,10 @@ mat-toolbar {
 .active {
     background-color: #fcded8 !important;
     color: black !important;
+}
+
+@media (max-width: 1023px) {
+    mat-toolbar {
+        top: 56px;
+    }
 }
