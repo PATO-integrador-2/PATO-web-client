@@ -292,6 +292,17 @@
                     </mat-expansion-panel>
 
                 </mat-accordion>
+
+                <button
+                    type="button"
+                    matButton="filled"
+                    [disabled]="exportableCount() === 0 || exporter.busy()"
+                    (click)="exportPdf()"
+                >
+                    <mat-icon>picture_as_pdf</mat-icon>
+                    Exportar
+                </button>
+
             </div>
 
 

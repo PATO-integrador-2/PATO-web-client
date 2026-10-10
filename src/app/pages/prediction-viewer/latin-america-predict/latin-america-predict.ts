@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, ElementRef, afterEveryRender, inject, signal, effect } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
 import { Navbar } from '../../../components/navbar/navbar';
 import { NavbarPredictions } from '../../../components/navbar-predictions/navbar-predictions';
@@ -13,6 +13,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { LatinAmericaService } from '../../../core/services/predictions-services/latin-america.service';
+
+import { PredictionPdfExportService } from '../../../core/services/pdf-export/prediction-pdf-export.service';
 
 @Component({
   selector: 'app-latin-america',
@@ -162,6 +164,22 @@ export class LatinAmericaPredict {
     }
 
     return true;
+  }
+
+  // Exportar a PDF
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly exporter = inject(PredictionPdfExportService);
+  protected readonly exportableCount = signal(0);
+
+  private readonly watchExportable = afterEveryRender(() =>
+    this.exportableCount.set(this.exporter.countExportable(this.host.nativeElement)),
+  );
+
+  protected exportPdf(): void {
+    void this.exporter.run(this.host.nativeElement, {
+      title: 'Predicciones de Latinoamérica',
+      slug: 'latinoamerica',
+    });
   }
 
   // Sidebar
