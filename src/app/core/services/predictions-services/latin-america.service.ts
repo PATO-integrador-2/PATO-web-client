@@ -73,7 +73,15 @@ export class LatinAmericaService {
             return;
         }
 
+        
+
         const requests = areas.map(area => {
+            if ( area === 'Nacional'){
+                area = 'National';
+            }else if (area === 'Urbana'){
+                area = 'Urban';
+            }
+
             const payload = { country, area, measure, begin_year, years };
 
             return this.httpClient.post<{ data: NationalPovertyItem[] }>(
@@ -123,6 +131,13 @@ export class LatinAmericaService {
         }
 
         const requests = age_ranges.map(age_range => {
+            if ( area === 'Nacional'){
+                area = 'National';
+            }else if (area === 'Urbana'){
+                area = 'Urban';
+                console.log("soff");
+            }
+
             const payload = { country, area, age_range, begin_year, years };
 
             return this.httpClient.post<{ data: PovertyByAgeItem[] }>(

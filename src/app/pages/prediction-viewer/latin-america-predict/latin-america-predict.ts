@@ -59,7 +59,7 @@ export class LatinAmericaPredict {
   ]);
 
   availableMeasures = signal<string[]>([
-    'Incidencia', 'Incidencia ajustada', 'Intensidad'
+    'Incidencia ajustada (M0)', 'Incidencia (H)', 'Intensidad (A)'
   ]);
 
   availableAreas = signal<string[]>([
@@ -67,7 +67,7 @@ export class LatinAmericaPredict {
   ]);
 
   availableAgeRanges = signal<string[]>([
-    '0-17','18-59', '60 años y más', 'Total'
+    '0 a 17 años','18 a 59 años', '60 años y más', 'Total'
   ]);
 
 
@@ -93,7 +93,7 @@ export class LatinAmericaPredict {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(3)]
     }),
-    measure: new FormControl<string>('Incidencia', { nonNullable: true }),
+    measure: new FormControl<string>('Incidencia (H)', { nonNullable: true }),
     yearStart: new FormControl<string>('2026', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
     yearEnd: new FormControl<string>('2030', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
   });
