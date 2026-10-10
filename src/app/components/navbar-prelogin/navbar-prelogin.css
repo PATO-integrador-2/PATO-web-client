@@ -1,7 +1,16 @@
+ :host {
+  display: block;
+}
+
 nav{
   background-color: #285750;
   align-content: center;
   color:white;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1000;
 }
 nav img{
   margin: 10%;
@@ -15,6 +24,10 @@ nav img{
     display: flex;
     align-items: center;
     background-color: #f5f4f8;
+  }
+
+  :host {
+    height: 184px;
   }
 
   .main-container {

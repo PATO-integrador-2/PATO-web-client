@@ -1,3 +1,8 @@
+ :host {
+  display: block;
+  height: 116px;
+}
+
 nav {
   background-color: #285750;
   align-content: center;
@@ -5,6 +10,11 @@ nav {
   display: flex;
   align-items: center;
   padding: 0.5rem 1.5rem;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1000;
 }
 
 nav img {
@@ -36,6 +46,10 @@ nav img {
 @media (max-width: 1023px) {
   nav {
     padding: 0.4rem 0.5rem;
+  }
+
+  :host {
+    height: 100px;
   }
 
   nav .main-container {

@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>Exportar a PDF</h2>
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="w-full">
+    <mat-label>Nombre del archivo</mat-label>
+    <input matInput [formControl]="name" (keydown.enter)="confirm()" />
+    <span matTextSuffix>.pdf</span>
+    @if (name.hasError('invalidName')) {
+      <mat-error>Escribe un nombre válido para el archivo.</mat-error>
+    }
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button type="button" matButton mat-dialog-close>Cancelar</button>
+  <button type="button" matButton="filled" [disabled]="name.invalid" (click)="confirm()">
+    Descargar
+  </button>
+</mat-dialog-actions>
