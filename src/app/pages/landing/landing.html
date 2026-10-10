@@ -1,0 +1,175 @@
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="#inicio" aria-label="PATO, ir al inicio">
+      <img class="brand__logo" src="assets/img/logo_blanco.png" alt="PATO" height="36" />
+    </a>
+
+    <button
+      type="button"
+      class="menu-toggle"
+      aria-controls="main-nav"
+      [attr.aria-expanded]="menuOpen()"
+      [attr.aria-label]="menuOpen() ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'"
+      (click)="toggleMenu()"
+    >
+      <span class="menu-toggle__bar"></span>
+      <span class="menu-toggle__bar"></span>
+      <span class="menu-toggle__bar"></span>
+    </button>
+
+    <nav id="main-nav" class="nav" [class.nav--open]="menuOpen()" aria-label="Principal">
+      <ul class="nav__links">
+        <li><a href="#inicio" (click)="closeMenu()">Inicio</a></li>
+        <li><a href="#funcionalidades" (click)="closeMenu()">Funcionalidades</a></li>
+        <li><a href="#sobre-nosotros" (click)="closeMenu()">Sobre nosotros</a></li>
+      </ul>
+      <div class="nav__actions">
+        <a class="btn btn--accent" routerLink="/register">Registro</a>
+        <a class="btn btn--outline-light" routerLink="/login">Login</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section id="inicio" class="hero" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <h1 id="hero-title">Explora la pobreza multidimensional en Colombia y Latinoamérica</h1>
+        <p class="hero__lead">
+          PATO reúne mapas, históricos y predicciones de indicadores territoriales en una sola
+          plataforma web.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" routerLink="/register">Crear cuenta</a>
+          <a class="btn btn--outline" routerLink="/login">Iniciar sesión</a>
+        </div>
+      </div>
+      <div class="hero__media">
+        <img
+          src="assets/img/pe.png"
+          alt="Ilustración de la plataforma PATO"
+          width="560"
+          height="420"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section id="funcionalidades" class="section" aria-labelledby="cap-title">
+    <div class="container">
+      <h2 id="cap-title">Qué puedes hacer con PATO</h2>
+      <ul class="capabilities">
+        @for (capability of capabilities; track capability.title) {
+          <li class="capability">
+            <h3>{{ capability.title }}</h3>
+            <p>{{ capability.description }}</p>
+            @if (capability.tech) {
+              <p class="capability__tech">{{ capability.tech }}</p>
+            }
+          </li>
+        }
+      </ul>
+      <p class="section__note">
+        Estas herramientas requieren una cuenta.
+        <a routerLink="/register">Crea la tuya</a> o <a routerLink="/login">inicia sesión</a>.
+      </p>
+    </div>
+  </section>
+
+  <section id="como-funciona" class="section section--tint" aria-labelledby="flow-title">
+    <div class="container">
+      <h2 id="flow-title">Del territorio a la predicción en cuatro pasos</h2>
+      <ol class="steps">
+        @for (step of steps; track step.title; let i = $index) {
+          <li class="step">
+            <span class="step__number" aria-hidden="true">{{ i + 1 }}</span>
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.description }}</p>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section id="sobre-nosotros" class="section" aria-labelledby="about-title">
+    <div class="container">
+      <div class="about">
+        <div class="about__text">
+          <h2 id="about-title">Sobre nosotros</h2>
+          <p>
+            PATO es una herramienta tecnológica que usa análisis de datos e inteligencia
+            artificial para apoyar a entidades públicas y privadas en la toma de decisiones y en
+            el diseño de proyectos de impacto.
+          </p>
+          <p>
+            Parte de los indicadores de pobreza multidimensional de mayor incidencia en la
+            población más vulnerable.
+          </p>
+        </div>
+        <div class="about__media">
+          <img src="assets/img/pato.png" alt="Mascota de PATO" width="320" height="320" />
+        </div>
+      </div>
+
+      <div class="identity">
+        <article class="identity__item">
+          <h3>Misión</h3>
+          <p>
+            Desarrollar e implementar una herramienta tecnológica basada en técnicas de análisis de
+            datos e inteligencia artificial que permita a entidades públicas y privadas apoyar y
+            mejorar su toma de decisiones, tomando como base los indicadores del Índice de Pobreza
+            Multidimensional (IPM) de mayor impacto en la población más vulnerable, mediante una
+            arquitectura orientada a microservicios.
+          </p>
+        </article>
+        <article class="identity__item">
+          <h3>Visión</h3>
+          <p>
+            Consolidar una plataforma tecnológica funcional, que integre análisis predictivo sobre
+            variables de vulnerabilidad socioeconómica, sirviendo como insumo de alta calidad para
+            la planificación urbana, el cierre de brechas de pobreza y el fortalecimiento de
+            ciudades inteligentes, alineada con los Objetivos de Desarrollo Sostenible de la
+            Agenda 2030.
+          </p>
+        </article>
+      </div>
+
+      <h3 id="team-title" class="team__title">Conoce al equipo PATO</h3>
+      <ul class="team" aria-labelledby="team-title">
+        @for (member of team; track member.name) {
+          <li class="member">
+            <img
+              class="member__photo"
+              [src]="member.photo"
+              [alt]="'Foto de ' + member.name"
+              width="240"
+              height="240"
+            />
+            <h4>{{ member.name }}</h4>
+            <p>{{ member.role }}</p>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__brand">
+      <img src="assets/img/logo_blanco.png" alt="PATO" height="32" />
+      <p>
+        Plataforma para explorar indicadores de pobreza multidimensional en Colombia y
+        Latinoamérica.
+      </p>
+    </div>
+    <nav aria-label="Documentos legales">
+      <ul class="footer__links">
+        <li><a href="assets/legal/data-security.html">Seguridad de datos</a></li>
+        <li><a href="assets/legal/data-treatment-policy.html">Tratamiento de datos</a></li>
+        <li><a href="assets/legal/terms-&amp;-conditions.html">Términos y condiciones</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
