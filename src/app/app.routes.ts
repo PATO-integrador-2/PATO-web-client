@@ -13,9 +13,11 @@ import { ColNationalPredict } from './pages/prediction-viewer/col-national-predi
 import { LatinAmericaPredict } from './pages/prediction-viewer/latin-america-predict/latin-america-predict';
 import { LatinAmericaDash } from './pages/dashboard-viewer/latin-america-dash/latin-america-dash';
 import { ColDeptDash } from './pages/dashboard-viewer/col-dept-dash/col-dept-dash';
+import { Landing } from './pages/landing/landing';
 
 export const routes: Routes = [
-  {path: '', redirectTo: 'login', pathMatch: 'full'},
+  // Landing pública (sin guardias)
+  { path: '', component: Landing, pathMatch: 'full' },
 
   // Rutas públicas / de autenticación
   { path: 'login', component: Login, canActivate: [authenticatedGuard]},

@@ -6,7 +6,6 @@ import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { Prediction } from '../../../pages/prediction-viewer/latin-america-predict/widgets/prediction/prediction';
-import { request } from 'http';
 
 const STORAGE_KEY = 'latam_prediction_widgets';
 
