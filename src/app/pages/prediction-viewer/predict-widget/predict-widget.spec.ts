@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Mpi } from './mpi';
+import { PredictWidget } from './predict-widget';
 
-describe('Mpi', () => {
-  let component: Mpi;
-  let fixture: ComponentFixture<Mpi>;
+describe('PredictWidget', () => {
+  let component: PredictWidget;
+  let fixture: ComponentFixture<PredictWidget>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Mpi],
+      imports: [PredictWidget],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Mpi);
+    fixture = TestBed.createComponent(PredictWidget);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

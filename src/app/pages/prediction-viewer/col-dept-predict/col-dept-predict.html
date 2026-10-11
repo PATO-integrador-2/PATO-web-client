@@ -1,0 +1,107 @@
+<app-navbar></app-navbar>
+
+<app-navbar-predictions></app-navbar-predictions>
+
+<button type="button" class="sidebar-tab-toggle" [class.is-closed]="!sidebarOpen()" (click)="toggleSidebar()"
+    [attr.aria-label]="sidebarOpen() ? 'Cerrar menú' : 'Abrir menú'">
+    <mat-icon>{{ sidebarOpen() ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+</button>
+<mat-drawer-container class="main-container-predict" autosize>
+    <mat-drawer mode="side" [opened]="sidebarOpen()" class="custom-sidebar-predict">
+
+        <div class="sidebar-header">
+            <h3>Añadir predicciones</h3>
+        </div>
+
+        <div class="sidebar-body-predict">
+
+            <mat-accordion>
+                <!-- PANEL 1: CONTRIBUCIÓN -->
+                <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title> Contribución relativa de privaciones </mat-panel-title>
+                    </mat-expansion-panel-header>
+
+                    <form [formGroup]="deptartamentPovertyForm" (ngSubmit)="deptartamentPovertyPrediction()"
+                        class="filter-section">
+
+                        <mat-form-field appearance="outline" class="compact-field full-width">
+                            <mat-label>Región</mat-label>
+                            <mat-select formControlName="region">
+                                @for (r of availableRegions(); track r) {
+                                <mat-option [value]="r">{{ r }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="compact-field full-width">
+                            <mat-label>Departamentos (Máx 5)</mat-label>
+                            <mat-select formControlName="departaments" multiple>
+                                @for (d of availableDepartaments(); track d) {
+                                <mat-option [value]="d">{{ d }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <div class="row-inputs">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Año inicio</mat-label>
+                                <input matInput type="number" formControlName="yearStart" placeholder="Ej. 2020">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Año fin</mat-label>
+                                <input matInput type="number" formControlName="yearEnd" placeholder="Ej. 2026">
+                            </mat-form-field>
+                        </div>
+
+                        @if (deptartamentPovertyError()) {
+                        <mat-error class="error-msg">{{ deptartamentPovertyError() }}</mat-error>
+                        }
+
+                        <div class="flex">
+                            <button type="submit" matButton="filled" class="submit-container">Añadir
+                                Gráfica</button>
+                        </div>
+                    </form>
+                </mat-expansion-panel>
+
+            </mat-accordion>
+
+        </div>
+
+
+    </mat-drawer>
+
+    <mat-drawer-content>
+        <div class="dashboard-layout">
+
+            <!-- CONTENIDO PRINCIPAL -->
+            <main class="main-content">
+                <header class="dashboard-header">
+                    <h1>Panel de Predicciones Multidimensional de Pobreza Colombia Regional</h1>
+                </header>
+                <br>
+
+                <!-- RENDERIZADO DE WIDGETS -->
+                <div class="dashboard-grid-predict">
+                    @for (widget of dashboardService.widgets(); track widget.id) {
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>{{ widget.title }}</h3>
+                            <button type="button" class="btn-remove"
+                                (click)="dashboardService.removeWidget(widget.id)">✕</button>
+                        </div>
+
+                        <div class="card-content">
+                            <ng-container *ngComponentOutlet="widget.content; inputs: { data: widget.data }">
+                            </ng-container>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </main>
+
+        </div>
+    </mat-drawer-content>
+</mat-drawer-container>
