@@ -58,10 +58,6 @@
   display: none;
 }
 
-.map-legend--location-open {
-  bottom: calc(50% + 36px);
-}
-
 .map-legend__title {
   margin-bottom: 7px;
   font-weight: 700;
