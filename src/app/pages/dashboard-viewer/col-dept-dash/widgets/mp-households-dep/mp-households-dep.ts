@@ -89,7 +89,7 @@ export class MPHouseholdsDep {
         labels: privationsMap.map(p => p.label),
         datasets: [
           {
-            label: `Porcentaje de privación - ${items[0].region} - ${items[0].departamento} (${items[0].anio})`,
+            label: `Porcentaje de privación - ${items[0].personas_que_habitan_ese_hogar} personas en el hogar - ${items[0].region} - ${items[0].departamento} (${items[0].anio})`,
             data: privationsMap.map(p => p.value),
             backgroundColor: [
               'rgb(255, 99, 133)',
@@ -107,15 +107,15 @@ export class MPHouseholdsDep {
           legend: { display: true, position: 'top' },
           tooltip: {
             callbacks: {
-              label: (context) => ` ${context.raw}%`
+              label: (context) => ` ${context.raw}`
             }
           }
         },
         scales: {
           x: {
             beginAtZero: true,
-            title: { display: true, text: 'Porcentaje de privación (%)' },
-            ticks: { callback: (val) => `${val}%` }
+            title: { display: true, text: 'ïndice de posesión' },
+            ticks: { callback: (val) => `${val}` }
           },
           y: {
             ticks: { font: { size: 11 } }
