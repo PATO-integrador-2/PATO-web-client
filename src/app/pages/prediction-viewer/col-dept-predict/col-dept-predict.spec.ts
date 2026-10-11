@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Prediction } from './prediction';
+import { ColDeptPredict } from './col-dept-predict';
 
-describe('Prediction', () => {
-  let component: Prediction;
-  let fixture: ComponentFixture<Prediction>;
+describe('ColDeptPredict', () => {
+  let component: ColDeptPredict;
+  let fixture: ComponentFixture<ColDeptPredict>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Prediction],
+      imports: [ColDeptPredict],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Prediction);
+    fixture = TestBed.createComponent(ColDeptPredict);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

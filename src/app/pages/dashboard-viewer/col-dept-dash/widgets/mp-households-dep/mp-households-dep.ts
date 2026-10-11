@@ -93,12 +93,6 @@ export class MPHouseholdsDep {
             data: privationsMap.map(p => p.value),
             backgroundColor: [
               'rgb(255, 99, 133)',
-              'rgb(255, 160, 64)',
-              'rgb(255, 204, 86)',
-              'rgb(75, 192, 192)',
-              'rgb(54, 163, 235)',
-              'rgb(153, 102, 255)',
-              'rgb(201, 203, 207)'
             ],
             borderWidth: 1,
             borderRadius: 4

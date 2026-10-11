@@ -1,11 +1,10 @@
 import { Service, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { WidgetItem } from '../../../interfaces/ipm.interface';
 import { ContributionLatamItem, MultiChartData, NationalPovertyItem, PovertyByAgeItem, StoredWidget, WidgetItemPredict } from '../../../interfaces/predictions.interface';
 import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
 import { forkJoin } from 'rxjs';
-import { Prediction } from '../../../pages/prediction-viewer/latin-america-predict/widgets/prediction/prediction';
+import { PredictWidget } from '../../../pages/prediction-viewer/predict-widget/predict-widget';
 
 const STORAGE_KEY = 'latam_prediction_widgets';
 
@@ -54,7 +53,7 @@ export class LatinAmericaService {
                 const newWidget: WidgetItemPredict = {
                     id: 1,
                     title: `IPM: ${deprivations.join(', ')} - ${country} (${begin_year} - ${begin_year + years})`,
-                    content: Prediction,
+                    content: PredictWidget,
                     data: chartData
                 }
 
@@ -111,7 +110,7 @@ export class LatinAmericaService {
                 const newWidget: WidgetItemPredict = {
                     id: 1,
                     title: `IPM: ${areas.join(', ')} - ${country} (${begin_year} - ${begin_year + years})`,
-                    content: Prediction,
+                    content: PredictWidget,
                     data: chartData
                 }
 
@@ -167,7 +166,7 @@ export class LatinAmericaService {
                 const newWidget: WidgetItemPredict = {
                     id: 1,
                     title: `IPM: ${age_ranges.join(', ')} - ${country} (${begin_year} - ${begin_year + years})`,
-                    content: Prediction,
+                    content: PredictWidget,
                     data: chartData
                 }
 
@@ -209,7 +208,7 @@ export class LatinAmericaService {
                 .map(item => ({
                     id: item.id,
                     title: item.title,
-                    content: Prediction,
+                    content: PredictWidget,
                     data: item.data
                 }));
 

@@ -14,6 +14,7 @@ import { LatinAmericaPredict } from './pages/prediction-viewer/latin-america-pre
 import { LatinAmericaDash } from './pages/dashboard-viewer/latin-america-dash/latin-america-dash';
 import { ColDeptDash } from './pages/dashboard-viewer/col-dept-dash/col-dept-dash';
 import { Landing } from './pages/landing/landing';
+import { ColDeptPredict } from './pages/prediction-viewer/col-dept-predict/col-dept-predict';
 
 export const routes: Routes = [
   // Landing pública (sin guardias)
@@ -32,6 +33,7 @@ export const routes: Routes = [
   { path: 'latin-dash', component: LatinAmericaDash, canActivate: [authGuard]},
   { path: 'col-national-predict', component: ColNationalPredict, canActivate: [authGuard]},
   { path: 'latin-predict', component: LatinAmericaPredict, canActivate: [authGuard]},
+  { path: 'col-regional-predict', component: ColDeptPredict, canActivate: [authGuard]},
   { path: 'map-viewer', component: MapViewer, canActivate: [authGuard]},
   { path: 'chat-bot', component: ChatBOT, canActivate: [authGuard]},
 

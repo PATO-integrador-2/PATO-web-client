@@ -1,15 +1,15 @@
 import { Component, inject, input, effect, PLATFORM_ID, viewChild, ElementRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Chart } from 'chart.js';
-import { MultiChartData } from '../../../../../interfaces/predictions.interface';
+import { MultiChartData } from '../../../interfaces/predictions.interface';
 
 @Component({
-  selector: 'app-mpi',
+  selector: 'app-predict-widget',
   imports: [],
-  templateUrl: './mpi.html',
-  styleUrl: './mpi.css',
+  templateUrl: './predict-widget.html',
+  styleUrl: './predict-widget.css',
 })
-export class Mpi {
+export class PredictWidget {
   private platformId = inject(PLATFORM_ID);
   private chartInstance?: Chart;
   private isBrowser = false;

@@ -1,0 +1,27 @@
+
+.filter-section h3 {
+    margin: 12px 0 8px 0;
+    font-size: 1rem;
+    color: #555;
+}
+
+/* Layout de inputs */
+.full-width {
+    width: 100%;
+}
+
+.row-inputs {
+    display: flex;
+    gap: 12px;
+}
+
+.row-inputs mat-form-field {
+    flex: 1;
+    width: 50%;
+}
+
+/*Contenedor principal */
+.main-container {
+    height: calc(100vh - 64px) !important;
+    width: 100%;
+}

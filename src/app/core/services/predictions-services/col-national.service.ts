@@ -2,7 +2,6 @@ import { Service, signal, inject, PLATFORM_ID, Type } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
-import { Mpi } from '../../../pages/prediction-viewer/col-national-predict/widgets/mpi/mpi';
 
 import {
     MpiItem,
@@ -17,15 +16,7 @@ import {
 } from '../../../interfaces/predictions.interface';
 
 import { forkJoin } from 'rxjs';
-
-const COMPONENT_MAP: Record<string, Type<unknown>> = {
-    Mpi: Mpi,
-    Deprivations: Mpi,
-    Percentage: Mpi,
-    Dimension: Mpi,
-    IncidenceBySex: Mpi,
-    IncidenceByHeadSex: Mpi,
-};
+import { PredictWidget } from '../../../pages/prediction-viewer/predict-widget/predict-widget';
 
 const STORAGE_KEY = 'col_national_predictions_widgets';
 
@@ -76,7 +67,7 @@ export class ColNationalService {
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     title: `IPM: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
-                    content: Mpi,
+                    content: PredictWidget,
                     data: chartData
                 };
 
@@ -117,7 +108,7 @@ export class ColNationalService {
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     title: `Privaciones (${domain}): ${variables.join(', ')}`,
-                    content: Mpi,
+                    content: PredictWidget,
                     data: chartData
                 };
 
@@ -158,7 +149,7 @@ export class ColNationalService {
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     title: `Porcentaje de privaciones de ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
-                    content: Mpi,
+                    content: PredictWidget,
                     data: chartData
                 }
 
@@ -201,7 +192,7 @@ export class ColNationalService {
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     title: `Predicción de contribución a la incidencia Ajustada del IPM por dimensión (${domain}): ${dimensions.join(', ')}`,
-                    content: Mpi,
+                    content: PredictWidget,
                     data: chartData
                 };
 
@@ -242,7 +233,7 @@ export class ColNationalService {
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     title: `Incidencia de Pobreza Multidimensioanl ${sex}: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
-                    content: Mpi,
+                    content: PredictWidget,
                     data: chartData
                 }
 
@@ -284,7 +275,7 @@ export class ColNationalService {
                 const newWidget: WidgetItemPredict = {
                     id: Date.now(),
                     title: `Incidencia de Pobreza Multidimensioanl ${sex}: ${domains.join(', ')} (${begin_year} - ${begin_year + years})`,
-                    content: Mpi,
+                    content: PredictWidget,
                     data: chartData
                 }
 
@@ -327,7 +318,7 @@ export class ColNationalService {
                 .map(item => ({
                     id: item.id,
                     title: item.title,
-                    content: Mpi,
+                    content: PredictWidget,
                     data: item.data
                 }));
 
