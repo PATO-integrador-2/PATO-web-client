@@ -73,7 +73,7 @@ export class PopulationPoverty {
         labels: labels,
         datasets: [
           {
-            label: `IPM (%) - ${domainName} - ${areaName} (${yearVal})`,
+            label: `${domainName} - ${areaName} (${yearVal})`,
             data: values,
             backgroundColor: [
               'rgb(255, 99, 133)',
