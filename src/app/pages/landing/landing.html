@@ -80,9 +80,23 @@
         >
           <div class="slide__media">
             @if (current.image) {
-              <img [src]="current.image" [alt]="current.imageAlt ?? current.title" />
+              <img
+                [src]="current.image"
+                [alt]="current.imageAlt ?? current.title"
+                (click)="changeSlideFromImage($event)"
+              />
             } @else {
-              <div class="placeholder" aria-hidden="true"><span>Imagen pendiente</span></div>
+              <div
+                class="placeholder"
+                role="button"
+                tabindex="0"
+                aria-label="Cambiar funcionalidad"
+                (click)="changeSlideFromImage($event)"
+                (keydown.enter)="changeSlideFromImage($event)"
+                (keydown.space)="changeSlideFromImage($event)"
+              >
+                <span>Imagen pendiente</span>
+              </div>
             }
           </div>
           <div class="slide__caption">
@@ -101,15 +115,17 @@
               <path d="M9 12L14 17" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
-          @for (capability of capabilities; track capability.title; let i = $index) {
-            <button
-              type="button"
-              class="dot"
-              [attr.aria-label]="'Ir a ' + capability.title"
-              [attr.aria-current]="i === slide() ? 'true' : null"
-              (click)="goToSlide(i)"
-            ></button>
-          }
+          <div class="carousel__dots">
+            @for (capability of capabilities; track capability.title; let i = $index) {
+              <button
+                type="button"
+                class="dot"
+                [attr.aria-label]="'Ir a ' + capability.title"
+                [attr.aria-current]="i === slide() ? 'true' : null"
+                (click)="goToSlide(i)"
+              ></button>
+            }
+          </div>
           <button type="button" class="arrow arrow--next" aria-label="Funcionalidad siguiente" (click)="nextSlide()">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
               <path d="M14 7L9 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />

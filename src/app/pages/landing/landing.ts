@@ -109,6 +109,21 @@ export class Landing {
     this.slide.set(index);
   }
 
+  protected changeSlideFromImage(event: Event): void {
+    const target = event.currentTarget;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const { left, width } = target.getBoundingClientRect();
+    if (event instanceof MouseEvent && event.clientX - left < width / 2) {
+      this.prevSlide();
+      return;
+    }
+
+    this.nextSlide();
+  }
+
   protected toggleMenu(): void {
     this.menuOpen.update((open) => !open);
   }
