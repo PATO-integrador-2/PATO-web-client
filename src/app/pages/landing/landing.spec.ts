@@ -28,9 +28,25 @@ describe('Landing', () => {
     expect(element.querySelectorAll('h1').length).toBe(1);
   });
 
-  it('muestra seis funcionalidades y cuatro pasos', () => {
-    expect(element.querySelectorAll('.capability').length).toBe(6);
-    expect(element.querySelectorAll('.step').length).toBe(4);
+  it('muestra un carrusel de seis funcionalidades y una cascada de cuatro pasos', () => {
+    expect(element.querySelectorAll('.dot').length).toBe(6);
+    expect(element.querySelectorAll('.slide').length).toBe(1);
+    expect(element.querySelectorAll('.cascade__row').length).toBe(4);
+  });
+
+  it('el carrusel avanza, retrocede y marca el punto activo', async () => {
+    const title = () => element.querySelector('.slide__caption h3')?.textContent?.trim();
+    const first = title();
+    (element.querySelector('.arrow--next') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(title()).not.toBe(first);
+    expect(element.querySelectorAll('.dot')[1].getAttribute('aria-current')).toBe('true');
+
+    (element.querySelector('.arrow:not(.arrow--next)') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(title()).toBe(first);
   });
 
   it('muestra seis integrantes del equipo', () => {

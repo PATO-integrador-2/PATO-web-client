@@ -5,11 +5,16 @@ interface Capability {
   title: string;
   description: string;
   tech?: string;
+  /** Ruta de la imagen (ej. assets/img/landing/mapa.png). Sin valor se muestra un placeholder. */
+  image?: string;
+  imageAlt?: string;
 }
 
 interface Step {
   title: string;
   description: string;
+  image?: string;
+  imageAlt?: string;
 }
 
 interface TeamMember {
@@ -27,6 +32,7 @@ interface TeamMember {
 })
 export class Landing {
   protected readonly menuOpen = signal(false);
+  protected readonly slide = signal(0);
 
   protected readonly capabilities: Capability[] = [
     {
@@ -83,13 +89,25 @@ export class Landing {
 
   // Placeholders: reemplazar nombre, rol y foto (p. ej. assets/img/team/nombre.jpg).
   protected readonly team: TeamMember[] = [
-    { name: 'Integrante 1', role: 'Rol del integrante', photo: 'assets/img/pato.png' },
-    { name: 'Integrante 2', role: 'Rol del integrante', photo: 'assets/img/pato.png' },
-    { name: 'Integrante 3', role: 'Rol del integrante', photo: 'assets/img/pato.png' },
-    { name: 'Integrante 4', role: 'Rol del integrante', photo: 'assets/img/pato.png' },
-    { name: 'Integrante 5', role: 'Rol del integrante', photo: 'assets/img/pato.png' },
-    { name: 'Integrante 6', role: 'Rol del integrante', photo: 'assets/img/pato.png' },
+    { name: 'Nathalia Rojas', role: 'Ingeniera Backend, PM', photo: 'assets/img/pato.png' },
+    { name: 'Danna Garzón', role: 'Ingeniera de IA', photo: 'assets/img/pato.png' },
+    { name: 'Dalyalí Porras', role: 'Ingeniera Frontend', photo: 'assets/img/pato.png' },
+    { name: 'Christian Duarte', role: 'Ingeniero de Infraestructura', photo: 'assets/img/pato.png' },
+    { name: 'Carlos Pimiento', role: 'Ingeniero Backend', photo: 'assets/img/pato.png' },
+    { name: 'Eduard Mojica', role: 'Ingeniero Frontend, DBA', photo: 'assets/img/pato.png' },
   ];
+
+  protected nextSlide(): void {
+    this.slide.update((i) => (i + 1) % this.capabilities.length);
+  }
+
+  protected prevSlide(): void {
+    this.slide.update((i) => (i - 1 + this.capabilities.length) % this.capabilities.length);
+  }
+
+  protected goToSlide(index: number): void {
+    this.slide.set(index);
+  }
 
   protected toggleMenu(): void {
     this.menuOpen.update((open) => !open);

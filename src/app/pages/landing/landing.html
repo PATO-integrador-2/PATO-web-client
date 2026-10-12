@@ -58,34 +58,89 @@
 
   <section id="funcionalidades" class="section" aria-labelledby="cap-title">
     <div class="container">
-      <h2 id="cap-title">Qué puedes hacer con PATO</h2>
-      <ul class="capabilities">
-        @for (capability of capabilities; track capability.title) {
-          <li class="capability">
-            <h3>{{ capability.title }}</h3>
-            <p>{{ capability.description }}</p>
-            @if (capability.tech) {
-              <p class="capability__tech">{{ capability.tech }}</p>
+      <div class="section__head">
+        <h2 id="cap-title">Qué puedes hacer con PATO</h2>
+      </div>
+
+      <div
+        class="carousel"
+        role="region"
+        aria-roledescription="carrusel"
+        aria-label="Funcionalidades de PATO"
+        (keydown.arrowleft)="prevSlide()"
+        (keydown.arrowright)="nextSlide()"
+      >
+        @let current = capabilities[slide()];
+        <div
+          class="slide"
+          role="group"
+          aria-roledescription="diapositiva"
+          aria-live="polite"
+          [attr.aria-label]="slide() + 1 + ' de ' + capabilities.length"
+        >
+          <div class="slide__media">
+            @if (current.image) {
+              <img [src]="current.image" [alt]="current.imageAlt ?? current.title" />
+            } @else {
+              <div class="placeholder" aria-hidden="true"><span>Imagen pendiente</span></div>
             }
-          </li>
-        }
-      </ul>
-      <p class="section__note">
-        Estas herramientas requieren una cuenta.
-        <a routerLink="/register">Crea la tuya</a> o <a routerLink="/login">inicia sesión</a>.
-      </p>
+          </div>
+          <div class="slide__caption">
+            <h3>{{ current.title }}</h3>
+            <p>{{ current.description }}</p>
+            @if (current.tech) {
+              <p class="slide__tech">{{ current.tech }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="carousel__controls">
+          <button type="button" class="arrow" aria-label="Funcionalidad anterior" (click)="prevSlide()">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+              <path d="M14 7L9 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M9 12L14 17" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          @for (capability of capabilities; track capability.title; let i = $index) {
+            <button
+              type="button"
+              class="dot"
+              [attr.aria-label]="'Ir a ' + capability.title"
+              [attr.aria-current]="i === slide() ? 'true' : null"
+              (click)="goToSlide(i)"
+            ></button>
+          }
+          <button type="button" class="arrow arrow--next" aria-label="Funcionalidad siguiente" (click)="nextSlide()">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+              <path d="M14 7L9 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M9 12L14 17" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section id="como-funciona" class="section section--tint" aria-labelledby="flow-title">
+  <section id="como-funciona" class="section" aria-labelledby="flow-title">
     <div class="container">
-      <h2 id="flow-title">Del territorio a la predicción en cuatro pasos</h2>
-      <ol class="steps">
+      <div class="section__head">
+        <h2 id="flow-title">Del territorio a la predicción en cuatro pasos</h2>
+      </div>
+      <ol class="cascade">
         @for (step of steps; track step.title; let i = $index) {
-          <li class="step">
-            <span class="step__number" aria-hidden="true">{{ i + 1 }}</span>
-            <h3>{{ step.title }}</h3>
-            <p>{{ step.description }}</p>
+          <li class="cascade__row">
+            <div class="cascade__media">
+              @if (step.image) {
+                <img [src]="step.image" [alt]="step.imageAlt ?? step.title" />
+              } @else {
+                <div class="placeholder" aria-hidden="true"><span>Imagen pendiente</span></div>
+              }
+            </div>
+            <div class="cascade__info">
+              <p class="cascade__num" aria-hidden="true">{{ i + 1 }}.</p>
+              <h3>{{ step.title }}</h3>
+              <p>{{ step.description }}</p>
+            </div>
           </li>
         }
       </ol>
