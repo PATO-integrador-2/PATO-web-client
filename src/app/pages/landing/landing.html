@@ -81,8 +81,11 @@
           <div class="slide__media">
             @if (current.image) {
               <img
+                class="slide__image"
                 [src]="current.image"
                 [alt]="current.imageAlt ?? current.title"
+                [class.slide__image--contain]="current.imageFit === 'contain'"
+                [class.slide__image--bottom]="current.imageFit === 'bottom'"
                 (click)="changeSlideFromImage($event)"
               />
             } @else {

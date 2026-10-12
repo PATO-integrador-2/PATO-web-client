@@ -282,6 +282,13 @@ button:focus-visible {
   height: 100%;
   object-fit: cover;
 }
+.slide__media .slide__image--contain {
+  object-fit: contain;
+  background: #fff;
+}
+.slide__media .slide__image--bottom {
+  object-position: center bottom;
+}
 .slide__caption {
   position: absolute;
   left: 24px;
@@ -417,7 +424,8 @@ button:focus-visible {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
 }
 .section .cascade__num {
   margin-bottom: 4px;
