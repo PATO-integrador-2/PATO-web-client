@@ -8,6 +8,7 @@ interface Capability {
   /** Ruta de la imagen (ej. assets/img/landing/mapa.png). Sin valor se muestra un placeholder. */
   image?: string;
   imageAlt?: string;
+  imageFit?: 'contain' | 'bottom';
 }
 
 interface Step {
@@ -39,32 +40,46 @@ export class Landing {
       title: 'Mapa geográfico',
       description:
         'Recorre el territorio y consulta los datos de cada zona directamente sobre el mapa.',
+      image: 'assets/img/ss-landing/territorio.png',
+      imageAlt: 'Mapa geográfico de PATO',
     },
     {
       title: 'Paneles históricos',
       description:
         'Revisa la evolución de los indicadores a nivel nacional, departamental y latinoamericano.',
+      image: 'assets/img/ss-landing/panel.png',
+      imageAlt: 'Panel histórico de indicadores de PATO',
     },
     {
       title: 'Predicciones del IPM',
       description:
         'Proyecta el Índice de Pobreza Multidimensional de una región a partir de datos históricos.',
       tech: 'Modelos de regresión de aprendizaje supervisado.',
+      image: 'assets/img/ss-landing/predicciones.png',
+      imageAlt: 'Panel de predicciones del IPM de PATO',
     },
     {
       title: 'Clasificación de regiones',
       description: 'Identifica qué regiones están en pobreza multidimensional y en qué categoría.',
       tech: 'Algoritmos de clasificación de aprendizaje supervisado.',
+      image: 'assets/img/ss-landing/regiones.png',
+      imageAlt: 'Clasificación de regiones de PATO',
+      imageFit: 'bottom',
     },
     {
       title: 'Chatbot',
       description: 'Pregunta a los datos en lenguaje natural y obtén contexto mientras exploras.',
       tech: 'Agente de procesamiento de lenguaje natural (NLP).',
+      image: 'assets/img/ss-landing/chatbot.png',
+      imageAlt: 'Chatbot de PATO',
     },
     {
       title: 'Exportar a PDF',
       description:
         'Descarga en PDF las predicciones que generas para compartirlas o incluirlas en tus informes.',
+      image: 'assets/img/ss-landing/pdf.png',
+      imageAlt: 'Exportación de predicciones a PDF en PATO',
+      imageFit: 'contain',
     },
   ];
 
@@ -72,18 +87,26 @@ export class Landing {
     {
       title: 'Elige un territorio',
       description: 'Selecciona una región, un país o un departamento.',
+      image: 'assets/img/ss-landing/costarica1.png',
+      imageAlt: 'Selección de un territorio en PATO',
     },
     {
       title: 'Consulta el histórico',
       description: 'Revisa cómo han cambiado los indicadores con el tiempo.',
+      image: 'assets/img/ss-landing/costarica2.png',
+      imageAlt: 'Consulta del histórico de indicadores en PATO',
     },
     {
       title: 'Compara',
       description: 'Contrasta dimensiones, variables o periodos.',
+      image: 'assets/img/ss-landing/costarica3.png',
+      imageAlt: 'Comparación de indicadores en PATO',
     },
     {
       title: 'Explora lo que viene',
       description: 'Mira las predicciones, consulta al chatbot y exporta los resultados a PDF.',
+      image: 'assets/img/ss-landing/costarica4.png',
+      imageAlt: 'Exploración de predicciones en PATO',
     },
   ];
 
