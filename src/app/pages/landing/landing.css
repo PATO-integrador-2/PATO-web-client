@@ -259,9 +259,14 @@ button:focus-visible {
 }
 
 /* Carrusel */
+.carousel {
+  position: relative;
+  width: 80vw;
+  margin-left: calc(50% - 40vw);
+}
 .slide {
   position: relative;
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 2.4 / 1;
   overflow: hidden;
   border-radius: var(--radius);
   background: var(--sand);
@@ -269,6 +274,7 @@ button:focus-visible {
 .slide__media {
   position: absolute;
   inset: 0;
+  cursor: pointer;
 }
 .slide__media img {
   display: block;
@@ -292,11 +298,13 @@ button:focus-visible {
   color: var(--green);
 }
 .carousel__controls {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 20px;
+  pointer-events: none;
 }
 .arrow {
   display: inline-flex;
@@ -310,6 +318,19 @@ button:focus-visible {
   background: var(--paper);
   color: var(--ink);
   cursor: pointer;
+  pointer-events: auto;
+}
+.arrow:first-child {
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.arrow--next {
+  position: absolute;
+  right: -24px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 .arrow:hover {
   background: var(--sand);
@@ -331,6 +352,15 @@ button:focus-visible {
   border: 0;
   background: transparent;
   cursor: pointer;
+  pointer-events: auto;
+}
+.carousel__dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
 }
 .dot::before {
   content: '';
@@ -341,12 +371,6 @@ button:focus-visible {
 }
 .dot[aria-current='true']::before {
   background: var(--green);
-}
-.arrow:first-child {
-  margin-right: 8px;
-}
-.arrow--next {
-  margin-left: 8px;
 }
 
 /* Cascada */
@@ -367,10 +391,27 @@ button:focus-visible {
   order: 2;
 }
 .cascade__media {
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 5 / 3;
   overflow: hidden;
-  border-radius: var(--radius);
-  background: var(--sand);
+  border: 10px solid #dbe7df;
+  border-radius: 2px;
+  background: #dbe7df;
+  box-shadow: 14px 14px 0 #f0c978;
+}
+.cascade__row:nth-child(2) .cascade__media {
+  border-color: #f2dfc4;
+  background: #f2dfc4;
+  box-shadow: -14px 14px 0 #b8d5cd;
+}
+.cascade__row:nth-child(3) .cascade__media {
+  border-color: #d8e1ee;
+  background: #d8e1ee;
+  box-shadow: 14px 14px 0 #e6b4a8;
+}
+.cascade__row:nth-child(4) .cascade__media {
+  border-color: #f1dfb7;
+  background: #f1dfb7;
+  box-shadow: -14px 14px 0 #c8d8a7;
 }
 .cascade__media img {
   display: block;
@@ -391,7 +432,11 @@ button:focus-visible {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   align-items: center;
-  gap: 64px;
+  gap: 96px;
+  min-height: 320px;
+  padding: 48px 64px;
+  border-left: 10px solid var(--accent);
+  background: #e8f0e5;
 }
 .about__text h2 {
   margin-bottom: 24px;
@@ -417,39 +462,50 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 32px;
-  margin-top: 72px;
-  padding-top: 40px;
-  border-top: 1px solid var(--line);
+  margin-top: 56px;
+}
+.identity__item {
+  min-height: 230px;
+  padding: 32px;
+  border-top: 6px solid var(--green);
+  background: #f6ead6;
+}
+.identity__item:last-child {
+  border-top-color: #d88962;
+  background: #e5edf2;
 }
 .identity__item p {
   max-width: 58ch;
 }
 .identity__item:last-child {
   padding-left: 32px;
-  border-left: 1px solid var(--line);
 }
 
 .section .team__title {
-  margin: 72px 0 28px;
+  margin: 64px 0 24px;
   font-size: 1.5rem;
   font-weight: 500;
 }
 .team {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 36px 28px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px 24px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .member__photo {
   display: block;
-  width: 100%;
+  width: min(100%, 170px);
   aspect-ratio: 1 / 1;
-  margin-bottom: 12px;
-  border-radius: var(--radius);
+  margin: 0 auto 12px;
+  border-radius: 50%;
   background: var(--sand);
   object-fit: contain;
+}
+.member h4,
+.member p {
+  text-align: center;
 }
 .section .member h4 {
   margin: 0;
@@ -552,6 +608,11 @@ button:focus-visible {
   .team {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .about {
+    gap: 40px;
+    padding: 40px 32px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -584,6 +645,10 @@ button:focus-visible {
     overflow: visible;
     background: transparent;
   }
+  .carousel {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+  }
   .slide__media {
     position: relative;
     aspect-ratio: 4 / 3;
@@ -597,13 +662,29 @@ button:focus-visible {
     padding: 16px 0 0;
     background: transparent;
   }
-  .arrow:first-child {
-    margin-right: 0;
+  .carousel__controls {
+    position: relative;
+    inset: auto;
+    margin-top: 16px;
   }
+  .arrow:first-child,
   .arrow--next {
-    margin-left: 0;
+    position: static;
+    transform: none;
   }
   .dot {
     width: 24px;
+  }
+
+  .cascade__media {
+    box-shadow: 8px 8px 0 #f0c978;
+  }
+  .cascade__row:nth-child(2) .cascade__media,
+  .cascade__row:nth-child(4) .cascade__media {
+    box-shadow: 8px 8px 0 #b8d5cd;
+  }
+  .identity__item {
+    min-height: 0;
+    padding: 24px;
   }
 }
