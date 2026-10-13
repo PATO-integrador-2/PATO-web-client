@@ -8,7 +8,7 @@
 }
 
 mat-toolbar {
-    background-color: #325754;
+    background-color: #45867E;
     position: fixed;
     top: 0;
     right: 0;
@@ -22,14 +22,14 @@ mat-toolbar {
 
     a[mat-button] {
         color: white;
-        background-color: #325754;
+        background-color: #45867E;
         font-family: 'Rubik', sans-;
         border-radius: 20px;
         padding: 8px 18px;
     }
 
     a[mat-button]:hover {
-        background-color: #4a7275;
+        background-color: #6bb4ac;
         font-family: 'Rubik', sans-serif
     }
 }
