@@ -49,8 +49,8 @@ body {
   @include mat.menu-overrides((container-shape: 12px,
       item-leading-spacing: 30px,
       item-trailing-spacing: 30px,
-      container-color: #264240,
-      item-hover-state-layer-color: #4b7272,
+      container-color: #306861,
+      item-hover-state-layer-color: #3f7a74,
       item-label-text-weight: 300,
       item-label-text-color: white,
     ));
@@ -64,11 +64,11 @@ body {
     @include mat.form-field-density(-3);
   }
 
-  @include mat.button-overrides((filled-container-color: #D6A79F,
-      filled-label-text-color: black,
+  @include mat.button-overrides((filled-container-color: #875945,
+      filled-label-text-color: white,
       filled-container-shape: var(--mat-sys-corner-full)));
 
-  @include mat.snack-bar-overrides((button-color: rgb(53, 187, 192),
+  @include mat.snack-bar-overrides((button-color: #875945,
       container-color: white,
       supporting-text-color: black));
 
