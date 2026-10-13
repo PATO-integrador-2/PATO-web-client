@@ -21,18 +21,17 @@ import { PredictionPdfExportService } from '../../../core/services/pdf-export/pr
   imports: [
     NavbarPredictions,
     NgComponentOutlet,
-    MatIconModule, 
-    MatGridListModule, 
-    MatExpansionModule, 
-    MatSidenavModule, 
-    Navbar, 
+    MatIconModule,
+    MatGridListModule,
+    MatExpansionModule,
+    MatSidenavModule,
+    Navbar,
     MatDividerModule,
-    MatSelectModule, 
-    MatFormFieldModule, 
-    MatInputModule, 
-    ReactiveFormsModule, 
+    MatSelectModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule,
     MatButtonModule],
-
   templateUrl: './latin-america-predict.html',
   styleUrl: './latin-america-predict.css',
 })
@@ -41,21 +40,19 @@ export class LatinAmericaPredict {
   readonly panelOpenState = signal(false);
 
   availableCountries = signal<string[]>([
-  'Argentina', 'Bolivia', 'Brasil', 'Chile', 'Colombia', 
-  'Costa Rica', 'Ecuador', 'El Salvador', 'Guatemala', 'Honduras', 
-  'México', 'Nicaragua', 'Panamá', 'Paraguay', 'Perú', 
-  'República Dominicana', 'Uruguay'
-]);
+    'Bolivia (Plurinational State of)', 'Colombia',
+    'Costa Rica', 'Dominican Republic', 'Ecuador', 
+    'El Salvador', 'Latin America (simple average)',
+    'Latin America (weighted average)', 'Paraguay', 
+    'Peru', 'Uruguay'
+  ]);
 
   availableDeprivations = signal<string[]>([
-    'Analfabetismo', 'Bajo logro educativo',
-    'Barreras a servicios para cuidado de la primera infancia',
-    'Barreras de acceso a servicios de salud', 'Desempleo de larga duración',
-    'Hacinamiento crítico', 'Inadecuada eliminación de excretas',
-    'Inasistencia escolar', 'Material inadecuado de pisos',
-    'Material inadecuado de paredes exteriores', 'Rezago escolar',
-    'Sin acceso a fuente de agua mejorada', 'Sin aseguramiento en salud',
-    'Trabajo infantil', 'Trabajo informal'
+    'Agua', 'Analfabetismo', 
+    'Aseguramiento en salud', 'Calidad del empleo',
+    'Condiciones de la vivienda', 'Hacinamiento',
+    'Inasistencia o rezago escolar', 'Inserción laboral',
+    'Logro educativo', 'Pensiones', 'Saneamiento'
   ]);
 
   availableMeasures = signal<string[]>([
@@ -67,7 +64,7 @@ export class LatinAmericaPredict {
   ]);
 
   availableAgeRanges = signal<string[]>([
-    '0 a 17 años','18 a 59 años', '60 años y más', 'Total'
+    '0 a 17 años', '18 a 59 años', '60 años y más', 'Total'
   ]);
 
 
@@ -81,14 +78,14 @@ export class LatinAmericaPredict {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(5)]
     }),
-    country: new FormControl<string>('Chile', { nonNullable: true }),
+    country: new FormControl<string>('Ecuador', { nonNullable: true }),
     yearStart: new FormControl<string>('2026', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)]),
     yearEnd: new FormControl<string>('2030', [Validators.required, Validators.pattern('^[0-9]{4}$'), Validators.min(2000), Validators.max(2100)])
   });
 
   // Formulario Contribuciones con múltiples áres (Máx. 3)
   nationalPovertyForm = new FormGroup({
-    country: new FormControl<string>('Chile', { nonNullable: true }),
+    country: new FormControl<string>('Ecuador', { nonNullable: true }),
     areas: new FormControl<string[]>(['Urbana'], {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(3)]
@@ -100,9 +97,9 @@ export class LatinAmericaPredict {
 
   // Formulario Contribuciones con múltiples rangos (Máx. 3)
   povertyByAgeForm = new FormGroup({
-    country: new FormControl<string>('Chile', { nonNullable: true }),
+    country: new FormControl<string>('Ecuador', { nonNullable: true }),
     area: new FormControl<string>('Nacional', { nonNullable: true }),
-    age_ranges: new FormControl<string[]>(['0-17'], {
+    age_ranges: new FormControl<string[]>(['0 a 17 años'], {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(4)]
     }),
@@ -129,7 +126,7 @@ export class LatinAmericaPredict {
     const start = Number(yearStart);
     const diffYears = Number(yearEnd) - start;
 
-    this.dashboardService.predictNationalPovertyMulti( country, areas, measure, start, diffYears);
+    this.dashboardService.predictNationalPovertyMulti(country, areas, measure, start, diffYears);
   }
 
   povertyByAgePrediction() {
@@ -140,7 +137,7 @@ export class LatinAmericaPredict {
     const start = Number(yearStart);
     const diffYears = Number(yearEnd) - start;
 
-    this.dashboardService.predictPovertyByAgeMulti( country, area, age_ranges, start, diffYears);
+    this.dashboardService.predictPovertyByAgeMulti(country, area, age_ranges, start, diffYears);
   }
 
   private validateForm(form: FormGroup, errorSignal: ReturnType<typeof signal<string>>): boolean {
@@ -148,7 +145,7 @@ export class LatinAmericaPredict {
       form.markAllAsTouched();
       if (form.get('countries')?.hasError('maxlength')) {
         errorSignal.set('Puedes seleccionar máximo 5 elementos para comparar');
-      } 
+      }
       else {
         errorSignal.set('Ingresa datos válidos en todos los campos');
       }
@@ -189,6 +186,5 @@ export class LatinAmericaPredict {
   toggleSidebar() {
     this.sidebarOpen.update(open => !open);
   }
-
 
 }

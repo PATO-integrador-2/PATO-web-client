@@ -31,49 +31,66 @@ export interface FilterModalData {
 })
 export class FilterModal {
   private dialogRef = inject(MatDialogRef<FilterModal>);
-  public data = inject<any>(MAT_DIALOG_DATA);
+  public data = inject<FilterModalData>(MAT_DIALOG_DATA);
 
-  selectedFilters!: {
-    year?: number;
-    domain?: string;
-    country?: string;
-    area?: string;
-    region?: string;
-    dept?: string;
-  };
+  selectedFilters: NonNullable<FilterModalData['currentFilters']> = {};
 
   availableYears: number[] = [];
-  availableCountries: string[] = [];
-  availableAreas: string[] = [];
   availableDomains: string[] = [];
+  availableAreas: string[] = [];
+  availableCountries: string[] = [];
   availableRegions: string[] = [];
   availableDepts: string[] = [];
 
   ngOnInit() {
-    this.selectedFilters = {
-      year: this.data.currentFilters?.year,
-      domain: this.data.currentFilters?.domain,
-      country: this.data.currentFilters?.country,
-      area: this.data.currentFilters?.area,
-      region: this.data.currentFilters?.region,
-      dept: this.data.currentFilters?.dept,
-    };
+  const current = this.data.currentFilters || {};
 
-    if (this.data.widget?.getYearsSignal) {
-      this.availableYears = this.data.widget.getYearsSignal();
-    }
-
-    if (!this.selectedFilters.year && this.availableYears.length > 0) {
-      this.selectedFilters.year = this.availableYears[0];
-    }
-
-    // Cargar Áreas y Países en cascada al iniciar
-    this.updateAreasAndCountries();
-    this.updateRegionsAndDepts();
+  // Cargar años disponibles
+  if (this.data.widget?.getYearsSignal) {
+    this.availableYears = this.data.widget.getYearsSignal();
   }
 
+  // Cargar dominios disponibles
+  if (this.data.widget?.getDomainsSignal) {
+    this.availableDomains = this.data.widget.getDomainsSignal();
+  }
+
+  // Establecer el año inicial
+  const initialYear = current.year && this.availableYears.includes(Number(current.year))
+    ? Number(current.year)
+    : (this.availableYears.length > 0 ? this.availableYears[0] : undefined);
+
+  this.selectedFilters = {
+    year: initialYear,
+    domain: current.domain,
+    country: current.country,
+    area: current.area,
+    region: current.region,
+    dept: current.dept,
+  };
+
+  // Refrescar todos los filtros
+  this.refreshAllFilters();
+
+  if (current.country && this.availableCountries.length > 0) {
+    const matchedCountry = this.availableCountries.find(
+      c => c.toLowerCase().trim() === String(current.country).toLowerCase().trim()
+    );
+    if (matchedCountry) this.selectedFilters.country = matchedCountry;
+  }
+
+  if (current.area && this.availableAreas.length > 0) {
+    const matchedArea = this.availableAreas.find(
+      a => a.toLowerCase().trim() === String(current.area).toLowerCase().trim()
+    );
+    if (matchedArea) this.selectedFilters.area = matchedArea;
+  }
+}
+
+  // Eventos de Interfaz 
+
   onYearChange() {
-    this.updateAreasAndCountries();
+    this.refreshAllFilters();
   }
 
   onAreaChange() {
@@ -84,65 +101,63 @@ export class FilterModal {
     this.updateDepts();
   }
 
-  private updateAreasAndCountries() {
-    // 1. Cargar Áreas
-    if (this.data.widget?.getAreasByYear && this.selectedFilters.year) {
-      this.availableAreas = this.data.widget.getAreasByYear(this.selectedFilters.year);
-      if (!this.availableAreas.includes(this.selectedFilters.area || '')) {
-        this.selectedFilters.area = this.availableAreas[0] || '';
-      }
+  // Lógica 
+
+  private refreshAllFilters() {
+    const year = this.selectedFilters.year;
+    if (!year) return;
+
+    const widget = this.data.widget;
+
+    // Dominios
+    if (widget?.getDomainsByYear) {
+      this.availableDomains = widget.getDomainsByYear(year);
     }
 
-    // 2. Cargar Países según el Año y Área seleccionados
+    // Áreas
+    if (widget?.getAreasByYear) {
+      this.availableAreas = widget.getAreasByYear(year);
+    }
+
+    // Regiones
+    if (widget?.getRegionsByYear) {
+      this.availableRegions = widget.getRegionsByYear(year);
+    }
+
+    // Países y departamentos
     this.updateCountries();
-  }
-
-  private updateCountries() {
-    if (!this.selectedFilters.year) return;
-
-    if (this.data.widget?.getCountriesByYearAndArea && this.selectedFilters.area) {
-      this.availableCountries = this.data.widget.getCountriesByYearAndArea(
-        this.selectedFilters.year,
-        this.selectedFilters.area
-      );
-    } else if (this.data.widget?.getCountriesByYear) {
-      this.availableCountries = this.data.widget.getCountriesByYear(this.selectedFilters.year);
-    }
-
-    if (!this.availableCountries.includes(this.selectedFilters.country || '')) {
-      this.selectedFilters.country = this.availableCountries[0] || '';
-    }
-  }
-
-  private updateRegionsAndDepts() {
-    // 1. Cargar regiones
-    if (this.data.widget?.getRegionsByYear && this.selectedFilters.year) {
-      this.availableRegions = this.data.widget.getRegionsByYear(this.selectedFilters.year);
-      if (!this.availableRegions.includes(this.selectedFilters.region || '')) {
-        this.selectedFilters.region = this.availableRegions[0] || '';
-      }
-    }
-
-    // 2. Cargar Países según el Año y Área seleccionados
     this.updateDepts();
   }
 
-  private updateDepts() {
-    if (!this.selectedFilters.year) return;
+  private updateCountries() {
+    const { year, area } = this.selectedFilters;
+    if (!year) return;
 
-    if (this.data.widget?.getDeptsByYearAndRegion && this.selectedFilters.region) {
-      this.availableDepts = this.data.widget.getDeptsByYearAndRegion(
-        this.selectedFilters.year,
-        this.selectedFilters.region
-      );
-    } else if (this.data.widget?.getDeptsByYear) {
-      this.availableDepts = this.data.widget.getDeptsByYear(this.selectedFilters.year);
+    const widget = this.data.widget;
+    if (widget?.getCountriesByYearAndArea && area) {
+      this.availableCountries = widget.getCountriesByYearAndArea(year, area as string);
+    } else if (widget?.getCountriesByYear) {
+      this.availableCountries = widget.getCountriesByYear(year as number);
+    } else {
+      this.availableCountries = [];
     }
 
-    if (!this.availableDepts.includes(this.selectedFilters.dept || '')) {
-      this.selectedFilters.dept = this.availableDepts[0] || '';
-    }
   }
+
+  private updateDepts() {
+    const { year, region } = this.selectedFilters;
+    if (!year) return;
+
+    const widget = this.data.widget;
+    
+    if (widget?.getDeptsByYearAndRegion && region) {
+      this.availableDepts = widget.getDeptsByYearAndRegion(year as number, region as string);
+    } else {
+      this.availableDepts = [];
+    }
+
+  }
+
 
   apply() {
     this.dialogRef.close(this.selectedFilters);

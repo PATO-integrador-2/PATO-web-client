@@ -41,7 +41,7 @@ export class MPHouseholdsDep {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       // Disparar la carga inicial de datos desde el backend
-      this.dashboardService.loadIndicatorsData(2024, 'Orinoquía', 'Arauca');
+      this.dashboardService.loadIndicatorsData(2024, 'Orinoquía - Amazonía', 'Arauca');
     }
   }
 
@@ -89,7 +89,7 @@ export class MPHouseholdsDep {
         labels: privationsMap.map(p => p.label),
         datasets: [
           {
-            label: `Porcentaje de privación - ${items[0].personas_que_habitan_ese_hogar} personas en el hogar - ${items[0].region} - ${items[0].departamento} (${items[0].anio})`,
+            label: `IPM: ${items[0].ipm}% - Personas en el hogar: ${items[0].personas_que_habitan_ese_hogar} - Región: [${items[0].region}] - Departamento: ${items[0].departamento} (${items[0].anio})`,
             data: privationsMap.map(p => p.value),
             backgroundColor: [
               'rgb(255, 99, 133)',

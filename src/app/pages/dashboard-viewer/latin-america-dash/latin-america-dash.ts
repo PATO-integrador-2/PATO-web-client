@@ -25,22 +25,12 @@ export class LatinAmericaDash {
 
   // Estado local para recordar qué valores tiene seleccionados cada tarjeta
   private currentFilters: Record<string, { year?: number; country?: string; area?: string }> = {
-    'contribution': { year: 2024, country: 'Colombia' },
-    'population': { year: 2024, area: 'Rural', country: 'Colombia' },
-    'poverty': { year: 2024, area: 'Rural', country: 'Colombia' },
+    1: { year: 2023, country: 'Colombia' },
+    2: { year: 2024, area: 'National', country: 'Ecuador' },
+    3: { year: 2024, area: 'National', country: 'Ecuador' },
   };
 
-  private route = inject(ActivatedRoute);
-
   ngOnInit() {
-    const params = this.route.snapshot.queryParamMap;
-    const year = Number(params.get('year')) || 2024;
-    const country = params.get('country') || 'Colombia';
-    Object.values(this.currentFilters).forEach(filters => {
-      filters.year = year;
-      filters.country = country;
-    });
-
     // Carga los datos iniciales ejecutando la función de cada widget
     this.dashboardService.widgets().forEach((widget) => {
       widget.loadData(this.currentFilters[widget.id]);

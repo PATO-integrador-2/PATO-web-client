@@ -43,7 +43,7 @@ export class ContributionDeprivations {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       // Disparar la carga inicial de datos desde el backend
-      this.dashboardService.loadDeprivationContributionData(2024, 'Colombia');
+      this.dashboardService.loadDeprivationContributionData(2023, 'Colombia');
     }
   }
 

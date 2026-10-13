@@ -25,10 +25,13 @@ export class ColNationalDash {
 
   // Estado local para recordar qué valores tiene seleccionados cada tarjeta
   private currentFilters: Record<string, { year?: number; domain?: string }> = {
-    'ipm': { year: 2024 },
-    'privations': { year: 2024, domain: 'Nacional' },
-    'intensity': { year: 2024 },
-    'contribution': { year: 2024, domain: 'Nacional' }
+    1: { year: 2024 },
+    2: { year: 2024, domain: 'Cabeceras' },
+    3: { domain: 'Antioquia' },
+    4: { year: 2024, domain: 'Oriental' },
+    5: { year: 2024},
+    6: { domain: 'Caribe'},
+
   };
 
   ngOnInit() {

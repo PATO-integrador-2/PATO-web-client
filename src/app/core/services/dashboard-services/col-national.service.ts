@@ -1,6 +1,6 @@
 import { Service, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PmiApiResponse, DeprivationsItem, WidgetItem, IntensityPovertyItem, ContributionImpactItem, MpiSexItem, MpiBossSexItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
+import { DeprivationsItem, WidgetItem, IntensityPovertyItem, ContributionImpactItem, MpiSexItem, MpiBossSexItem, WidgetItemDash, MpiItem } from '../../../interfaces/ipm.interface';
 import { environment } from '../../../../environments/environment.development';
 import { RadarDeprivations } from '../../../pages/dashboard-viewer/col-national-dash/widgets/radar-deprivations/radar-deprivations';
 import { MpiSex } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi-sex/mpi-sex';
@@ -9,6 +9,7 @@ import { MpiBossSex } from '../../../pages/dashboard-viewer/col-national-dash/wi
 import { isPlatformBrowser } from '@angular/common';
 import { Mpi } from '../../../pages/dashboard-viewer/col-national-dash/widgets/mpi/mpi';
 import { ContributionsImpact } from '../../../pages/dashboard-viewer/col-national-dash/widgets/contributions-impact/contributions-impact';
+import { signalGetFn } from '@angular/core/primitives/signals';
 
 @Service()
 export class ColNationalService {
@@ -21,10 +22,10 @@ export class ColNationalService {
             label: 'Incidencia de Pobreza Multidimensional',
             content: Mpi,
             filterFields: ['year'],
-            getYearsSignal: () => this.pmiYears(),
+            getYearsSignal: () => this.getMpiYears(),
             loadData: (f) => {
                 const selectedYear = f?.year ?? 2025;
-                this.loadIpmData(selectedYear);
+                this.loadMpiData(selectedYear);
             }
         },
         {
@@ -32,12 +33,12 @@ export class ColNationalService {
             label: 'Privaciones por hogar',
             content: RadarDeprivations,
             filterFields: ['year', 'domain'],
-            getYearsSignal: () => this.deprivationYears(),
-            getDomainsByYear: () => this.deprivationDomains(),
+            getYearsSignal: () => this.getDeprivationsYears(),
+            getDomainsByYear: (year?: number) => this.getDeprivationsDomainsByYear(year),
             loadData: (f) => {
-                const selectedYear = f?.year ?? 2025;
-                const selectedDomain = f?.domain ?? 'Nacional';
-                this.loadPrivationsData(selectedDomain, selectedYear);
+                const selectedYear = f?.year ?? 2024;
+                const selectedDomain = f?.domain ?? 'Cabeceras';
+                this.loadDeprivationsData(selectedYear, selectedDomain);
             }
         },
         {
@@ -45,10 +46,10 @@ export class ColNationalService {
             label: 'Incidencia de Pobreza Multidimensioanl según sexo de la persona ',
             content: MpiSex,
             filterFields: ['domain'],
-            getDomainsByYear: () => this.mpiSexDomains(),
+            getDomainsSignal: () => this.getMpiSexDomains(),
             loadData: (f) => {
-                const selectedDomain = f?.domain ?? 'Cabeceras';
-                this.loadIpmSexData(selectedDomain);
+                const selectedDomain = f?.domain ?? 'Antioquia';
+                this.loadMpiSexData(selectedDomain);
             }
 
         },
@@ -57,12 +58,12 @@ export class ColNationalService {
             label: 'Contribuciones a la incidencia Ajustada del IPM',
             content: ContributionsImpact,
             filterFields: ['year', 'domain'],
-            getYearsSignal: () => this.constributionYears(),
-            getDomainsByYear: () => this.constributionDomains(),
+            getYearsSignal: () => this.getContributionImpactYears(),
+            getDomainsByYear: (year?: number) => this.getContributionImpactDomainsByYear(year),
             loadData: (f) => {
                 const selectedYear = f?.year ?? 2025;
                 const selectedDomain = f?.domain ?? 'Nacional';
-                this.loadContributionsImpact(selectedDomain, selectedYear);
+                this.loadContributionImpactData(selectedYear, selectedDomain);
             }
         },
         {
@@ -70,228 +71,424 @@ export class ColNationalService {
             label: 'Proporción de privaciones entre las personas en situación de Pobreza Multidimensional',
             content: IntensityPoverty,
             filterFields: ['year'],
-            getYearsSignal: () => this.intensityYears(),
+            getYearsSignal: () => this.getIntensityPovertyYears(),
             loadData: (f) => {
                 const selectedYear = f?.year ?? 2025;
                 this.loadIntensityPovertyData(selectedYear);
             }
         },
-        
+
         {
             id: 6,
             label: 'Incidencia de Pobreza Multidimensioanl según sexo del jefe del hogar',
             content: MpiBossSex,
             filterFields: ['domain'],
-            getDomainsByYear: () => this.mpiSexDomains(),
+            getDomainsSignal: () => this.getMpiBossSexDomains(),
             loadData: (f) => {
-                const selectedDomain = f?.domain ?? 'Cabeceras';
-                this.loadIpmBossSexData(selectedDomain);
+                const selectedDomain = f?.domain ?? 'Antioquia';
+                this.loadMpiBossSexData(selectedDomain);
             }
 
         },
 
     ]);
 
-    private IPM_URL = `${environment.apiAddr}/api/users/ipm-by-domain`;
-    pmiData = signal<PmiApiResponse[]>([]);
-    pmiYears = signal<number[]>([]);
+    private mpi_url = `${environment.apiAddr}/api/users/ipm-by-domain`;
+    private rawMpiData = signal<MpiItem[]>([]);
+    mpiData = signal<MpiItem[]>([]);
 
-    loadIpmData(year: number) {
+    fetchMpiData(year?: number) {
         if (!isPlatformBrowser(this.platformId)) return;
 
-        this.httpClient.get<PmiApiResponse[]>(this.IPM_URL).subscribe({
+        this.httpClient.get<MpiItem[]>(this.mpi_url).subscribe({
             next: (data) => {
                 if (!data || data.length === 0) return;
 
-                // Extraer todos los años 
-                const years = [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
-                this.pmiYears.set(years);
+                // Guardar todos los datos recibidos
+                this.rawMpiData.set(data);
 
-                // Filtrar los datos para el año que viene por parámetro
-                const filteredData = data.filter(
-                    (d) => Number(d.anio) === Number(year)
-                );
+                // Determinar el año 
+                const availableYears = this.getMpiYears();
+                const targetYear = year && availableYears.includes(Number(year))
+                    ? Number(year)
+                    : availableYears[0];
 
-                this.pmiData.set(filteredData);
+                // Filtrar y emitir el resultado inicial
+                this.loadMpiData(targetYear,);
             },
-            error: (err) => console.error('Error al cargar datos IPM:', err),
+            error: (err) => console.error('Error al cargar datos IPM de la API:', err),
         });
-
     }
 
-    private DEPRIVATIONS_URL = `${environment.apiAddr}/api/users/deprivations-by-variable`;
+    getMpiYears(): number[] {
+        const data = this.rawMpiData();
+        return [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
+    }
+
+    loadMpiData(year: number) {
+        const data = this.rawMpiData();
+
+        // Si no se han descargado los datos aún, llamar a la API
+        if (data.length === 0) {
+            this.fetchMpiData(year);
+            return;
+        }
+
+
+        let filteredData = data.filter(
+            (d) =>
+                Number(d.anio) === Number(year)
+        );
+
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y país disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+            const fallbackYear = data[0].anio;
+            filteredData = data.filter(
+                (d) => Number(d.anio) === Number(fallbackYear)
+            );
+        }
+
+        this.mpiData.set(filteredData);
+    }
+
+    private deprivations_url = `${environment.apiAddr}/api/users/deprivations-by-variable`;
+    rawDeprivationsData = signal<DeprivationsItem[]>([]);
     deprivationsData = signal<DeprivationsItem[]>([]);
-    deprivationYears = signal<number[]>([]);
-    deprivationDomains = signal<string[]>([]);
 
-    loadPrivationsData(domain: string, year: number) {
+    fetchDeprivationsData(year?: number, domain?: string) {
         if (!isPlatformBrowser(this.platformId)) return;
 
-        this.httpClient.get<DeprivationsItem[]>(this.DEPRIVATIONS_URL).subscribe({
+        this.httpClient.get<DeprivationsItem[]>(this.deprivations_url).subscribe({
             next: (data) => {
                 if (!data || data.length === 0) return;
 
-                const years = [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
-                this.deprivationYears.set(years);
+                // Guardar todos los datos recibidos
+                this.rawDeprivationsData.set(data);
 
-                const domainsForSelectedYear = [
-                    ...new Set(
-                        data
-                            .filter((d) => Number(d.anio) === Number(year))
-                            .map((d) => d.dominio?.trim())
-                            .filter(Boolean) as string[]
-                    ),
-                ];
-                this.deprivationDomains.set(domainsForSelectedYear);
+                // Determinar el año y el dominio a mostrar de forma segura
+                const availableYears = this.getDeprivationsYears();
+                const targetYear = year && availableYears.includes(Number(year))
+                    ? Number(year)
+                    : availableYears[0];
 
-                const filtered = data.filter(
-                    (d) =>
-                        d.dominio?.toLowerCase().trim() === String(domain).toLowerCase().trim() &&
-                        Number(d.anio) === Number(year)
-                );
+                const availableDomains = this.getDeprivationsDomainsByYear(targetYear);
+                const targetDomain = domain && availableDomains.some(c => c.toLowerCase() === domain.toLowerCase())
+                    ? domain
+                    : availableDomains[0];
 
-                // Si hay coincidencias se guarda la lista, si no, fallback a los primeros datos
-                this.deprivationsData.set(filtered.length > 0 ? filtered : data);
+                // Filtrar y emitir el resultado inicial
+                this.loadDeprivationsData(targetYear, targetDomain);
             },
-            error: (err) => console.error('Error al cargar privaciones:', err),
+            error: (err) => console.error('Error al cargar datos IPM de la API:', err),
         });
     }
 
-    private INTENSITY_POVERTY_URL = `${environment.apiAddr}/api/users/average-deprivations`;
+    getDeprivationsYears(): number[] {
+        const data = this.rawDeprivationsData();
+        return [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
+    }
+
+    getDeprivationsDomainsByYear(year?: number | string): string[] {
+        const data = this.rawDeprivationsData();
+        if (!year) return [];
+
+        return [
+            ...new Set(
+                data
+                    .filter((d) => Number(d.anio) === Number(year))
+                    .map((d) => d.dominio?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
+
+    loadDeprivationsData(year: number, domain: string) {
+        const data = this.rawDeprivationsData();
+
+        // Si no se han descargado los datos aún, llamar a la API
+        if (data.length === 0) {
+            this.fetchDeprivationsData(year, domain);
+            return;
+        }
+
+        let filteredData = data.filter(
+            (d) =>
+                Number(d.anio) === Number(year) &&
+                d.dominio?.toLowerCase().trim() === String(domain).toLowerCase().trim()
+        );
+
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y país disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+            const fallbackYear = data[0].anio;
+            const fallbackCountry = data[0].dominio;
+            filteredData = data.filter(
+                (d) => Number(d.anio) === Number(fallbackYear) && d.dominio === fallbackCountry
+            );
+        }
+
+        this.deprivationsData.set(filteredData);
+    }
+
+    private intensity_poverty_url = `${environment.apiAddr}/api/users/average-deprivations`;
+    private rawIntensityPovertyData = signal<IntensityPovertyItem[]>([]);
     intensityPovertyData = signal<IntensityPovertyItem[]>([]);
-    intensityYears = signal<number[]>([]);
+
+    fetchIntensityPovertyData(year?: number) {
+        if (!isPlatformBrowser(this.platformId)) return;
+
+        this.httpClient.get<IntensityPovertyItem[]>(this.intensity_poverty_url).subscribe({
+            next: (data) => {
+                if (!data || data.length === 0) return;
+
+                // Guardar todos los datos recibidos
+                this.rawIntensityPovertyData.set(data);
+
+                // Determinar el año 
+                const availableYears = this.getMpiYears();
+                const targetYear = year && availableYears.includes(Number(year))
+                    ? Number(year)
+                    : availableYears[0];
+
+                // Filtrar y emitir el resultado inicial
+                this.loadIntensityPovertyData(targetYear,);
+            },
+            error: (err) => console.error('Error al cargar datos intensidad de pobreza de la API:', err),
+        });
+    }
+
+    getIntensityPovertyYears(): number[] {
+        const data = this.rawIntensityPovertyData();
+        return [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
+    }
 
     loadIntensityPovertyData(year: number) {
-        if (!isPlatformBrowser(this.platformId)) return;
+        const data = this.rawIntensityPovertyData();
 
-        this.httpClient.get<IntensityPovertyItem[]>(this.INTENSITY_POVERTY_URL).subscribe({
-            next: (data) => {
-                if (!data || data.length === 0) return;
+        // Si no se han descargado los datos aún, llamar a la API
+        if (data.length === 0) {
+            this.fetchIntensityPovertyData(year);
+            return;
+        }
 
-                // Extraer todos los años 
-                const years = [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
-                this.intensityYears.set(years);
 
-                // Filtrar los datos para el año que viene por parámetro
-                const filteredData = data.filter(
-                    (d) => Number(d.anio) === Number(year)
-                );
+        let filteredData = data.filter(
+            (d) =>
+                Number(d.anio) === Number(year)
+        );
 
-                this.intensityPovertyData.set(filteredData);
-            },
-            error: (err) => console.error('Error al cargar datos IPM:', err),
-        });
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y país disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+            const fallbackYear = data[0].anio;
+            filteredData = data.filter(
+                (d) => Number(d.anio) === Number(fallbackYear)
+            );
+        }
 
+        this.intensityPovertyData.set(filteredData);
     }
 
+    private contribution_impact_url = `${environment.apiAddr}/api/users/dimension-contribution`;
+    rawContributionImpactData = signal<ContributionImpactItem[]>([]);
     contributionImpactData = signal<ContributionImpactItem[]>([]);
-    private constribution_URL = `${environment.apiAddr}/api/users/dimension-contribution`;
-    constributionYears = signal<number[]>([]);
-    constributionDomains = signal<string[]>([]);
 
-    loadContributionsImpact(domain: string, year: number) {
+    fetchContributionImpactData(year?: number, domain?: string) {
         if (!isPlatformBrowser(this.platformId)) return;
-        this.httpClient.get<ContributionImpactItem[]>(this.constribution_URL).subscribe({
+
+        this.httpClient.get<ContributionImpactItem[]>(this.contribution_impact_url).subscribe({
             next: (data) => {
                 if (!data || data.length === 0) return;
 
-                // Extraer todos los años
-                const years = [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
-                this.constributionYears.set(years);
+                // Guardar todos los datos recibidos
+                this.rawContributionImpactData.set(data);
 
-                // Extraer los dominios únicos que pertenecen al año seleccionado
-                const domainsForSelectedYear = [
-                    ...new Set(
-                        data
-                            .filter((d) => Number(d.anio) === Number(year))
-                            .map((d) => d.dominio?.trim())
-                            .filter(Boolean) as string[]
-                    ),
-                ];
-                this.constributionDomains.set(domainsForSelectedYear);
+                // Determinar el año y el dominio a mostrar de forma segura
+                const availableYears = this.getContributionImpactYears();
+                const targetYear = year && availableYears.includes(Number(year))
+                    ? Number(year)
+                    : availableYears[0];
 
-                // Filtrar los datos por año y dominio
-                const filteredData = data.filter(
-                    (d) =>
-                        Number(d.anio) === Number(year) &&
-                        d.dominio?.toLowerCase().trim() === String(domain).toLowerCase().trim()
-                );
+                const availableDomains = this.getContributionImpactDomainsByYear(targetYear);
+                const targetDomain = domain && availableDomains.some(c => c.toLowerCase() === domain.toLowerCase())
+                    ? domain
+                    : availableDomains[0];
 
-                // Si hay coincidencias se guarda la lista, si no, fallback a los primeros datos
-                this.contributionImpactData.set(filteredData.length > 0 ? filteredData : data);
+                // Filtrar y emitir el resultado inicial
+                this.loadContributionImpactData(targetYear, targetDomain);
             },
-
-            error: (err) => console.error('Error al cargar contribuciones:', err),
-
+            error: (err) => console.error('Error al cargar datos IPM de la API:', err),
         });
+    }
+
+    getContributionImpactYears(): number[] {
+        const data = this.rawContributionImpactData();
+        return [...new Set(data.map((d) => Number(d.anio)))].sort((a, b) => b - a);
+    }
+
+    getContributionImpactDomainsByYear(year?: number | string): string[] {
+        const data = this.rawContributionImpactData();
+        if (!year) return [];
+
+        return [
+            ...new Set(
+                data
+                    .filter((d) => Number(d.anio) === Number(year))
+                    .map((d) => d.dominio?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
+
+    loadContributionImpactData(year: number, domain: string) {
+        const data = this.rawContributionImpactData();
+
+        // Si no se han descargado los datos aún, llamar a la API
+        if (data.length === 0) {
+            this.fetchContributionImpactData(year, domain);
+            return;
+        }
+
+        let filteredData = data.filter(
+            (d) =>
+                Number(d.anio) === Number(year) &&
+                d.dominio?.toLowerCase().trim() === String(domain).toLowerCase().trim()
+        );
+
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y país disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+            const fallbackYear = data[0].anio;
+            const fallbackCountry = data[0].dominio;
+            filteredData = data.filter(
+                (d) => Number(d.anio) === Number(fallbackYear) && d.dominio === fallbackCountry
+            );
+        }
+
+        this.contributionImpactData.set(filteredData);
     }
 
     private mpi_sex_url = `${environment.apiAddr}/api/users/incidence-by-person-sex`;
+    rawMpiSexData = signal<MpiSexItem[]>([]);
     mpiSexData = signal<MpiSexItem[]>([]);
-    mpiSexDomains = signal<string[]>([]);
 
-    loadIpmSexData(domain: string) {
+    fetchMpiSexData(domain?: string) {
         if (!isPlatformBrowser(this.platformId)) return;
 
         this.httpClient.get<MpiSexItem[]>(this.mpi_sex_url).subscribe({
             next: (data) => {
                 if (!data || data.length === 0) return;
 
-                // Extraer todos los dominios únicos 
-                const domains = [
-                    ...new Set(
-                        data
-                            .map((d) => d.dominio?.trim())
-                            .filter(Boolean) as string[]
-                    ),
-                ].sort();
+                // Guardar todos los datos recibidos
+                this.rawMpiSexData.set(data);
 
-                this.mpiSexDomains.set(domains);
+                // Determinar el dominio a mostrar
+                const availableDomains = this.getMpiSexDomains();
+                const targetDomain = domain && availableDomains.some(c => c.toLowerCase() === domain.toLowerCase())
+                    ? domain
+                    : availableDomains[0];
 
-                // Filtrar los datos correspondientes al dominio recibido por parámetro
-                const filteredData = data.filter(
-                    (d) => d.dominio?.toLowerCase().trim() === String(domain).toLowerCase().trim()
-                );
-
-                // Si hay coincidencias se guarda la lista, si no, fallback a los primeros datos
-                this.mpiSexData.set(filteredData.length > 0 ? filteredData : data);
+                // Filtrar y emitir el resultado inicial
+                this.loadMpiSexData(targetDomain);
             },
-            error: (err) => console.error('Error al cargar datos IPM:', err),
+            error: (err) => console.error('Error al cargar datos de ipm por sexo de la API:', err),
         });
     }
 
-    private mpi_boss_sex_url = `${environment.apiAddr}/api/users/incidence-by-household-head-sex`;
-    mpiBossSexData = signal<MpiBossSexItem[]>([]);
-    mpiBossDomains = signal<string[]>([]);
+    getMpiSexDomains(): string[] {
+        const data = this.rawMpiSexData();
+        return [
+            ...new Set(
+                data
+                    .map((d) => d.dominio?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
 
-    loadIpmBossSexData(domain: string) {
+    loadMpiSexData(domain: string) {
+        const data = this.rawMpiSexData();
+
+        // Si no se han descargado los datos aún, llamar a la API
+        if (data.length === 0) {
+            this.fetchMpiSexData(domain);
+            return;
+        }
+
+        let filteredData = data.filter(
+            (d) =>
+                d.dominio?.toLowerCase().trim() === String(domain).toLowerCase().trim()
+        );
+
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y país disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+            const fallbackDomain = data[0].dominio;
+            filteredData = data.filter(
+                (d) => d.dominio === fallbackDomain
+            );
+        }
+
+        this.mpiSexData.set(filteredData);
+    }
+
+    private mpi_boss_sex_url = `${environment.apiAddr}/api/users/incidence-by-household-head-sex`;
+    rawMpiBossSexData = signal<MpiBossSexItem[]>([]);
+    mpiBossSexData = signal<MpiBossSexItem[]>([]);
+
+    fetchMpiBossSexData(domain?: string) {
         if (!isPlatformBrowser(this.platformId)) return;
 
         this.httpClient.get<MpiBossSexItem[]>(this.mpi_boss_sex_url).subscribe({
             next: (data) => {
                 if (!data || data.length === 0) return;
 
-                // Extraer todos los dominios únicos 
-                const domains = [
-                    ...new Set(
-                        data
-                            .map((d) => d.dominio?.trim())
-                            .filter(Boolean) as string[]
-                    ),
-                ].sort();
+                // Guardar todos los datos recibidos
+                this.rawMpiBossSexData.set(data);
 
-                this.mpiBossDomains.set(domains);
+                // Determinar el dominio a mostrar
+                const availableDomains = this.getMpiBossSexDomains();
+                const targetDomain = domain && availableDomains.some(c => c.toLowerCase() === domain.toLowerCase())
+                    ? domain
+                    : availableDomains[0];
 
-                // Filtrar los datos correspondientes al dominio recibido por parámetro
-                const filteredData = data.filter(
-                    (d) => d.dominio?.toLowerCase().trim() === String(domain).toLowerCase().trim()
-                );
-
-                // Si hay coincidencias se guarda la lista, si no, fallback a los primeros datos
-                this.mpiBossSexData.set(filteredData.length > 0 ? filteredData : data);
+                // Filtrar y emitir el resultado inicial
+                this.loadMpiBossSexData(targetDomain);
             },
-            error: (err) => console.error('Error al cargar datos IPM:', err),
+            error: (err) => console.error('Error al cargar datos de ipm por sexo de jefe del hogar la API:', err),
         });
+    }
+
+    getMpiBossSexDomains(): string[] {
+        const data = this.rawMpiBossSexData();
+        return [
+            ...new Set(
+                data
+                    .map((d) => d.dominio?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
+
+    loadMpiBossSexData(domain: string) {
+        const data = this.rawMpiBossSexData();
+
+        // Si no se han descargado los datos aún, llamar a la API
+        if (data.length === 0) {
+            this.fetchMpiBossSexData(domain);
+            return;
+        }
+
+        let filteredData = data.filter(
+            (d) =>
+                d.dominio?.toLowerCase().trim() === String(domain).toLowerCase().trim()
+        );
+
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y país disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+            const fallbackDomain = data[0].dominio;
+            filteredData = data.filter(
+                (d) => d.dominio === fallbackDomain
+            );
+        }
+
+        this.mpiBossSexData.set(filteredData);
     }
 
 }

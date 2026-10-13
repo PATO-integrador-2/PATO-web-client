@@ -196,7 +196,7 @@
                     <!-- PANEL 5: PREDICCIÓN DE INCIDENCIA POR SEXO -->
                     <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
                         <mat-expansion-panel-header>
-                            <mat-panel-title> IPM según sexo del jefe del hogar </mat-panel-title>
+                            <mat-panel-title> IPM según sexo de la persona </mat-panel-title>
                         </mat-expansion-panel-header>
 
                         <form [formGroup]="incidenceBySexForm" (ngSubmit)="incidenceBySexPrediction()"
