@@ -31,7 +31,6 @@ export const CHAT_SOCKET_FACTORY = new InjectionToken<ChatSocketFactory>('CHAT_S
 
 export const CHAT_WS_PATH = '/api/users/chat/ws';
 export const AUTH_TOKEN_KEY = 'authToken';
-const TEMPORARY_CONVERSATION_ID = 'test-postman';
 const WS_OPEN = 1;
 
 /**
@@ -124,7 +123,7 @@ export class ChatService implements OnDestroy {
     }
 
     const payload: ChatSendPayload = {
-      conversationId: TEMPORARY_CONVERSATION_ID,
+      conversationId,
       message: text,
     };
     this.inFlightLocalId = localId;
