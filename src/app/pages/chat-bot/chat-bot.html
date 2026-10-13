@@ -1,83 +1,190 @@
 <app-navbar></app-navbar>
 
-<main class="chatbot-shell" aria-label="Chatbot">
-	<aside class="chat-sidebar">
-		<button class="new-chat-button" type="button">
-			<svg class="sidebar-action-icon" viewBox="0 0 24 24" aria-hidden="true">
-				<path d="M22.853,1.148a3.626,3.626,0,0,0-5.124,0L1.465,17.412A4.968,4.968,0,0,0,0,20.947V23a1,1,0,0,0,1,1H3.053a4.966,4.966,0,0,0,3.535-1.464L22.853,6.271A3.626,3.626,0,0,0,22.853,1.148ZM5.174,21.122A3.022,3.022,0,0,1,3.053,22H2V20.947a2.98,2.98,0,0,1,.879-2.121L15.222,6.483l2.3,2.3ZM21.438,4.857,18.932,7.364l-2.3-2.295,2.507-2.507a1.623,1.623,0,1,1,2.295,2.3Z" />
-			</svg>
-			<span>Nueva conversación</span>
-		</button>
+<div class="chatbot-shell" [class.sidebar-open]="sidebarOpen()">
+  <aside class="chat-sidebar" aria-label="Historial de conversaciones">
+    <button type="button" class="new-chat-button" (click)="newConversation()">
+      <svg class="sidebar-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+      </svg>
+      Nueva conversación
+    </button>
 
-		<button class="search-chat-button" type="button">
-			<svg class="sidebar-action-icon" viewBox="0 0 24 24" aria-hidden="true">
-				<path d="M23.707,22.293l-5.969-5.969a10.016,10.016,0,1,0-1.414,1.414l5.969,5.969a1,1,0,0,0,1.414-1.414ZM10,18a8,8,0,1,1,8-8A8.009,8.009,0,0,1,10,18Z" />
-			</svg>
-			<span>Buscar chat</span>
-		</button>
+    <button type="button" class="search-chat-button">
+      <svg class="sidebar-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+        />
+      </svg>
+      Buscar chat
+    </button>
 
-		<div class="sidebar-section">
-			<p class="sidebar-label">Historial de chats</p>
-			@for (conversation of conversations; track conversation) {
-				<div class="conversation-row" [class.active-conversation-row]="activeConversation === conversation">
-					<button class="conversation" type="button" (click)="selectConversation(conversation)">
-						{{ conversation }}
-					</button>
-					<button
-						class="delete-conversation-button"
-						type="button"
-						aria-label="Eliminar conversación"
-						(click)="requestConversationDeletion(conversation)"
-					>
-						×
-					</button>
-				</div>
-			}
-		</div>
-	</aside>
+    <nav aria-label="Conversaciones">
+      <p class="sidebar-label">Recientes</p>
 
-	<section class="chat-content">
-		<div class="chat-stage">
-			<div class="welcome-copy">
-				<h1>¿Qué planificarás hoy?</h1>
-			</div>
+      @if (conversations().length === 0) {
+        <p class="sidebar-empty">Aún no tienes conversaciones.</p>
+      }
 
-			<img class="chatbot-duck" src="assets/img/pato.png" alt="Pato del asistente" />
+      @for (conversation of conversations(); track conversation.localId) {
+        <div
+          class="conversation-row"
+          [class.active-conversation-row]="conversation.localId === activeLocalId()"
+        >
+          <button
+            type="button"
+            class="conversation"
+            [attr.aria-current]="conversation.localId === activeLocalId() ? 'true' : null"
+            (click)="selectConversation(conversation.localId)"
+          >
+            {{ conversation.title }}
+          </button>
+          <button
+            type="button"
+            class="delete-conversation-button"
+            [attr.aria-label]="'Eliminar conversación ' + conversation.title"
+            (click)="requestConversationDeletion(conversation)"
+          >
+            ×
+          </button>
+        </div>
+      }
+    </nav>
+  </aside>
 
-			<div class="composer-area">
-				<form class="composer" (ngSubmit)="submitQuestion()">
-					<input
-						type="text"
-						class="composer-input"
-						name="question"
-						[(ngModel)]="question"
-						autocomplete="off"
-						placeholder="Escribe tu pregunta..."
-						aria-label="Escribe tu pregunta"
-					/>
-					<button class="send-button" type="submit" aria-label="Enviar mensaje">↑</button>
-				</form>
-				<p class="composer-note">El asistente de chatbot puede cometer errores. Verifica la información importante.</p>
-			</div>
-		</div>
-	</section>
-</main>
+  @if (sidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="toggleSidebar()"></div>
+  }
 
-@if (conversationToDelete) {
-	<div class="modal-backdrop" (click)="cancelConversationDeletion()">
-		<section
-			class="delete-modal"
-			role="dialog"
-			aria-modal="true"
-			aria-labelledby="delete-modal-title"
-			(click)="$event.stopPropagation()"
-		>
-			<h2 id="delete-modal-title">¿Eliminar conversación?</h2>
-			<p>Esta conversación se eliminará del historial.</p>
-			<div class="modal-actions">
-				<button class="modal-cancel-button" type="button" (click)="cancelConversationDeletion()">Cancelar</button>
-				<button class="modal-delete-button" type="button" (click)="confirmConversationDeletion()">Eliminar</button>
-			</div>
-		</section>
-	</div>
+  <section class="chat-content">
+    <button
+      type="button"
+      class="sidebar-toggle"
+      aria-label="Abrir historial de conversaciones"
+      [attr.aria-expanded]="sidebarOpen()"
+      (click)="toggleSidebar()"
+    >
+      ☰
+    </button>
+
+    <div class="chat-stage" [class.chat-stage--conversation]="messages().length > 0">
+      @if (messages().length === 0) {
+        <div class="welcome-copy">
+          <span class="welcome-mark" aria-hidden="true">✦</span>
+          <h1>¿En qué puedo ayudarte hoy?</h1>
+        </div>
+        <img class="chatbot-duck" src="assets/img/pato.png" alt="PATO" />
+      } @else {
+        <div
+          #scroller
+          class="message-scroll"
+          role="log"
+          aria-live="polite"
+          aria-label="Conversación con el asistente"
+          [attr.aria-busy]="isStreaming()"
+          (scroll)="onScroll()"
+        >
+          <ol class="message-list">
+            @for (message of messages(); track message.id) {
+              <li
+                class="message"
+                [class.message--user]="message.role === 'user'"
+                [class.message--assistant]="message.role === 'assistant'"
+                [attr.data-status]="message.status"
+              >
+                <span class="visually-hidden">
+                  {{ message.role === 'user' ? 'Tú' : 'Asistente' }}:
+                </span>
+
+                @if (message.content) {
+                  <p class="message-text">{{ message.content }}</p>
+                }
+
+                @if (message.status === 'streaming') {
+                  <span class="typing" role="status" aria-label="El asistente está respondiendo">
+                    <span></span><span></span><span></span>
+                  </span>
+                }
+
+                @if (message.status === 'cancelled') {
+                  <p class="message-note">Respuesta cancelada.</p>
+                }
+
+                @if (message.status === 'error') {
+                  <p class="message-note message-note--error" role="alert">
+                    {{ activeError() || 'No se pudo completar la respuesta.' }}
+                  </p>
+                }
+
+                @if (message.id === retryableMessageId()) {
+                  <button type="button" class="retry-button" (click)="retryLastResponse()">
+                    Reintentar
+                  </button>
+                }
+              </li>
+            }
+          </ol>
+        </div>
+      }
+
+      <div class="composer-area" [class.composer-area--docked]="messages().length > 0">
+        <form class="composer" (ngSubmit)="submitQuestion()">
+          <textarea
+            name="question"
+            class="composer-input"
+            rows="1"
+            placeholder="Escribe tu pregunta"
+            aria-label="Escribe tu pregunta"
+            [(ngModel)]="question"
+            (keydown.enter)="onComposerEnter($event)"
+          ></textarea>
+
+          @if (isStreaming()) {
+            <button
+              type="button"
+              class="send-button send-button--stop"
+              aria-label="Detener respuesta"
+              (click)="cancelResponse()"
+            >
+              ■
+            </button>
+          } @else {
+            <button
+              type="submit"
+              class="send-button"
+              aria-label="Enviar pregunta"
+              [disabled]="!question.trim()"
+            >
+              ↑
+            </button>
+          }
+        </form>
+        <p class="composer-note">
+          PATO puede cometer errores. Verifica la información importante.
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+@if (conversationToDelete(); as target) {
+  <div class="modal-backdrop" (click)="cancelConversationDeletion()">
+    <div
+      class="delete-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-title"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 id="delete-title">Eliminar conversación</h2>
+      <p>¿Seguro que quieres eliminar «{{ target.title }}»? Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button type="button" class="modal-cancel-button" (click)="cancelConversationDeletion()">
+          Cancelar
+        </button>
+        <button type="button" class="modal-delete-button" (click)="confirmConversationDeletion()">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
 }
