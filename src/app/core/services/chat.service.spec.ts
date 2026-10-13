@@ -115,21 +115,20 @@ describe('ChatService', () => {
 
     sockets[0].open();
     expect(service.state()).toBe('streaming');
-    // Override temporal para probar el contrato con Postman.
     expect(JSON.parse(sockets[0].sent[0])).toEqual({
-      conversationId: 'test-postman',
+      conversationId: null,
       message: '¿Qué es el hacinamiento crítico?',
     });
     expect(sockets[0].sent[0]).not.toContain('local-1');
   });
 
-  it('envia el conversationId temporal de Postman aunque llegue otro ID', () => {
+  it('envia el conversationId recibido', () => {
     const service = setup();
     service.send('local-1', 'srv-42', '¿Cómo se mide?');
     sockets[0].open();
 
     expect(JSON.parse(sockets[0].sent[0])).toEqual({
-      conversationId: 'test-postman',
+      conversationId: 'srv-42',
       message: '¿Cómo se mide?',
     });
   });
