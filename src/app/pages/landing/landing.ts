@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLinkActive, RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+
 
 interface Capability {
   title: string;
@@ -26,7 +28,7 @@ interface TeamMember {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink],
+  imports: [RouterLinkActive, RouterLink, MatButtonModule],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

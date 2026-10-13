@@ -24,8 +24,8 @@
         <li><a href="#sobre-nosotros" (click)="closeMenu()">Sobre nosotros</a></li>
       </ul>
       <div class="nav__actions">
-        <a class="btn btn--accent" routerLink="/register">Registro</a>
-        <a class="btn btn--outline-light" routerLink="/login">Login</a>
+        <a mat-button matButton="filled" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" routerLink="/register">Registro</a>
+        <a mat-button matButton="outlined" class="custom-outlined-btn" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" routerLink="/register">Iniciar sesión</a>
       </div>
     </nav>
   </div>
@@ -41,8 +41,8 @@
           plataforma web.
         </p>
         <div class="hero__actions">
-          <a class="btn btn--primary" routerLink="/register">Crear cuenta</a>
-          <a class="btn btn--outline" routerLink="/login">Iniciar sesión</a>
+          <a mat-button matButton="filled" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" routerLink="/register">Crear cuenta</a>
+          <a mat-button matButton="outlined" class="custom-outlined-btn-2" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" routerLink="/register">Iniciar sesión</a>
         </div>
       </div>
       <div class="hero__media">
