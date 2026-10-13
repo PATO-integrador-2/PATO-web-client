@@ -1,11 +1,11 @@
 :host {
-  --green: #285750;
+  --green: #45867E;
   --ink: #1d2b27;
   --muted: #4d5c57;
   --paper: #fbf9f5;
   --sand: #ece7dc;
   --line: #d9d2c4;
-  --accent: #e2a43a;
+  --accent: #875945;
   --accent-hover: #cf9227;
   --radius: 6px;
   --header-h: 72px;
@@ -40,6 +40,17 @@ button:focus-visible {
 }
 
 /* Botones */
+.custom-outlined-btn {
+  color: white !important;
+  border-color: white !important;
+
+}
+
+.custom-outlined-btn-2 {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

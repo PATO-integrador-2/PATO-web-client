@@ -66,7 +66,9 @@ body {
 
   @include mat.button-overrides((filled-container-color: #875945,
       filled-label-text-color: white,
-      filled-container-shape: var(--mat-sys-corner-full)));
+      filled-container-shape: var(--mat-sys-corner-full),
+
+      outlined-container-shape: var(--mat-sys-corner-full)));
 
   @include mat.snack-bar-overrides((button-color: #875945,
       container-color: white,
