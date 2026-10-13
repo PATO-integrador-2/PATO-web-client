@@ -11,7 +11,7 @@ COPY . .
 RUN echo "\
 export const environment = {\
     production: ${PRODUCTION},\
-    apiAddr: '${APIADDR}'\
+    apiAddr: '${APIADDR}',\
     wsAddr: '${WSADDR}'\
 };" > ./src/environments/environment.development.ts
 
