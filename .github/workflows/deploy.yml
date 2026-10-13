@@ -27,6 +27,7 @@ jobs:
           export const environment = {\
               production: ${{secrets.PRODUCTION}},\
               apiAddr: '${{secrets.APIADDR}}'\
+              wsAddr: '${{secrets.APIADDR}}'\
           };" > ./src/environments/environment.development.ts
 
           npm install
