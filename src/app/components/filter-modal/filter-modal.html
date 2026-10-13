@@ -11,7 +11,7 @@
 
     <div class="fields-grid">
 
-        <!-- Desplegable de Año -->
+        <!-- Desplegable de año -->
         @if (data.filterFields?.includes('year')) {
         <mat-form-field appearance="outline">
             <mat-label>Año</mat-label>
@@ -34,7 +34,7 @@
         </mat-form-field>
         }
 
-        <!-- Desplegable de País -->
+        <!-- Desplegable de país -->
         @if (data.filterFields?.includes('country')) {
         <mat-form-field appearance="outline">
             <mat-label>País</mat-label>
@@ -64,6 +64,18 @@
             <mat-label>Departamentos</mat-label>
             <mat-select [(ngModel)]="selectedFilters.dept">
                 @for (d of availableDepts; track d) {
+                <mat-option [value]="d">{{ d }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        }
+
+        <!-- Desplegable de dominio -->
+        @if (data.filterFields?.includes('domain')) {
+        <mat-form-field appearance="outline">
+            <mat-label>Dominios</mat-label>
+            <mat-select [(ngModel)]="selectedFilters.domain">
+                @for (d of availableDomains; track d) {
                 <mat-option [value]="d">{{ d }}</mat-option>
                 }
             </mat-select>

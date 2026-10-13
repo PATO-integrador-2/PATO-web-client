@@ -1,6 +1,6 @@
 import { Service, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PmiApiResponse, DeprivationsItem, WidgetItem, IntensityPovertyItem, ContributionPovertyItem, NationalPovertyItem, PovertyByAgeItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
+import { ContributionPovertyItem, NationalPovertyItem, PovertyByAgeItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
 import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
 import { ContributionDeprivations } from '../../../pages/dashboard-viewer/latin-america-dash/widgets/contribution-deprivations/contribution-deprivations';
@@ -20,7 +20,7 @@ export class LatinAmericaService {
             getYearsSignal: () => this.getContributionYears(),
             getCountriesByYear: (year?: number) => this.getContributionCountriesByYear(year),
             loadData: (f) => {
-                const selectedYear = f?.year ?? 2024;
+                const selectedYear = f?.year ?? 2023;
                 const selectedCountry = f?.country ?? 'Colombia';
                 this.loadDeprivationContributionData(selectedYear, selectedCountry);
             }

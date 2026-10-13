@@ -41,7 +41,7 @@ export class PovertyByAge {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       // Disparar la carga inicial de datos desde el backend
-      this.dashboardService.loadPovertyByAgeData(2024, 'Urban', 'Colombia');
+      this.dashboardService.loadPovertyByAgeData(2024, 'National', 'Ecuador');
     }
   }
 

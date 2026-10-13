@@ -26,21 +26,11 @@ export class ColDeptDash {
   private filterModalService = inject(DashboardFilterService);
 
   // Estado local para recordar qué valores tiene seleccionados cada tarjeta
-  private currentFilters: Record<string, { year?: number; country?: string; area?: string }> = {
-    'indicators': { year: 2024, country: 'Colombia' },
+  private currentFilters: Record<string, { year?: number; region?: string; dept?: string }> = {
+    1: { year: 2024, region: 'Orinoquía - Amazonía', dept: 'Arauca' },
   };
 
-  private route = inject(ActivatedRoute);
-
   ngOnInit() {
-    const params = this.route.snapshot.queryParamMap;
-    const year = Number(params.get('year')) || 2024;
-    const country = params.get('country') || 'Colombia';
-    Object.values(this.currentFilters).forEach(filters => {
-      filters.year = year;
-      filters.country = country;
-    });
-
     // Carga los datos iniciales ejecutando la función de cada widget
     this.dashboardService.widgets().forEach((widget) => {
       widget.loadData(this.currentFilters[widget.id]);
@@ -50,7 +40,7 @@ export class ColDeptDash {
   onClickFilter(widget: WidgetItemDash) {
     const filters = this.currentFilters[widget.id];
 
-    this.filterModalService.openCardFilter(widget, filters, )
+    this.filterModalService.openCardFilter(widget, filters,)
       .subscribe((newFilters) => {
         if (newFilters) {
           // Guarda el estado actualizado

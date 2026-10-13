@@ -27,11 +27,12 @@ export interface WidgetItemDash {
     getDomainsByYear?: (year?: number) => string[];
     getRegionsByYear?: (year?: number) => string[];
     getDeptsByYearAndRegion?: (year?: number, region?: string) => string[];
+    getDomainsSignal?: () => string[];
     loadData: (filters: any) => void;
 }
 // Dashboard 1
 
-export interface PmiApiResponse {
+export interface MpiItem {
     anio: number;
     dominio: string;
     ipm: string;

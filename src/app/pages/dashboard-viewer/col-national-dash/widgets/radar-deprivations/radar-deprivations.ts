@@ -14,33 +14,52 @@ export class RadarDeprivations {
   private dashboardService = inject(ColNationalService);
   private platformId = inject(PLATFORM_ID);
 
-  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
+  chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
   private chartInstance?: Chart;
 
-  ipmData = computed(() => this.dashboardService.deprivationsData());
+  data = computed(() => this.dashboardService.deprivationsData());
 
   constructor() {
+    // Escuchar activamente cuando el Canvas o los Datos cambian
     effect(() => {
-      const items = this.ipmData();
-      if (this.chartInstance && items.length > 0) {
-        this.updateChartData(items);
+      const canvasRef = this.chartCanvas();
+      const items = this.data();
+
+      if (!isPlatformBrowser(this.platformId) || !canvasRef || !items || items.length === 0) {
+        return;
       }
+
+      const canvasEl = canvasRef.nativeElement;
+
+      // Usar setTimeout para asegurar que el navegador ya aplicó las dimensiones al DOM
+      setTimeout(() => {
+        this.renderOrUpdateChart(canvasEl, items);
+      }, 0);
     });
   }
 
-  ngAfterViewInit() {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    setTimeout(() => {
-      const canvas = this.chartElement()?.nativeElement;
-      if (canvas && !this.chartInstance) {
-        this.initChart(canvas);
-      }
-    }, 150);
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      // Disparar la carga inicial de datos desde el backend
+      this.dashboardService.loadDeprivationsData(2024, 'Cabeceras');
+    }
   }
 
-  private initChart(canvas: HTMLCanvasElement) {
-    const items = this.ipmData();
+  ngOnDestroy() {
+    // Destruir la gráfica si el componente se desmonta
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = undefined;
+    }
+  }
+
+  private renderOrUpdateChart(canvas: HTMLCanvasElement, items: DeprivationsItem[]) {
+    // Si la instancia ya existe pero el canvas cambió destruir la vieja
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = undefined;
+    }
+    
     const labels = items.map((item) => item.variable);
     const values = items.map((item) => item.ipm);
     const domainName = items[0]?.dominio || 'Nacional';
@@ -101,17 +120,4 @@ export class RadarDeprivations {
     });
   }
 
-  private updateChartData(items: DeprivationsItem[]) {
-    if (!this.chartInstance) return;
-
-    this.chartInstance.data.labels = items.map((item) => item.variable);
-    this.chartInstance.data.datasets[0].data = items.map((item) => item.ipm);
-    this.chartInstance.data.datasets[0].label = `Privaciones - ${items[0]?.dominio} (${items[0]?.anio})`;
-
-    this.chartInstance.update();
-  }
-
-  ngOnDestroy() {
-    this.chartInstance?.destroy();
-  }
 }

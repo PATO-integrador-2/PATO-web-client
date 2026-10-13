@@ -2,6 +2,7 @@ import { Component, inject, computed, input, effect, PLATFORM_ID, viewChild, Ele
 import { isPlatformBrowser } from '@angular/common';
 import { Chart } from 'chart.js';
 import { ColNationalService } from '../../../../../core/services/dashboard-services/col-national.service';
+import { MpiSexItem } from '../../../../../interfaces/ipm.interface';
 
 @Component({
   selector: 'app-mpi-sex',
@@ -13,33 +14,51 @@ export class MpiSex {
   private dashboardService = inject(ColNationalService);
   private platformId = inject(PLATFORM_ID);
 
-  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
+  chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('Chart');
   private chartInstance?: Chart;
 
   data = computed(() => this.dashboardService.mpiSexData());
 
   constructor() {
+    // Escuchar activamente cuando el Canvas o los Datos cambian
     effect(() => {
+      const canvasRef = this.chartCanvas();
       const items = this.data();
-      if (this.chartInstance && items && items.length > 0) {
-        this.updateChartData(items);
+
+      if (!isPlatformBrowser(this.platformId) || !canvasRef || !items || items.length === 0) {
+        return;
       }
+
+      const canvasEl = canvasRef.nativeElement;
+
+      setTimeout(() => {
+        this.renderOrUpdateChart(canvasEl, items);
+      }, 0);
     });
   }
 
-  ngAfterViewInit() {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    setTimeout(() => {
-      const canvas = this.chartElement()?.nativeElement;
-      if (canvas && !this.chartInstance) {
-        this.initChart(canvas);
-      }
-    }, 150);
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      // Disparar la carga inicial de datos desde el backend
+      this.dashboardService.loadMpiSexData('Antioquia');
+    }
   }
 
-  private initChart(canvas: HTMLCanvasElement) {
-    const items = this.data();
+  ngOnDestroy() {
+    // Destruir la gráfica si el componente se desmonta
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = undefined;
+    }
+  }
+
+
+  private renderOrUpdateChart(canvas: HTMLCanvasElement, items: MpiSexItem[]) {
+    // Si la instancia ya existe pero el canvas cambió destruir la vieja
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = undefined;
+    }
 
     // Filtrar puntos para hombres y mujeres
     const menData = this.extractMenData(items);
@@ -91,20 +110,6 @@ export class MpiSex {
       }
     });
 
-  }
-
-  private updateChartData(items: any[]) {
-    if (!this.chartInstance) return;
-
-    // Filtrar puntos para hombres y muejeres
-    const menData = this.extractMenData(items);
-    const womenData = this.extractWomenData(items);
-
-
-    // Actualizar y renderizar la gráfica
-    this.chartInstance.data.datasets[0].data = menData;
-    this.chartInstance.data.datasets[1].data = womenData;
-    this.chartInstance.update();
   }
 
   private extractMenData(items: any[]) {
