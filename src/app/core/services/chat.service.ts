@@ -2,7 +2,7 @@ import { Injectable, InjectionToken, OnDestroy, PLATFORM_ID, inject, signal } fr
 import { isPlatformBrowser } from '@angular/common';
 import { Subject } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.development';
 import {
   ChatConnectionState,
   ChatSendPayload,
