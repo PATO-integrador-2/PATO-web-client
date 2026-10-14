@@ -145,16 +145,18 @@ export class FilterModal {
   }
 
   private updateDepts() {
-    const { year, region } = this.selectedFilters;
+    const { year, region, area } = this.selectedFilters;
     if (!year) return;
 
     const widget = this.data.widget;
     
     if (widget?.getDeptsByYearAndRegion && region) {
-      this.availableDepts = widget.getDeptsByYearAndRegion(year as number, region as string);
-    } else {
-      this.availableDepts = [];
-    }
+    this.availableDepts = widget.getDeptsByYearAndRegion(year as number, region as string);
+  } else if (widget?.getDeptsByYearAndArea && area) {
+    this.availableDepts = widget.getDeptsByYearAndArea(year as number, area as string);
+  } else {
+    this.availableDepts = [];
+  }
 
   }
 

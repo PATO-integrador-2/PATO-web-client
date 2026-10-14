@@ -26,8 +26,9 @@ export class ColDeptDash {
   private filterModalService = inject(DashboardFilterService);
 
   // Estado local para recordar qué valores tiene seleccionados cada tarjeta
-  private currentFilters: Record<string, { year?: number; region?: string; dept?: string }> = {
+  private currentFilters: Record<string, { year?: number; region?: string; dept?: string, area?: string }> = {
     1: { year: 2024, region: 'Orinoquía - Amazonía', dept: 'Arauca' },
+    2: { year: 2024, area: 'Cabeceras'}
   };
 
   ngOnInit() {

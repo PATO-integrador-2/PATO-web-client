@@ -8,6 +8,7 @@ import {MatMenuModule} from '@angular/material/menu';
 import { EditProfile } from '../edit-profile/edit-profile';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../core/services/auth.service';
+import { ScrollStrategyOptions } from '@angular/cdk/overlay';
 
 @Component({
   selector: 'app-navbar',
@@ -21,12 +22,15 @@ export class Navbar {
   readonly name = model(' ');
   readonly editProfile = inject(MatDialog);
   private authService = inject(AuthService);
+  private scrollStrategies = inject(ScrollStrategyOptions);
 
   // Abrir el modal de editar perfil
   openEditProfile(): void {
     const dialogRef = this.editProfile.open(EditProfile, {
       width: '420px',
+      scrollStrategy: this.scrollStrategies.noop()
   });
+  
 
   }
 
