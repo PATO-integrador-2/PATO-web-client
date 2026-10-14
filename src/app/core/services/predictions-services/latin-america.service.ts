@@ -51,7 +51,7 @@ export class LatinAmericaService {
                 const chartData: MultiChartData = { labels, datasets };
 
                 const newWidget: WidgetItemPredict = {
-                    id: 1,
+                    id: Date.now(),
                     title: `IPM: ${deprivations.join(', ')} - ${country} (${begin_year} - ${begin_year + years})`,
                     content: PredictWidget,
                     data: chartData

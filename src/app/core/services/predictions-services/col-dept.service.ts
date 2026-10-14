@@ -100,7 +100,7 @@ export class ColDeptService {
                 const chartData: MultiChartData = { labels, datasets };
 
                 const newWidget: WidgetItemPredict = {
-                    id: 1,
+                    id: Date.now(),
                     title: `IPM: ${departamentos.join(', ')} - ${region} (${begin_year} - ${begin_year + years})`,
                     content: PredictWidget,
                     data: chartData
