@@ -27,6 +27,7 @@ export interface WidgetItemDash {
     getDomainsByYear?: (year?: number) => string[];
     getRegionsByYear?: (year?: number) => string[];
     getDeptsByYearAndRegion?: (year?: number, region?: string) => string[];
+    getDeptsByYearAndArea?: (year?: number, area?: string) => string[];
     getDomainsSignal?: () => string[];
     loadData: (filters: any) => void;
 }
@@ -96,6 +97,22 @@ export interface IndicatorDeptItem {
     ipm: number;
     pobre: number;
 }
+
+export interface MpiDeptItem {
+    anio: number,
+    area: string,
+    departamento: string,
+    ipm:string
+}
+
+export interface MpiDeptIndicatorItem {
+    anio: number,
+    area: string,
+    departamento: string,
+    porcentaje: string,
+    variable: string
+}
+
 
 // Dashboard 3
 
