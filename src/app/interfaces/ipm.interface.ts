@@ -23,11 +23,12 @@ export interface WidgetItemDash {
     getYearsSignal?: () => number[];
     getCountriesByYear?: (year?: number) => string[];
     getAreasByYear?: (year?: number) => string[];
-    getCountriesByYearAndArea?: (year?: number, area?: string) => string[];
+    getDeptsByYear?: (year?: number) => string[];
+    getAreasByYearAndCountry?: (year?: number, country?: string) => string[];
     getDomainsByYear?: (year?: number) => string[];
     getRegionsByYear?: (year?: number) => string[];
     getDeptsByYearAndRegion?: (year?: number, region?: string) => string[];
-    getDeptsByYearAndArea?: (year?: number, area?: string) => string[];
+    getAreasByYearAndDept?: (year?: number, dept?: string) => string[];
     getDomainsSignal?: () => string[];
     loadData: (filters: any) => void;
 }

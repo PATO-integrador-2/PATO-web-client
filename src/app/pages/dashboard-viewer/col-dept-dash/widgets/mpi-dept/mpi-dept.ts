@@ -40,7 +40,7 @@ export class MpiDept {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       // Disparar la carga inicial de datos desde el backend
-      this.dashboardService.loadMpiDeptData(2024, "Cabeceras");
+      this.dashboardService.loadMpiDeptData(2024, "Arauca");
     }
   }
 
@@ -62,6 +62,7 @@ export class MpiDept {
     const labels = items.map((item) => item.area);
     const values: number[] = items.map((item) => Number(item.ipm));
     const yearVal = items[0]?.anio || '';
+    const deptName = items[0]?.departamento || '';
 
     this.chartInstance = new Chart(canvas, {
       type: 'bar',
@@ -69,7 +70,7 @@ export class MpiDept {
         labels: labels,
         datasets: [
           {
-            label: `IPM (%) (${yearVal})`,
+            label: `IPM (%) (${yearVal}) - (${deptName})`,
             data: values,
             backgroundColor: [
               'rgb(255, 99, 133)',

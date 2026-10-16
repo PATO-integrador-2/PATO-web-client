@@ -11,76 +11,90 @@
 
     <div class="fields-grid">
 
-        <!-- Desplegable de año -->
-        @if (data.filterFields?.includes('year')) {
-        <mat-form-field appearance="outline">
-            <mat-label>Año</mat-label>
-            <mat-select [(ngModel)]="selectedFilters.year" (selectionChange)="onYearChange()">
-                @for (year of availableYears; track year) {
-                <mat-option [value]="year">{{ year }}</mat-option>
-                }
-            </mat-select>
-        </mat-form-field>
-        }
+        <!-- 1. Desplegable de Año -->
+    @if (data.filterFields?.includes('year')) {
+    <mat-form-field appearance="outline">
+        <mat-label>Año</mat-label>
+        <mat-select [(ngModel)]="selectedFilters.year" (selectionChange)="onYearChange()">
+            @for (year of availableYears; track year) {
+            <mat-option [value]="year">{{ year }}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+    }
 
-        @if (data.filterFields.includes('area')) {
-        <mat-form-field appearance="outline">
-            <mat-label>Area</mat-label>
-            <mat-select [(ngModel)]="selectedFilters.area" (selectionChange)="onAreaChange()">
-                @for (area of availableAreas; track area) {
-                <mat-option [value]="area">{{ area }}</mat-option>
-                }
-            </mat-select>
-        </mat-form-field>
-        }
+    <!-- 2. Desplegable de País -->
+    @if (data.filterFields?.includes('country')) {
+    <mat-form-field appearance="outline">
+        <mat-label>País</mat-label>
+        <mat-select 
+            [(ngModel)]="selectedFilters.country" 
+            (selectionChange)="onCountryChange()"
+            [disabled]="availableCountries.length === 0">
+            @for (country of availableCountries; track country) {
+            <mat-option [value]="country">{{ country }}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+    }
 
-        <!-- Desplegable de país -->
-        @if (data.filterFields?.includes('country')) {
-        <mat-form-field appearance="outline">
-            <mat-label>País</mat-label>
-            <mat-select [(ngModel)]="selectedFilters.country" >
-                @for (country of availableCountries; track country) {
-                <mat-option [value]="country">{{ country }}</mat-option>
-                }
-            </mat-select>
-        </mat-form-field>
-        }
+    <!-- 4. Desplegable de Departamento -->
+    @if (data.filterFields?.includes('dept')) {
+    <mat-form-field appearance="outline">
+        <mat-label>Departamento</mat-label>
+        <mat-select 
+            [(ngModel)]="selectedFilters.dept" 
+            (selectionChange)="onDeptChange()"
+            [disabled]="availableDepts.length === 0">
+            @for (d of availableDepts; track d) {
+            <mat-option [value]="d">{{ d }}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+    }
 
-        <!-- Desplegable de region -->
-        @if (data.filterFields?.includes('region')) {
-        <mat-form-field appearance="outline">
-            <mat-label>Region</mat-label>
-            <mat-select [(ngModel)]="selectedFilters.region" (selectionChange)="onRegionChange()">
-                @for (region of availableRegions; track region) {
-                <mat-option [value]="region">{{ region }}</mat-option>
-                }
-            </mat-select>
-        </mat-form-field>
-        }
+    <!-- 5. Desplegable de Área -->
+    @if (data.filterFields?.includes('area')) {
+    <mat-form-field appearance="outline">
+        <mat-label>Área</mat-label>
+        <mat-select 
+            [(ngModel)]="selectedFilters.area"
+            [disabled]="availableAreas.length === 0">
+            @for (area of availableAreas; track area) {
+            <mat-option [value]="area">{{ area }}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+    }
 
-        <!-- Desplegable de dept -->
-        @if (data.filterFields?.includes('dept')) {
-        <mat-form-field appearance="outline">
-            <mat-label>Departamentos</mat-label>
-            <mat-select [(ngModel)]="selectedFilters.dept">
-                @for (d of availableDepts; track d) {
-                <mat-option [value]="d">{{ d }}</mat-option>
-                }
-            </mat-select>
-        </mat-form-field>
-        }
+    <!-- 6. Desplegable de Dominio -->
+    @if (data.filterFields?.includes('domain')) {
+    <mat-form-field appearance="outline">
+        <mat-label>Dominio</mat-label>
+        <mat-select 
+            [(ngModel)]="selectedFilters.domain"
+            [disabled]="availableDomains.length === 0">
+            @for (d of availableDomains; track d) {
+            <mat-option [value]="d">{{ d }}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+    }
 
-        <!-- Desplegable de dominio -->
-        @if (data.filterFields?.includes('domain')) {
-        <mat-form-field appearance="outline">
-            <mat-label>Dominios</mat-label>
-            <mat-select [(ngModel)]="selectedFilters.domain">
-                @for (d of availableDomains; track d) {
-                <mat-option [value]="d">{{ d }}</mat-option>
-                }
-            </mat-select>
-        </mat-form-field>
-        }
+    <!-- 3. Desplegable de Región -->
+    @if (data.filterFields?.includes('region')) {
+    <mat-form-field appearance="outline">
+        <mat-label>Región</mat-label>
+        <mat-select 
+            [(ngModel)]="selectedFilters.region" 
+            (selectionChange)="onRegionChange()"
+            [disabled]="availableRegions.length === 0">
+            @for (region of availableRegions; track region) {
+            <mat-option [value]="region">{{ region }}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+    }
 
     </div>
 
