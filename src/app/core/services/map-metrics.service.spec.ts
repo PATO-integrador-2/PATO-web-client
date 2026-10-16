@@ -1,4 +1,4 @@
-import { buildCountryInfo, buildGeographicMetrics, normalizeDepartmentName, normalizeRegionName } from './map-metrics.service';
+import { buildCountryInfo, buildGeographicMetrics, normalizeDepartmentName, normalizeMapMetrics, normalizeRegionName } from './map-metrics.service';
 import type { NationalPovertyItem } from '../../interfaces/ipm.interface';
 import type { DepartmentMetricItem } from './map-metrics.service';
 
@@ -98,5 +98,23 @@ describe('buildGeographicMetrics', () => {
     expect(normalizeDepartmentName('SANTAFE DE BOGOTA D.C')).toBe('santafe de bogota dc');
     expect(normalizeRegionName('Orinoquía - Amazonía')).toBe('orinoquia-amazonia');
     expect(normalizeDepartmentName('NARIÃ‘O')).toBe('narino');
+  });
+});
+
+describe('normalizeMapMetrics', () => {
+  it('uses the national value from country payload records', () => {
+    const metrics = normalizeMapMetrics({
+      countries: [
+        {
+          country: 'Colombia',
+          national: 0.190267,
+          urban: 0.148462,
+          rural: 0.401167,
+        },
+      ],
+    });
+
+    expect(metrics.countries.get('colombia')).toBe(0.190267);
+    expect(metrics.countryInfo.get('colombia')?.national).toBe(0.190267);
   });
 });
