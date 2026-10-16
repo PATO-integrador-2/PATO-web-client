@@ -35,20 +35,6 @@ export class ColDeptService {
 
         {
             id: 2,
-            label: 'IPM Colombia Departamental',
-            content: MpiDept,
-            filterFields: ['year', 'dept'],
-            getYearsSignal: () => this.getMpiDeptYears(),
-            getDeptsByYear: (year?: number) => this.getMpiDeptDeptsByYear(year),
-            loadData: (f) => {
-                const selectedYear = f?.year ?? 2024;
-                const selectedDept = f?.dept ?? 'Arauca';
-                this.loadMpiDeptData(selectedYear, selectedDept);
-            }
-        },
-
-        {
-            id: 3,
             label: 'Indicadores Variables Colombia Nivel Departamental',
             content: MpiDeptIndicators,
             filterFields: ['year', 'dept', 'area'],
@@ -66,6 +52,22 @@ export class ColDeptService {
         },
 
         {
+            id: 3,
+            label: 'IPM Colombia Departamental',
+            content: MpiDept,
+            filterFields: ['year', 'dept'],
+            getYearsSignal: () => this.getMpiDeptYears(),
+            getDeptsByYear: (year?: number) => this.getMpiDeptDeptsByYear(year),
+            loadData: (f) => {
+                const selectedYear = f?.year ?? 2024;
+                const selectedDept = f?.dept ?? 'Arauca';
+                this.loadMpiDeptData(selectedYear, selectedDept);
+            }
+        },
+
+        
+        /*
+        {
             id: 4,
             label: 'Porcentaje de IPM departamental por sexo',
             content: MpiDeptSex,
@@ -76,6 +78,7 @@ export class ColDeptService {
                 this.loadMpiDeptSexData(selectedDept);
             }
         },
+        */
 
     ]);
 
