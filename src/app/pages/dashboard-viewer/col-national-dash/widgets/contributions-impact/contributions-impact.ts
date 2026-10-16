@@ -67,9 +67,8 @@ export class ContributionsImpact {
     this.chartInstance = new Chart(canvas, {
       type: 'pie',
       data: {
-        labels: labels,
+        labels: [...labels, `IPM (%) - ${domainName} (${yearVal})`],
         datasets: [{
-          label: `IPM (%) - ${domainName} (${yearVal})`,
           data: values,
           backgroundColor: [
             'rgb(255, 99, 133)',
