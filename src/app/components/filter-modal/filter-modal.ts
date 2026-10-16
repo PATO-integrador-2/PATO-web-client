@@ -43,65 +43,71 @@ export class FilterModal {
   availableDepts: string[] = [];
 
   ngOnInit() {
-  const current = this.data.currentFilters || {};
+    const current = this.data.currentFilters || {};
 
-  // Cargar años disponibles
-  if (this.data.widget?.getYearsSignal) {
-    this.availableYears = this.data.widget.getYearsSignal();
+    // Cargar años disponibles
+    if (this.data.widget?.getYearsSignal) {
+      this.availableYears = this.data.widget.getYearsSignal();
+    }
+
+    // Cargar dominios disponibles
+    if (this.data.widget?.getDomainsSignal) {
+      this.availableDomains = this.data.widget.getDomainsSignal();
+    }
+
+    // Establecer el año inicial
+    const initialYear = current.year && this.availableYears.includes(Number(current.year))
+      ? Number(current.year)
+      : (this.availableYears.length > 0 ? this.availableYears[0] : undefined);
+
+    this.selectedFilters = {
+      year: initialYear,
+      domain: current.domain,
+      country: current.country,
+      area: current.area,
+      region: current.region,
+      dept: current.dept,
+    };
+
+    // Refrescar todos los filtros en cascada
+    this.refreshAllFilters();
+
+    // Validar y coincidir valores seleccionados inicialmente
+    if (current.country && this.availableCountries.length > 0) {
+      const matchedCountry = this.availableCountries.find(
+        c => c.toLowerCase().trim() === String(current.country).toLowerCase().trim()
+      );
+      if (matchedCountry) this.selectedFilters.country = matchedCountry;
+    }
+
+    if (current.area && this.availableAreas.length > 0) {
+      const matchedArea = this.availableAreas.find(
+        a => a.toLowerCase().trim() === String(current.area).toLowerCase().trim()
+      );
+      if (matchedArea) this.selectedFilters.area = matchedArea;
+    }
   }
 
-  // Cargar dominios disponibles
-  if (this.data.widget?.getDomainsSignal) {
-    this.availableDomains = this.data.widget.getDomainsSignal();
-  }
-
-  // Establecer el año inicial
-  const initialYear = current.year && this.availableYears.includes(Number(current.year))
-    ? Number(current.year)
-    : (this.availableYears.length > 0 ? this.availableYears[0] : undefined);
-
-  this.selectedFilters = {
-    year: initialYear,
-    domain: current.domain,
-    country: current.country,
-    area: current.area,
-    region: current.region,
-    dept: current.dept,
-  };
-
-  // Refrescar todos los filtros
-  this.refreshAllFilters();
-
-  if (current.country && this.availableCountries.length > 0) {
-    const matchedCountry = this.availableCountries.find(
-      c => c.toLowerCase().trim() === String(current.country).toLowerCase().trim()
-    );
-    if (matchedCountry) this.selectedFilters.country = matchedCountry;
-  }
-
-  if (current.area && this.availableAreas.length > 0) {
-    const matchedArea = this.availableAreas.find(
-      a => a.toLowerCase().trim() === String(current.area).toLowerCase().trim()
-    );
-    if (matchedArea) this.selectedFilters.area = matchedArea;
-  }
-}
-
-  // Eventos de Interfaz 
+  // Eventos de interfaz 
 
   onYearChange() {
     this.refreshAllFilters();
   }
 
-  onAreaChange() {
-    this.updateCountries();
+  onCountryChange() {
+    this.updateAreas();
+  }
+
+  onDeptChange() {
+    this.updateAreas();
   }
 
   onRegionChange() {
     this.updateDepts();
+    this.updateAreas();
   }
 
-  // Lógica 
+  // Lógica de Población de Desplegables 
 
   private refreshAllFilters() {
     const year = this.selectedFilters.year;
@@ -109,57 +115,59 @@ export class FilterModal {
 
     const widget = this.data.widget;
 
-    // Dominios
     if (widget?.getDomainsByYear) {
       this.availableDomains = widget.getDomainsByYear(year);
     }
 
-    // Áreas
-    if (widget?.getAreasByYear) {
-      this.availableAreas = widget.getAreasByYear(year);
-    }
-
-    // Regiones
     if (widget?.getRegionsByYear) {
       this.availableRegions = widget.getRegionsByYear(year);
     }
 
-    // Países y departamentos
-    this.updateCountries();
+    if (widget?.getDeptsByYear) {
+      this.availableDepts = widget.getDeptsByYear(year);
+    }
+
+    if (widget?.getCountriesByYear) {
+      this.availableCountries = widget.getCountriesByYear(year);
+    }
+
+    if (widget?.getAreasByYear) {
+      this.availableAreas = widget.getAreasByYear(year);
+    }
+
+    // Actualizar dependencias secundarias
     this.updateDepts();
+    this.updateAreas();
   }
 
-  private updateCountries() {
-    const { year, area } = this.selectedFilters;
+  private updateAreas() {
+    const { year, country, dept } = this.selectedFilters;
     if (!year) return;
 
     const widget = this.data.widget;
-    if (widget?.getCountriesByYearAndArea && area) {
-      this.availableCountries = widget.getCountriesByYearAndArea(year, area as string);
-    } else if (widget?.getCountriesByYear) {
-      this.availableCountries = widget.getCountriesByYear(year as number);
-    } else {
-      this.availableCountries = [];
-    }
 
+    // Obtener áreas según país o departamento
+    if (widget?.getAreasByYearAndCountry && country) {
+      this.availableAreas = widget.getAreasByYearAndCountry(year, country);
+    } else if (widget?.getAreasByYearAndDept && dept) {
+      this.availableAreas = widget.getAreasByYearAndDept(year, dept);
+    } else if (widget?.getAreasByYear) {
+      this.availableAreas = widget.getAreasByYear(year);
+    }
   }
 
   private updateDepts() {
-    const { year, region, area } = this.selectedFilters;
+    const { year, region } = this.selectedFilters;
     if (!year) return;
 
     const widget = this.data.widget;
-    
+
     if (widget?.getDeptsByYearAndRegion && region) {
-    this.availableDepts = widget.getDeptsByYearAndRegion(year as number, region as string);
-  } else if (widget?.getDeptsByYearAndArea && area) {
-    this.availableDepts = widget.getDeptsByYearAndArea(year as number, area as string);
-  } else {
-    this.availableDepts = [];
+      this.availableDepts = widget.getDeptsByYearAndRegion(year, region);
+    } else if (widget?.getDeptsByYear) {
+      this.availableDepts = widget.getDeptsByYear(year);
+    }
   }
-
-  }
-
 
   apply() {
     this.dialogRef.close(this.selectedFilters);

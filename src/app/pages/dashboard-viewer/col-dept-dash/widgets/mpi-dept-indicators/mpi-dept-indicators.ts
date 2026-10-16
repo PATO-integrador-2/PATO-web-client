@@ -41,7 +41,7 @@ export class MpiDeptIndicators {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       // Disparar la carga inicial de datos desde el backend
-      this.dashboardService.loadMpiDeptIndicatorsData(2024, 'Cabeceras');
+      this.dashboardService.loadMpiDeptIndicatorsData(2024, 'Arauca', 'Cabeceras');
     }
   }
 
@@ -62,8 +62,9 @@ export class MpiDeptIndicators {
     
     const labels = items.map((item) => item.variable);
     const values = items.map((item) => Number(item.porcentaje));
-    const domainName = items[0]?.departamento || 'Nacional';
     const yearVal = items[0]?.anio || '';
+    const deptName = items[0]?.departamento || '';
+    const areaName = items[0]?.area || '';
 
     this.chartInstance = new Chart(canvas, {
       type: 'radar',
@@ -71,7 +72,7 @@ export class MpiDeptIndicators {
         labels: labels,
         datasets: [
           {
-            label: `Privaciones - ${domainName} (${yearVal})`,
+            label: `Privaciones - Dept: ${deptName} - Área: ${areaName} - (${yearVal})`,
             data: values,
             fill: true,
             backgroundColor: 'rgba(212, 111, 162, 0.25)',
