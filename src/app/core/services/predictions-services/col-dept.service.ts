@@ -16,6 +16,12 @@ export class ColDeptService {
 
     widgets = signal<WidgetItemPredict[]>([]);
 
+    constructor() {
+        if (this.isBrowser) {
+            this.loadWidgetsFromStorage();
+        }
+    }
+
     // 1. PREDICCIÓN POBREZA DEPARTAMENTAL
     private dept_poverty_url = `${environment.apiAddr}/api/users/predictions/department_poverty`;
 

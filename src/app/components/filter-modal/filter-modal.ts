@@ -55,6 +55,11 @@ export class FilterModal {
       this.availableDomains = this.data.widget.getDomainsSignal();
     }
 
+    // Cargar departamentos disponibles
+    if (this.data.widget?.getDeptsSignal) {
+      this.availableDepts = this.data.widget.getDeptsSignal();
+    }
+
     // Establecer el año inicial
     const initialYear = current.year && this.availableYears.includes(Number(current.year))
       ? Number(current.year)
@@ -69,7 +74,7 @@ export class FilterModal {
       dept: current.dept,
     };
 
-    // Refrescar todos los filtros en cascada
+    // Refrescar todos los filtros 
     this.refreshAllFilters();
 
     // Validar y coincidir valores seleccionados inicialmente

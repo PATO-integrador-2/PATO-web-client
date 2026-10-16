@@ -38,6 +38,21 @@
     </mat-form-field>
     }
 
+    <!-- 3. Desplegable de Región -->
+    @if (data.filterFields?.includes('region')) {
+    <mat-form-field appearance="outline">
+        <mat-label>Región</mat-label>
+        <mat-select 
+            [(ngModel)]="selectedFilters.region" 
+            (selectionChange)="onRegionChange()"
+            [disabled]="availableRegions.length === 0">
+            @for (region of availableRegions; track region) {
+            <mat-option [value]="region">{{ region }}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+    }
+
     <!-- 4. Desplegable de Departamento -->
     @if (data.filterFields?.includes('dept')) {
     <mat-form-field appearance="outline">
@@ -76,21 +91,6 @@
             [disabled]="availableDomains.length === 0">
             @for (d of availableDomains; track d) {
             <mat-option [value]="d">{{ d }}</mat-option>
-            }
-        </mat-select>
-    </mat-form-field>
-    }
-
-    <!-- 3. Desplegable de Región -->
-    @if (data.filterFields?.includes('region')) {
-    <mat-form-field appearance="outline">
-        <mat-label>Región</mat-label>
-        <mat-select 
-            [(ngModel)]="selectedFilters.region" 
-            (selectionChange)="onRegionChange()"
-            [disabled]="availableRegions.length === 0">
-            @for (region of availableRegions; track region) {
-            <mat-option [value]="region">{{ region }}</mat-option>
             }
         </mat-select>
     </mat-form-field>

@@ -1,11 +1,12 @@
 import { Service, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { IndicatorDeptItem, MpiDeptIndicatorItem, MpiDeptItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
+import { IndicatorDeptItem, MpiDeptIndicatorItem, MpiDeptItem, MpiDeptSexItem, WidgetItemDash } from '../../../interfaces/ipm.interface';
 import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser } from '@angular/common';
 import { MPHouseholdsDep } from '../../../pages/dashboard-viewer/col-dept-dash/widgets/mp-households-dep/mp-households-dep';
 import { MpiDept } from '../../../pages/dashboard-viewer/col-dept-dash/widgets/mpi-dept/mpi-dept';
 import { MpiDeptIndicators } from '../../../pages/dashboard-viewer/col-dept-dash/widgets/mpi-dept-indicators/mpi-dept-indicators';
+import { MpiDeptSex } from '../../../pages/dashboard-viewer/col-dept-dash/widgets/mpi-dept-sex/mpi-dept-sex';
 
 @Service()
 export class ColDeptService {
@@ -64,7 +65,17 @@ export class ColDeptService {
 
         },
 
-
+        {
+            id: 4,
+            label: 'Porcentaje de IPM departamental por sexo',
+            content: MpiDeptSex,
+            filterFields: ['dept'],
+            getDeptsSignal: () => this.getMpiDeptSexDepts(),
+            loadData: (f) => {
+                const selectedDept = f?.dept ?? 'Arauca';
+                this.loadMpiDeptSexData(selectedDept);
+            }
+        },
 
     ]);
 
@@ -245,7 +256,7 @@ export class ColDeptService {
             filteredData = data.filter(
                 (d) =>
                     Number(d.anio) === Number(fallbackYear) &&
-                    d.area?.toLowerCase().trim() === fallbackDept.toLowerCase().trim()
+                    d.departamento?.toLowerCase().trim() === fallbackDept.toLowerCase().trim()
             );
         }
 
@@ -358,6 +369,72 @@ export class ColDeptService {
         }
 
         this.mpiDeptIndicatorsData.set(filteredData);
+    }
+    
+    private mpi_dept_sex_url = `${environment.apiAddr}/api/users/ipm-department-sex`;
+    private rawMpiDeptSexData = signal<MpiDeptSexItem[]>([]);
+    mpiDeptSexData = signal<MpiDeptSexItem[]>([]);
+
+    fetchMpiDeptSexData(dept?: string) {
+        if (!isPlatformBrowser(this.platformId)) return;
+
+        this.httpClient.get<MpiDeptSexItem[]>(this.mpi_dept_sex_url).subscribe({
+            next: (data) => {
+                if (!data || data.length === 0) return;
+
+                // Guardar la data completa devuelta por el API
+                this.rawMpiDeptSexData.set(data);
+
+                // Determinar el año y el país a mostrar de forma segura
+                const availableDepts = this.getMpiDeptSexDepts();
+                const targetDept = dept && availableDepts.includes(dept)
+                    ? dept
+                    : availableDepts[0];
+
+
+                this.loadMpiDeptSexData(targetDept);
+            },
+            error: (err) => console.error('Error al cargar datos de ipm departamental:', err),
+        });
+    }
+
+    getMpiDeptSexDepts(): string[] {
+        const data = this.rawMpiDeptSexData();
+        return [
+            ...new Set(
+                data
+                    .map((d) => d.departamento?.trim())
+                    .filter(Boolean) as string[]
+            ),
+        ].sort();
+    }
+
+
+    loadMpiDeptSexData(dept?: string) {
+        const data = this.rawMpiDeptSexData();
+        // Si no se han descargado los datos aún, llamar a la API
+        if (!data || data.length === 0) {
+            this.fetchMpiDeptSexData(dept);
+            return;
+        }
+
+        // Filtrar segúndepartamento
+        let filteredData = data.filter(
+            (d) =>
+                d.departamento?.toLowerCase().trim() === String(dept).toLowerCase().trim()
+        );
+
+        // Fallback: si con el año y país solicitados no hay coincidencias, tomar el primer año y departamento disponibles
+        if (filteredData.length === 0 && data.length > 0) {
+
+            const fallbackDept = data[0].departamento;
+            filteredData = data.filter(
+                (d) =>
+                    d.departamento === fallbackDept
+            );
+        }
+
+        this.mpiDeptSexData.set(filteredData);
     }
 
 }
