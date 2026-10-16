@@ -16,6 +16,12 @@ export class LatinAmericaService {
 
     widgets = signal<WidgetItemPredict[]>([]);
 
+    constructor() {
+        if (this.isBrowser) {
+            this.loadWidgetsFromStorage();
+        }
+    }
+
     // 1. PREDICCIÓN CONTRIBUCIONES 
     private contribution_url = `${environment.apiAddr}/api/users/predictions/contribution_latam`;
 

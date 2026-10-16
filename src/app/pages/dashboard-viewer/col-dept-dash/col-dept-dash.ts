@@ -29,7 +29,8 @@ export class ColDeptDash {
   private currentFilters: Record<string, { year?: number; region?: string; dept?: string, area?: string }> = {
     1: { year: 2024, region: 'Orinoquía - Amazonía', dept: 'Arauca' },
     2: { year: 2024, dept: 'Arauca',},
-    3: { year: 2024, dept: 'Arauca', area: 'Cabeceras'}
+    3: { year: 2024, dept: 'Arauca', area: 'Cabeceras'},
+    4: { year: 2024, dept: 'Arauca'}
   };
 
   ngOnInit() {

@@ -63,6 +63,7 @@ export class MpiSex {
     // Filtrar puntos para hombres y mujeres
     const menData = this.extractMenData(items);
     const womenData = this.extractWomenData(items);
+    const domainName = items[0].dominio;
 
     this.chartInstance = new Chart(canvas, {
       type: 'scatter',
@@ -75,7 +76,7 @@ export class MpiSex {
             pointRadius: 7
           },
           {
-            label: 'Mujeres',
+            label: `Mujeres - Dominio: ${domainName}`,
             data: womenData,
             backgroundColor: 'rgba(255, 99, 132, 1)',
             pointRadius: 7

@@ -21,6 +21,7 @@ export interface WidgetItemDash {
     content: any;
     filterFields: Array<'year' | 'domain' | 'country' | 'area' | 'region' | 'dept'>;
     getYearsSignal?: () => number[];
+    getDeptsSignal?: () => string[];
     getCountriesByYear?: (year?: number) => string[];
     getAreasByYear?: (year?: number) => string[];
     getDeptsByYear?: (year?: number) => string[];
@@ -112,6 +113,13 @@ export interface MpiDeptIndicatorItem {
     departamento: string,
     porcentaje: string,
     variable: string
+}
+
+export interface MpiDeptSexItem {
+    anio: number,
+    departamento: string,
+    porcentaje: string,
+    sexo: string
 }
 
 

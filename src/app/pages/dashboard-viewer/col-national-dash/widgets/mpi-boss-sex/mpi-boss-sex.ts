@@ -61,6 +61,8 @@ export class MpiBossSex {
 
     const menData = this.extractMenData(items);
     const womenData = this.extractWomenData(items);
+    const domainName = items[0].dominio;
+    
     this.chartInstance = new Chart(canvas, {
       type: 'scatter',
       data: {
@@ -72,7 +74,7 @@ export class MpiBossSex {
             pointRadius: 7
           },
           {
-            label: 'Mujeres',
+            label: `Mujeres - Dominio: ${domainName}`,
             data: womenData,
             backgroundColor: 'rgba(255, 99, 132, 1)',
             pointRadius: 7
