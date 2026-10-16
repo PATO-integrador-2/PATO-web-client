@@ -1,9 +1,10 @@
 import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 
 import { Navbar } from '../../components/navbar/navbar';
 import { ChatService } from '../../core/services/chat.service';
+import { ConversationService } from '../../core/services/conversation.service';
 import { ChatStreamEvent } from '../../interfaces/chat.interface';
 import { ChatBOT, deriveTitle } from './chat-bot';
 
@@ -22,10 +23,37 @@ class FakeChatService {
   }
 }
 
+class FakeConversationService {
+  getCalls: string[] = [];
+  deleteCalls: string[] = [];
+
+  getConversation(id: string) {
+    this.getCalls.push(id);
+    return of({ conversationId: id });
+  }
+
+  deleteConversation(id: string) {
+    this.deleteCalls.push(id);
+    return of(void 0);
+  }
+
+  toChatConversation(response: { conversationId?: string }, localId: string) {
+    return {
+      id: response.conversationId ?? null,
+      localId,
+      title: 'Nueva conversación',
+      messages: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+}
+
 describe('ChatBOT', () => {
   let fixture: ComponentFixture<ChatBOT>;
   let component: ChatBOT;
   let chat: FakeChatService;
+  let conversationsApi: FakeConversationService;
   let el: HTMLElement;
 
   async function ask(text: string): Promise<void> {
@@ -37,7 +65,10 @@ describe('ChatBOT', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ChatBOT],
-      providers: [{ provide: ChatService, useClass: FakeChatService }],
+      providers: [
+        { provide: ChatService, useClass: FakeChatService },
+        { provide: ConversationService, useClass: FakeConversationService },
+      ],
     })
       .overrideComponent(ChatBOT, {
         remove: { imports: [Navbar] },
@@ -48,6 +79,7 @@ describe('ChatBOT', () => {
     fixture = TestBed.createComponent(ChatBOT);
     component = fixture.componentInstance;
     chat = TestBed.inject(ChatService) as unknown as FakeChatService;
+    conversationsApi = TestBed.inject(ConversationService) as unknown as FakeConversationService;
     el = fixture.nativeElement;
     fixture.detectChanges();
   });
@@ -116,6 +148,17 @@ describe('ChatBOT', () => {
     chat.events$.next({ type: 'conversation', localId, conversationId: 'srv-2' });
 
     expect(component.activeConversation()?.id).toBe('srv-1');
+  });
+
+  it('consulta el historial al seleccionar una conversacion persistida', async () => {
+    await ask('hola');
+    const localId = component.activeLocalId() as string;
+    chat.events$.next({ type: 'conversation', localId, conversationId: 'srv-1' });
+    component.activeLocalId.set(null);
+
+    component.selectConversation(localId);
+
+    expect(conversationsApi.getCalls).toEqual(['srv-1']);
   });
 
   it('sin ID devuelto por el backend, los mensajes siguientes siguen enviando null', async () => {
@@ -287,6 +330,18 @@ describe('ChatBOT', () => {
     expect(chat.cancelCalls).toBe(1); // estaba en streaming
     expect(component.activeLocalId()).toBeNull();
     expect(el.querySelector('.welcome-copy')).not.toBeNull();
+  });
+
+  it('eliminar una conversacion persistida llama al endpoint DELETE', async () => {
+    await ask('uno');
+    const localId = component.activeLocalId() as string;
+    chat.events$.next({ type: 'conversation', localId, conversationId: 'srv-1' });
+
+    component.requestConversationDeletion(component.activeConversation()!);
+    component.confirmConversationDeletion();
+
+    expect(conversationsApi.deleteCalls).toEqual(['srv-1']);
+    expect(component.conversations()).toHaveLength(0);
   });
 
   it('cierra el socket al destruirse', () => {

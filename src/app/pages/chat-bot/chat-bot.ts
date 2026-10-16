@@ -16,6 +16,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 // AJUSTAR: ruta/nombre real del navbar del proyecto (no estaba disponible al implementar).
 import { Navbar } from '../../components/navbar/navbar';
 import { ChatService } from '../../core/services/chat.service';
+import { ConversationService } from '../../core/services/conversation.service';
 import {
   ChatConversation,
   ChatMessage,
@@ -51,6 +52,7 @@ export function deriveTitle(question: string): string {
 })
 export class ChatBOT implements OnDestroy {
   private readonly chat = inject(ChatService);
+  private readonly conversationsApi = inject(ConversationService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
@@ -127,6 +129,21 @@ export class ChatBOT implements OnDestroy {
     this.activeLocalId.set(id);
     this.stickToBottom = true;
     this.sidebarOpen.set(false);
+
+    const conversation = this.conversations().find((item) => item.localId === id);
+    if (conversation?.id) {
+      this.conversationsApi.getConversation(conversation.id).subscribe({
+        next: (response) => {
+          const loaded = this.conversationsApi.toChatConversation(response, conversation.localId);
+          this.updateConversation(conversation.localId, (current) => ({
+            ...current,
+            ...loaded,
+            id: loaded.id ?? current.id,
+            localId: current.localId,
+          }));
+        },
+      });
+    }
   }
 
   requestConversationDeletion(conversation: ChatConversation): void {
@@ -144,13 +161,14 @@ export class ChatBOT implements OnDestroy {
     if (target.localId === this.activeLocalId()) {
       this.interruptActiveResponse();
     }
-    const remaining = this.conversations().filter((c) => c.localId !== target.localId);
-    this.conversations.set(remaining);
-    this.errors.update(({ [target.localId]: _removed, ...rest }) => rest);
-    if (target.localId === this.activeLocalId()) {
-      this.activeLocalId.set(remaining[0]?.localId ?? null);
+    if (!target.id) {
+      this.removeConversation(target);
+      return;
     }
-    this.conversationToDelete.set(null);
+
+    this.conversationsApi.deleteConversation(target.id).subscribe({
+      next: () => this.removeConversation(target),
+    });
   }
 
   toggleSidebar(): void {
@@ -307,5 +325,15 @@ export class ChatBOT implements OnDestroy {
 
   private clearError(localId: string): void {
     this.errors.update(({ [localId]: _removed, ...rest }) => rest);
+  }
+
+  private removeConversation(target: ChatConversation): void {
+    const remaining = this.conversations().filter((c) => c.localId !== target.localId);
+    this.conversations.set(remaining);
+    this.errors.update(({ [target.localId]: _removed, ...rest }) => rest);
+    if (target.localId === this.activeLocalId()) {
+      this.activeLocalId.set(remaining[0]?.localId ?? null);
+    }
+    this.conversationToDelete.set(null);
   }
 }

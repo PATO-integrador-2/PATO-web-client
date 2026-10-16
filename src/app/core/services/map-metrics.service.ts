@@ -1,6 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import type { NationalPovertyItem } from '../../interfaces/ipm.interface';
 import type { LocationInfoMetrics } from '../../interfaces/map-location';
@@ -12,6 +11,28 @@ export interface DepartmentMetricItem {
   region: string;
   departamento: string;
   ipm: number | string;
+}
+
+type MapMetricRecord = Record<string, unknown>;
+
+export interface MapMetricsResponse {
+  data?: MapMetricsPayload;
+  content?: MapMetricsPayload;
+  countries?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  regions?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  departments?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  countryMetrics?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  regionMetrics?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  departmentMetrics?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+}
+
+interface MapMetricsPayload {
+  countries?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  regions?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  departments?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  countryMetrics?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  regionMetrics?: MapMetricRecord[] | Record<string, MapMetricRecord>;
+  departmentMetrics?: MapMetricRecord[] | Record<string, MapMetricRecord>;
 }
 
 export interface GeographicMetricMaps {
@@ -129,8 +150,7 @@ function buildYearRange(valuesByYear: Map<number, number[]>): YearRange {
 @Injectable({ providedIn: 'root' })
 export class MapMetricsService {
   private readonly http = inject(HttpClient);
-  private readonly nationalPovertyUrl = `${environment.apiAddr}/api/users/national-poverty`;
-  private readonly departmentPovertyUrl = `${environment.apiAddr}/api/users/household-poverty-by-department`;
+  private readonly mapMetricsUrl = `${environment.apiAddr}/api/users/map-metrics`;
 
   private readonly _status = signal<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   private readonly _year = signal<number | null>(null);
@@ -155,33 +175,22 @@ export class MapMetricsService {
     if (this._status() !== 'idle') return;
     this._status.set('loading');
 
-    forkJoin({
-      countries: this.http.get<NationalPovertyItem[]>(this.nationalPovertyUrl),
-      departments: this.http.get<DepartmentMetricItem[]>(this.departmentPovertyUrl),
-    }).subscribe({
-      next: ({ countries, departments }) => {
-        const countryItems = extractItems<NationalPovertyItem>(countries);
-        const departmentItems = extractItems<DepartmentMetricItem>(departments);
-        const countryMetrics = buildCountryMetrics(countryItems);
-        const countryInfo = buildCountryInfo(countryItems, countryMetrics);
-        const geographicMetrics = buildGeographicMetrics(departmentItems);
-        this._countryMetrics.set(countryMetrics);
-        this._countryInfo.set(countryInfo);
-        this._departmentMetrics.set(geographicMetrics.departments);
-        this._regionMetrics.set(geographicMetrics.regions);
-        this._departmentYears.set(geographicMetrics.departmentYears);
-        this._regionYears.set(geographicMetrics.regionYears);
-        const latestYear = [...countryItems, ...departmentItems]
-          .map(item => Number(item.anio))
-          .filter(year => Number.isFinite(year))
-          .reduce((latest, year) => Math.max(latest, year), 0);
-        this._year.set(latestYear || null);
+    this.http.get<MapMetricsResponse>(this.mapMetricsUrl).subscribe({
+      next: (response) => {
+        const metrics = normalizeMapMetrics(response);
+        this._countryMetrics.set(metrics.countries);
+        this._countryInfo.set(metrics.countryInfo);
+        this._departmentMetrics.set(metrics.departments);
+        this._regionMetrics.set(metrics.regions);
+        this._departmentYears.set(metrics.departmentYears);
+        this._regionYears.set(metrics.regionYears);
+        this._year.set(metrics.year);
         this._status.set('loaded');
         console.info('[MapMetrics] métricas cargadas', {
           period: 'all-years-average',
-          countries: countryMetrics.size,
-          regions: geographicMetrics.regions.size,
-          departments: geographicMetrics.departments.size,
+          countries: metrics.countries.size,
+          regions: metrics.regions.size,
+          departments: metrics.departments.size,
         });
       },
       error: (error) => {
@@ -190,6 +199,94 @@ export class MapMetricsService {
       },
     });
   }
+}
+
+interface NormalizedMapMetrics {
+  countries: MetricMap;
+  countryInfo: ReadonlyMap<string, LocationInfoMetrics>;
+  departments: MetricMap;
+  regions: MetricMap;
+  departmentYears: ReadonlyMap<string, YearRange>;
+  regionYears: ReadonlyMap<string, YearRange>;
+  year: number | null;
+}
+
+export function normalizeMapMetrics(response: MapMetricsResponse): NormalizedMapMetrics {
+  const payload = (response.data ?? response.content ?? response) as MapMetricsPayload;
+  const countryRecords = getMetricRecords(payload.countries ?? payload.countryMetrics);
+  const regionRecords = getMetricRecords(payload.regions ?? payload.regionMetrics);
+  const departmentRecords = getMetricRecords(payload.departments ?? payload.departmentMetrics);
+
+  const countries = recordsToMetricMap(countryRecords, record => normalizeCountryName(readText(record, 'pais', 'country', 'name')));
+  const regions = recordsToMetricMap(regionRecords, record => normalizeRegionName(readText(record, 'region', 'name')));
+  const departments = recordsToMetricMap(departmentRecords, record => normalizeDepartmentName(readText(record, 'departamento', 'department', 'name')));
+
+  return {
+    countries,
+    countryInfo: recordsToCountryInfo(countryRecords, countries),
+    departments,
+    regions,
+    departmentYears: recordsToYearMap(departmentRecords, record => normalizeDepartmentName(readText(record, 'departamento', 'department', 'name'))),
+    regionYears: recordsToYearMap(regionRecords, record => normalizeRegionName(readText(record, 'region', 'name'))),
+    year: [...countryRecords, ...regionRecords, ...departmentRecords]
+      .map(record => readNumber(record, 'latestYear', 'latest_year', 'anio', 'year'))
+      .filter((year): year is number => year !== undefined)
+      .reduce((latest, year) => Math.max(latest, year), 0) || null,
+  };
+}
+
+function getMetricRecords(section: MapMetricRecord[] | Record<string, MapMetricRecord> | undefined): MapMetricRecord[] {
+  if (!section) return [];
+  return Array.isArray(section)
+    ? section
+    : Object.entries(section).map(([key, value]) => ({ key, ...value }));
+}
+
+function recordsToMetricMap(records: MapMetricRecord[], getKey: (record: MapMetricRecord) => string): MetricMap {
+  return new Map(records.map(record => [getKey(record), readMetric(record)]).filter(([key, value]) => !!key && value !== undefined) as [string, number][]);
+}
+
+function recordsToYearMap(records: MapMetricRecord[], getKey: (record: MapMetricRecord) => string): ReadonlyMap<string, YearRange> {
+  return new Map(records.map(record => [
+    getKey(record),
+    {
+      highestYear: readNumber(record, 'highestYear', 'highest_year', 'maxYear'),
+      lowestYear: readNumber(record, 'lowestYear', 'lowest_year', 'minYear'),
+    },
+  ]).filter(([key]) => !!key) as [string, YearRange][]);
+}
+
+function recordsToCountryInfo(records: MapMetricRecord[], countryMetrics: MetricMap): ReadonlyMap<string, LocationInfoMetrics> {
+  return new Map(records.map(record => {
+    const country = normalizeCountryName(readText(record, 'pais', 'country', 'name'));
+    return [country, {
+      national: readMetric(record) ?? countryMetrics.get(country),
+      urban: readMetric(record, 'urban', 'urbano'),
+      rural: readMetric(record, 'rural'),
+      latestYear: readNumber(record, 'latestYear', 'latest_year', 'anio', 'year'),
+      highestYear: readNumber(record, 'highestYear', 'highest_year', 'maxYear'),
+      lowestYear: readNumber(record, 'lowestYear', 'lowest_year', 'minYear'),
+    }];
+  }).filter(([country]) => !!country) as [string, LocationInfoMetrics][]);
+}
+
+function readMetric(record: MapMetricRecord, ...keys: string[]): number | undefined {
+  const key = keys.length > 0
+    ? keys.find(candidate => record[candidate] !== undefined)
+    : ['national', 'average', 'promedio', 'metric', 'value', 'ipm', 'valor', 'valor_porcentaje']
+      .find(candidate => record[candidate] !== undefined);
+  return normalizeMetric(record[key ?? ''] as number | string | undefined);
+}
+
+function readText(record: MapMetricRecord, ...keys: string[]): string {
+  const key = keys.find(candidate => record[candidate] !== undefined) ?? 'key';
+  return String(record[key] ?? '');
+}
+
+function readNumber(record: MapMetricRecord, ...keys: string[]): number | undefined {
+  const key = keys.find(candidate => record[candidate] !== undefined);
+  const value = key ? Number(record[key]) : Number.NaN;
+  return Number.isFinite(value) ? value : undefined;
 }
 
 function extractItems<T>(response: T[] | { data?: T[]; content?: T[] }): T[] {

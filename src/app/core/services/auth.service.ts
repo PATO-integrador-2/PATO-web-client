@@ -54,7 +54,7 @@ export class AuthService {
                     if (this.isBrowser) {
                         localStorage.removeItem(this.tokenKey);
                     }
-                    this.router.navigate(['login']);
+                    this.router.navigate(['/']);
                 })
             )
             .subscribe();
