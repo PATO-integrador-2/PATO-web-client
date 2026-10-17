@@ -90,6 +90,7 @@ export class ChatBOT implements OnDestroy {
 
   constructor() {
     this.chat.events$.pipe(takeUntilDestroyed()).subscribe((event) => this.onStreamEvent(event));
+    this.loadConversations();
 
     // Mantiene el scroll al final mientras llegan chunks (solo en browser).
     effect(() => {
@@ -239,6 +240,18 @@ export class ChatBOT implements OnDestroy {
   }
 
   // ------------------------------------------------------------------ privado
+
+  private loadConversations(): void {
+    this.conversationsApi.getConversations().subscribe({
+      next: (responses) => {
+        this.conversations.set(
+          responses.map((response, index) =>
+            this.conversationsApi.toChatConversation(response, `server-${index}-${createLocalKey()}`),
+          ),
+        );
+      },
+    });
+  }
 
   /**
    * `backendId` es null para una conversacion nueva (el backend crea el ID) o el ID que el
