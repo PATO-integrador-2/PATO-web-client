@@ -125,6 +125,21 @@ export class ColDeptPredict {
     this.sidebarOpen.update(open => !open);
   }
 
+  // Exportar a PDF
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly exporter = inject(PredictionPdfExportService);
+  protected readonly exportableCount = signal(0);
+
+  private readonly watchExportable = afterEveryRender(() =>
+    this.exportableCount.set(this.exporter.countExportable(this.host.nativeElement)),
+  );
+
+  protected exportPdf(): void {
+    void this.exporter.run(this.host.nativeElement, {
+      title: 'Predicciones nacionales de Colombia',
+      slug: 'colombia',
+    });
+  }
 
 
 }

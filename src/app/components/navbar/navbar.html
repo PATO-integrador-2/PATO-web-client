@@ -13,8 +13,8 @@
     <div class="nav-container">
         <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" routerLink="/map-viewer">Mapa</a>
         <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" routerLink="/chat-bot">ChatBOT</a>
-        <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" routerLink="/col-national-dash">Panel histórico</a>
-        <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" routerLink="/col-national-predict">Predicciones</a>
+        <a mat-button routerLinkActive="active" routerLink="/dash">Panel histórico</a>
+        <a mat-button routerLinkActive="active" routerLink="/predict">Predicciones</a>
 
     </div>
 
@@ -47,10 +47,10 @@
             routerLink="/map-viewer" (click)="closeMenu()">Mapa</a>
         <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
             routerLink="/chat-bot" (click)="closeMenu()">ChatBOT</a>
-        <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-            routerLink="/col-national-dash" (click)="closeMenu()">Panel histórico</a>
-        <a mat-button routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-            routerLink="/col-national-predict" (click)="closeMenu()">Predicciones</a>
+        <a mat-button routerLinkActive="active"
+            routerLink="/dash" (click)="closeMenu()">Panel histórico</a>
+        <a mat-button routerLinkActive="active"
+            routerLink="/predict" (click)="closeMenu()">Predicciones</a>
     </nav>
 
     <div class="mobile-sidebar-account">
