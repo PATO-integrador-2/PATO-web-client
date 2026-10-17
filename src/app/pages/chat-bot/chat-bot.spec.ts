@@ -24,8 +24,14 @@ class FakeChatService {
 }
 
 class FakeConversationService {
+  listCalls = 0;
   getCalls: string[] = [];
   deleteCalls: string[] = [];
+
+  getConversations() {
+    this.listCalls++;
+    return of([]);
+  }
 
   getConversation(id: string) {
     this.getCalls.push(id);

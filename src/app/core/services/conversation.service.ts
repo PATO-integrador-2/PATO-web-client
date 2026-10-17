@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
-import { environment } from '../../../environments/environment.development';
 import { ChatConversation } from '../../interfaces/chat.interface';
+import { environment } from '../../../environments/environment.development';
 
 export type ConversationListResponse =
   | ConversationResponse[]
@@ -19,6 +19,7 @@ export interface ConversationResponse {
   created_at?: string;
   updatedAt?: string;
   updated_at?: string;
+  last_used_at?: string;
   messages?: ConversationMessageResponse[];
   conversation?: ConversationResponse;
   data?: ConversationResponse;
@@ -36,9 +37,7 @@ export interface ConversationMessageResponse {
 @Injectable({ providedIn: 'root' })
 export class ConversationService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${(environment.wsAddr ?? environment.apiAddr)
-    .replace(/^wss?:\/\//i, 'http://')
-    .replace(/\/+$/, '')}/api/conversations`;
+  private readonly apiUrl = `${environment.apiAddr}/api/conversations`;
 
   getConversations(): Observable<ConversationResponse[]> {
     return this.http.get<ConversationListResponse>(this.apiUrl).pipe(
@@ -47,7 +46,9 @@ export class ConversationService {
   }
 
   getConversation(conversationId: string): Observable<ConversationResponse> {
-    return this.http.get<ConversationResponse>(`${this.apiUrl}/${encodeURIComponent(conversationId)}`);
+    return this.http.get<ConversationResponse>(
+      `${this.apiUrl}/${encodeURIComponent(conversationId)}/messages`,
+    );
   }
 
   deleteConversation(conversationId: string): Observable<void> {
@@ -78,7 +79,7 @@ export class ConversationService {
         'Nueva conversación',
       messages,
       createdAt: source.createdAt ?? source.created_at ?? now,
-      updatedAt: source.updatedAt ?? source.updated_at ?? now,
+      updatedAt: source.updatedAt ?? source.updated_at ?? source.last_used_at ?? now,
     };
   }
 }
