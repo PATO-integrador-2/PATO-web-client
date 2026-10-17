@@ -1,15 +1,20 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment.development';
 import { ChatConversation } from '../../interfaces/chat.interface';
+
+export type ConversationListResponse =
+  | ConversationResponse[]
+  | { conversations?: ConversationResponse[]; data?: ConversationResponse[] };
 
 export interface ConversationResponse {
   conversationId?: string;
   conversation_id?: string;
   id?: string;
   title?: string;
+  name?: string;
   createdAt?: string;
   created_at?: string;
   updatedAt?: string;
@@ -31,7 +36,15 @@ export interface ConversationMessageResponse {
 @Injectable({ providedIn: 'root' })
 export class ConversationService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiAddr}/api/conversations`;
+  private readonly apiUrl = `${(environment.wsAddr ?? environment.apiAddr)
+    .replace(/^wss?:\/\//i, 'http://')
+    .replace(/\/+$/, '')}/api/conversations`;
+
+  getConversations(): Observable<ConversationResponse[]> {
+    return this.http.get<ConversationListResponse>(this.apiUrl).pipe(
+      map((response) => (Array.isArray(response) ? response : response.conversations ?? response.data ?? [])),
+    );
+  }
 
   getConversation(conversationId: string): Observable<ConversationResponse> {
     return this.http.get<ConversationResponse>(`${this.apiUrl}/${encodeURIComponent(conversationId)}`);
@@ -58,7 +71,11 @@ export class ConversationService {
     return {
       id,
       localId,
-      title: source.title ?? messages.find((message) => message.role === 'user')?.content ?? 'Nueva conversación',
+      title:
+        source.title ??
+        source.name ??
+        messages.find((message) => message.role === 'user')?.content ??
+        'Nueva conversación',
       messages,
       createdAt: source.createdAt ?? source.created_at ?? now,
       updatedAt: source.updatedAt ?? source.updated_at ?? now,
