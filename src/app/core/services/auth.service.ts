@@ -52,11 +52,12 @@ export class AuthService {
             .pipe(
                 finalize(() => {
                     if (this.isBrowser) {
-                        localStorage.removeItem(this.tokenKey);
+                        localStorage.clear(); 
                     }
                     this.router.navigate(['login']);
                 })
             )
             .subscribe();
     }
+
 }

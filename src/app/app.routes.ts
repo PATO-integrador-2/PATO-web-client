@@ -17,7 +17,7 @@ import { Landing } from './pages/landing/landing';
 import { ColDeptPredict } from './pages/prediction-viewer/col-dept-predict/col-dept-predict';
 
 export const routes: Routes = [
-  // Landing pública (sin guardias)
+  // Landing pública 
   { path: '', component: Landing, pathMatch: 'full' },
 
   // Rutas públicas / de autenticación
@@ -28,12 +28,12 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPassword, canActivate: [authenticatedGuard]},
 
   // Rutas protegidas por authGuard
-  { path: 'col-national-dash', component: ColNationalDash, canActivate: [authGuard]},
-  { path: 'col-dept-dash', component: ColDeptDash, canActivate: [authGuard]},
-  { path: 'latin-dash', component: LatinAmericaDash, canActivate: [authGuard]},
-  { path: 'col-national-predict', component: ColNationalPredict, canActivate: [authGuard]},
-  { path: 'latin-predict', component: LatinAmericaPredict, canActivate: [authGuard]},
-  { path: 'col-regional-predict', component: ColDeptPredict, canActivate: [authGuard]},
+  { path: 'dash', component: ColNationalDash, canActivate: [authGuard]},
+  { path: 'dash/col-regional', component: ColDeptDash, canActivate: [authGuard]},
+  { path: 'dash/latin', component: LatinAmericaDash, canActivate: [authGuard]},
+  { path: 'predict', component: ColNationalPredict, canActivate: [authGuard]},
+  { path: 'predict/col-regional', component: ColDeptPredict, canActivate: [authGuard]},
+  { path: 'predict/latin', component: LatinAmericaPredict, canActivate: [authGuard]},
   { path: 'map-viewer', component: MapViewer, canActivate: [authGuard]},
   { path: 'chat-bot', component: ChatBOT, canActivate: [authGuard]},
 
