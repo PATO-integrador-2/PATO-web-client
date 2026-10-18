@@ -129,6 +129,8 @@ describe('ChatBOT', () => {
 
     expect(el.querySelector('.message--user')?.textContent).toContain('hacinamiento');
     expect(el.querySelector('.typing')).not.toBeNull();
+    expect(el.querySelector('.typing img')?.getAttribute('src')).toBe('/assets/img/gifRodrigo.gif');
+    expect(el.querySelector('.typing')?.textContent).toContain('Rodrigo está pensando tu respuesta');
     expect(el.querySelector('.send-button--stop')).not.toBeNull();
   });
 
