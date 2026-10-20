@@ -6,7 +6,12 @@ import { Navbar } from '../../components/navbar/navbar';
 import { ChatService } from '../../core/services/chat.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import { ChatStreamEvent } from '../../interfaces/chat.interface';
-import { ChatBOT, deriveTitle, parseMarkdownTable } from './chat-bot';
+import {
+  ChatBOT,
+  deriveTitle,
+  normalizeConversationSearch,
+  parseMarkdownTable,
+} from './chat-bot';
 
 class FakeChatService {
   readonly events$ = new Subject<ChatStreamEvent>();
@@ -218,6 +223,25 @@ describe('ChatBOT', () => {
     expect(component.conversations().length).toBe(0);
   });
 
+  it('filtra conversaciones por texto del titulo ignorando mayusculas y tildes', async () => {
+    await ask('¿Cuál fue el IPM en Huila en 2018?');
+    chat.events$.next({ type: 'done', localId: component.activeLocalId() as string });
+    component.activeLocalId.set(null);
+    await ask('IPM de Antioquia en 2020');
+
+    component.searchOpen.set(true);
+    component.searchQuery.set('HUILA');
+    fixture.detectChanges();
+
+    expect(component.filteredConversations().map((conversation) => conversation.title)).toEqual([
+      'Cuál fue el IPM en Huila en 2018',
+    ]);
+    expect(el.querySelectorAll('.conversation-row')).toHaveLength(1);
+
+    component.searchQuery.set('2018');
+    expect(component.filteredConversations()).toHaveLength(1);
+  });
+
   it('acumula varios chunks en un unico mensaje y done lo completa', async () => {
     await ask('hola');
     const id = component.activeLocalId() as string;
@@ -398,5 +422,11 @@ describe('deriveTitle', () => {
   });
   it('trunca titulos largos', () => {
     expect(deriveTitle('a'.repeat(100)).length).toBe(48);
+  });
+});
+
+describe('normalizeConversationSearch', () => {
+  it('elimina tildes y espacios externos', () => {
+    expect(normalizeConversationSearch('  HÚILA  ')).toBe('huila');
   });
 });

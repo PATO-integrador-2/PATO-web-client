@@ -83,6 +83,24 @@
 	background: #f1f5f9;
 }
 
+.conversation-search-input {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 9px 12px;
+	border: 1px solid #cbd8d4;
+	border-radius: 8px;
+	outline: 0;
+	background: #ffffff;
+	color: var(--chat-ink);
+	font: inherit;
+	font-size: 13px;
+}
+
+.conversation-search-input:focus {
+	border-color: var(--chat-accent);
+	box-shadow: 0 0 0 2px rgba(50, 87, 84, 0.12);
+}
+
 .sidebar-action-icon {
 	width: 24px;
 	height: 24px;

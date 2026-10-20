@@ -74,6 +74,14 @@ export function deriveTitle(question: string): string {
   return base.length > MAX_TITLE_LENGTH ? `${base.slice(0, MAX_TITLE_LENGTH - 1).trimEnd()}…` : base;
 }
 
+export function normalizeConversationSearch(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
 @Component({
   selector: 'app-chat-bot',
   imports: [FormsModule, Navbar],
@@ -96,6 +104,8 @@ export class ChatBOT {
   readonly activeLocalId = this.session.activeLocalId;
   readonly conversationToDelete = signal<ChatConversation | null>(null);
   readonly sidebarOpen = signal(false);
+  readonly searchOpen = signal(false);
+  readonly searchQuery = signal('');
   /** Texto de error por conversacion (el mensaje del asistente solo guarda el estado). */
   question = '';
 
@@ -106,6 +116,14 @@ export class ChatBOT {
   readonly activeConversation = computed<ChatConversation | null>(
     () => this.conversations().find((c) => c.localId === this.activeLocalId()) ?? null,
   );
+  readonly filteredConversations = computed(() => {
+    const query = normalizeConversationSearch(this.searchQuery());
+    if (!query) return this.conversations();
+
+    return this.conversations().filter((conversation) =>
+      normalizeConversationSearch(conversation.title).includes(query),
+    );
+  });
   readonly messages = computed<ChatMessage[]>(() => this.activeConversation()?.messages ?? []);
   readonly isStreaming = computed(() => this.messages().some((m) => m.status === 'streaming'));
   readonly activeError = computed(() => {
@@ -202,6 +220,12 @@ export class ChatBOT {
 
   toggleSidebar(): void {
     this.sidebarOpen.update((open) => !open);
+  }
+
+  toggleSearch(): void {
+    this.searchOpen.update((open) => !open);
+    if (this.searchOpen()) return;
+    this.searchQuery.set('');
   }
 
   // -------------------------------------------------------------------- envio

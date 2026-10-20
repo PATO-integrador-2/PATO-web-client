@@ -9,7 +9,7 @@
       Nueva conversación
     </button>
 
-    <button type="button" class="search-chat-button">
+    <button type="button" class="search-chat-button" (click)="toggleSearch()" [attr.aria-expanded]="searchOpen()">
       <svg class="sidebar-action-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path
           d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
@@ -18,14 +18,27 @@
       Buscar chat
     </button>
 
+    @if (searchOpen()) {
+      <input
+        type="search"
+        class="conversation-search-input"
+        placeholder="Buscar por título"
+        aria-label="Buscar conversación por título"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    }
+
     <nav aria-label="Conversaciones">
       <p class="sidebar-label">Recientes</p>
 
       @if (conversations().length === 0) {
         <p class="sidebar-empty">Aún no tienes conversaciones.</p>
+      } @else if (filteredConversations().length === 0) {
+        <p class="sidebar-empty">No hay conversaciones con ese título.</p>
       }
 
-      @for (conversation of conversations(); track conversation.localId) {
+      @for (conversation of filteredConversations(); track conversation.localId) {
         <div
           class="conversation-row"
           [class.active-conversation-row]="conversation.localId === activeLocalId()"
