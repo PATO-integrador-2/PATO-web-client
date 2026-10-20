@@ -1,7 +1,6 @@
 import {
   Component,
   ElementRef,
-  OnDestroy,
   PLATFORM_ID,
   computed,
   effect,
@@ -11,20 +10,51 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 // AJUSTAR: ruta/nombre real del navbar del proyecto (no estaba disponible al implementar).
 import { Navbar } from '../../components/navbar/navbar';
 import { ChatService } from '../../core/services/chat.service';
+import { ChatSessionService } from '../../core/services/chat-session.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import {
   ChatConversation,
   ChatMessage,
-  ChatStreamEvent,
 } from '../../interfaces/chat.interface';
 
 export const DEFAULT_CONVERSATION_TITLE = 'Nueva conversación';
 const MAX_TITLE_LENGTH = 48;
+
+export interface MarkdownTable {
+  headers: string[];
+  rows: string[][];
+}
+
+function parseTableRow(line: string): string[] | null {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) return null;
+  return trimmed
+    .slice(1, -1)
+    .split('|')
+    .map((cell) => cell.trim());
+}
+
+export function parseMarkdownTable(content: string): MarkdownTable | null {
+  const lines = content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length < 2) return null;
+
+  const headers = parseTableRow(lines[0]);
+  const separator = parseTableRow(lines[1]);
+  if (!headers?.length || !separator || separator.length !== headers.length) return null;
+  if (!separator.every((cell) => /^:?-{3,}:?$/.test(cell))) return null;
+
+  const rows = lines.slice(2).map(parseTableRow);
+  if (rows.some((row) => !row || row.length !== headers.length)) return null;
+
+  return { headers, rows: rows as string[][] };
+}
 
 function createLocalKey(): string {
   const c = (globalThis as { crypto?: Crypto }).crypto;
@@ -50,9 +80,10 @@ export function deriveTitle(question: string): string {
   templateUrl: './chat-bot.html',
   styleUrl: './chat-bot.css',
 })
-export class ChatBOT implements OnDestroy {
+export class ChatBOT {
   private readonly chat = inject(ChatService);
   private readonly conversationsApi = inject(ConversationService);
+  private readonly session = inject(ChatSessionService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
@@ -61,14 +92,16 @@ export class ChatBOT implements OnDestroy {
   readonly defaultTitle = DEFAULT_CONVERSATION_TITLE;
 
   // ---- estado
-  readonly conversations = signal<ChatConversation[]>([]);
-  readonly activeLocalId = signal<string | null>(null);
+  readonly conversations = this.session.conversations;
+  readonly activeLocalId = this.session.activeLocalId;
   readonly conversationToDelete = signal<ChatConversation | null>(null);
   readonly sidebarOpen = signal(false);
   /** Texto de error por conversacion (el mensaje del asistente solo guarda el estado). */
-  private readonly errors = signal<Record<string, string>>({});
-
   question = '';
+
+  parseTable(content: string): MarkdownTable | null {
+    return parseMarkdownTable(content);
+  }
 
   readonly activeConversation = computed<ChatConversation | null>(
     () => this.conversations().find((c) => c.localId === this.activeLocalId()) ?? null,
@@ -77,7 +110,7 @@ export class ChatBOT implements OnDestroy {
   readonly isStreaming = computed(() => this.messages().some((m) => m.status === 'streaming'));
   readonly activeError = computed(() => {
     const id = this.activeLocalId();
-    return id ? (this.errors()[id] ?? null) : null;
+    return id ? (this.session.errors()[id] ?? null) : null;
   });
   /** El ultimo mensaje del asistente fallido/cancelado es el que se puede reintentar. */
   readonly retryableMessageId = computed(() => {
@@ -89,7 +122,6 @@ export class ChatBOT implements OnDestroy {
   });
 
   constructor() {
-    this.chat.events$.pipe(takeUntilDestroyed()).subscribe((event) => this.onStreamEvent(event));
     this.loadConversations();
 
     // Mantiene el scroll al final mientras llegan chunks (solo en browser).
@@ -101,10 +133,6 @@ export class ChatBOT implements OnDestroy {
         if (el) el.scrollTop = el.scrollHeight;
       });
     });
-  }
-
-  ngOnDestroy(): void {
-    this.chat.cancel();
   }
 
   // ------------------------------------------------------------ conversaciones
@@ -244,7 +272,8 @@ export class ChatBOT implements OnDestroy {
   private loadConversations(): void {
     this.conversationsApi.getConversations().subscribe({
       next: (responses) => {
-        this.conversations.set(
+        if (this.conversations().length > 0) return;
+        this.session.setConversations(
           responses.map((response, index) =>
             this.conversationsApi.toChatConversation(response, `server-${index}-${createLocalKey()}`),
           ),
@@ -260,31 +289,6 @@ export class ChatBOT implements OnDestroy {
   private dispatch(localId: string, backendId: string | null, text: string): void {
     this.clearError(localId);
     this.chat.send(localId, backendId, text);
-  }
-
-  private onStreamEvent(event: ChatStreamEvent): void {
-    // Los eventos se aplican a la conversacion que los origino (localId), nunca a la activa.
-    switch (event.type) {
-      case 'conversation':
-        // El ID del backend se adopta una sola vez y nunca se sobrescribe (debe ser estable).
-        this.updateConversation(event.localId, (c) =>
-          c.id === null ? { ...c, id: event.conversationId } : c,
-        );
-        break;
-      case 'chunk':
-        this.updateStreamingMessage(event.localId, (m) => ({
-          ...m,
-          content: m.content + event.content,
-        }));
-        break;
-      case 'done':
-        this.updateStreamingMessage(event.localId, (m) => ({ ...m, status: 'complete' }));
-        break;
-      case 'error':
-        this.updateStreamingMessage(event.localId, (m) => ({ ...m, status: 'error' }));
-        this.errors.update((e) => ({ ...e, [event.localId]: event.message }));
-        break;
-    }
   }
 
   /** Cancela el stream en curso (si lo hay) y marca el mensaje como cancelado. */
@@ -317,33 +321,21 @@ export class ChatBOT implements OnDestroy {
   }
 
   private updateConversation(localId: string, fn: (c: ChatConversation) => ChatConversation): void {
-    this.conversations.update((list) => list.map((c) => (c.localId === localId ? fn(c) : c)));
+    this.session.updateConversation(localId, fn);
   }
 
   private updateStreamingMessage(localId: string, fn: (m: ChatMessage) => ChatMessage): void {
-    this.updateConversation(localId, (c) => {
-      let index = -1;
-      for (let i = c.messages.length - 1; i >= 0; i--) {
-        if (c.messages[i].role === 'assistant' && c.messages[i].status === 'streaming') {
-          index = i;
-          break;
-        }
-      }
-      if (index === -1) return c; // evento tardio sin mensaje activo: se ignora
-      const messages = c.messages.slice();
-      messages[index] = fn(messages[index]);
-      return { ...c, messages, updatedAt: new Date().toISOString() };
-    });
+    this.session.updateStreamingMessage(localId, fn);
   }
 
   private clearError(localId: string): void {
-    this.errors.update(({ [localId]: _removed, ...rest }) => rest);
+    this.session.clearError(localId);
   }
 
   private removeConversation(target: ChatConversation): void {
     const remaining = this.conversations().filter((c) => c.localId !== target.localId);
-    this.conversations.set(remaining);
-    this.errors.update(({ [target.localId]: _removed, ...rest }) => rest);
+    this.session.setConversations(remaining);
+    this.session.clearError(target.localId);
     if (target.localId === this.activeLocalId()) {
       this.activeLocalId.set(remaining[0]?.localId ?? null);
     }

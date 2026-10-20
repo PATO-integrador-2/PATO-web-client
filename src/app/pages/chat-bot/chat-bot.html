@@ -95,7 +95,28 @@
                   {{ message.role === 'user' ? 'Tú' : 'Asistente' }}:
                 </span>
 
-                @if (message.content) {
+                @if (parseTable(message.content); as table) {
+                  <div class="message-table-wrapper">
+                    <table class="chat-table">
+                      <thead>
+                        <tr>
+                          @for (header of table.headers; track $index) {
+                            <th scope="col">{{ header }}</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (row of table.rows; track $index) {
+                          <tr>
+                            @for (cell of row; track $index) {
+                              <td>{{ cell }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else if (message.content) {
                   <p class="message-text">{{ message.content }}</p>
                 }
 

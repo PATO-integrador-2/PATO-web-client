@@ -6,7 +6,7 @@ import { Navbar } from '../../components/navbar/navbar';
 import { ChatService } from '../../core/services/chat.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import { ChatStreamEvent } from '../../interfaces/chat.interface';
-import { ChatBOT, deriveTitle } from './chat-bot';
+import { ChatBOT, deriveTitle, parseMarkdownTable } from './chat-bot';
 
 class FakeChatService {
   readonly events$ = new Subject<ChatStreamEvent>();
@@ -88,6 +88,22 @@ describe('ChatBOT', () => {
     conversationsApi = TestBed.inject(ConversationService) as unknown as FakeConversationService;
     el = fixture.nativeElement;
     fixture.detectChanges();
+  });
+
+  it('convierte una tabla Markdown en una tabla HTML', () => {
+    const table = parseMarkdownTable(
+      '| Proyecto | Descripción | Dimensión IPM |\n|---|---|---|\n| Escuelas Comunitarias | Instalación de escuelas | Educación |',
+    );
+
+    expect(table).toEqual({
+      headers: ['Proyecto', 'Descripción', 'Dimensión IPM'],
+      rows: [['Escuelas Comunitarias', 'Instalación de escuelas', 'Educación']],
+    });
+  });
+
+  it('mantiene como texto el contenido que no es una tabla Markdown válida', () => {
+    expect(parseMarkdownTable('Proyecto | Descripción')).toBeNull();
+    expect(parseMarkdownTable('| Proyecto | Descripción |\n| texto | texto |')).toBeNull();
   });
 
   it('se crea y muestra el estado vacio sin conversaciones hardcodeadas', () => {
@@ -222,6 +238,24 @@ describe('ChatBOT', () => {
     expect(component.isStreaming()).toBe(false);
     expect(el.querySelector('.typing')).toBeNull();
     expect(el.querySelector('.send-button--stop')).toBeNull();
+  });
+
+  it('mantiene una respuesta activa al salir y volver al modulo', async () => {
+    await ask('hola');
+    const localId = component.activeLocalId() as string;
+
+    fixture.destroy();
+    expect(chat.cancelCalls).toBe(0);
+
+    chat.events$.next({ type: 'chunk', localId, content: 'Respuesta ' });
+    chat.events$.next({ type: 'chunk', localId, content: 'continuada' });
+
+    fixture = TestBed.createComponent(ChatBOT);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.activeLocalId()).toBe(localId);
+    expect(fixture.componentInstance.messages()[1].content).toBe('Respuesta continuada');
+    expect(fixture.componentInstance.messages()[1].status).toBe('streaming');
   });
 
   it('un error muestra el mensaje y permite reintentar sin duplicar al usuario', async () => {
