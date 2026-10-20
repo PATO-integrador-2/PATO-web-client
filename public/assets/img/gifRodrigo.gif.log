@@ -1,0 +1,21 @@
+C:/Program Files/Krita (x64)/bin/ffmpeg.exe -hide_banner -y -y -r 15 -start_number 0 -start_number_range 1 -i C:/Users/Dalyhae/Documents/University Data/6 semestre/proyecto_2/web/PATO-web-client/public/assets/img/fotograma%04d.png -i C:/Users/Dalyhae/Documents/University Data/6 semestre/proyecto_2/web/PATO-web-client/public/assets/img/KritaTempPalettegen_%06d.png -lavfi scale=w=1276:h=1000:flags=bicubic[0:v];[0:v][1:v]paletteuse=dither=sierra2_4a:diff_mode=none -f gif -loop 0 -gifflags +transdiff C:/Users/Dalyhae/Documents/University Data/6 semestre/proyecto_2/web/PATO-web-client/public/assets/img/gifRodrigo.gif
+=====================================================
+Input #0, image2, from 'C:/Users/Dalyhae/Documents/University Data/6 semestre/proyecto_2/web/PATO-web-client/public/assets/img/fotograma%04d.png':
+  Duration: 00:00:10.04, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: png, rgba(pc, gbr/unknown/unknown), 970x760 [SAR 11811:11811 DAR 97:76], 25 fps, 25 tbr, 25 tbn
+Input #1, image2, from 'C:/Users/Dalyhae/Documents/University Data/6 semestre/proyecto_2/web/PATO-web-client/public/assets/img/KritaTempPalettegen_%06d.png':
+  Duration: 00:00:00.04, start: 0.000000, bitrate: N/A
+  Stream #1:0: Video: png, rgba(pc, gbr/unknown/unknown), 16x16 [SAR 1:1 DAR 1:1], 25 fps, 25 tbr, 25 tbn
+Stream mapping:
+  Stream #0:0 (png) -> scale:default
+  Stream #1:0 (png) -> paletteuse
+  paletteuse:default -> Stream #0:0 (gif)
+Press [q] to stop, [?] for help
+Output #0, gif, to 'C:/Users/Dalyhae/Documents/University Data/6 semestre/proyecto_2/web/PATO-web-client/public/assets/img/gifRodrigo.gif':
+  Metadata:
+    encoder         : Lavf62.3.100
+  Stream #0:0: Video: gif, pal8(pc, gbr/unknown/unknown, progressive), 1276x1000 [SAR 12125:12122 DAR 97:76], q=2-31, 200 kb/s, 15 fps, 100 tbn
+    Metadata:
+      encoder         : Lavc62.11.100 gif
+frame=   14 fps=0.0 q=-0.0 size=      47KiB time=00:00:00.93 bitrate= 410.3kbits/s speed=1.87x elapsed=0:00:00.50    frame=   30 fps= 30 q=-0.0 size=      72KiB time=00:00:02.00 bitrate= 296.8kbits/s speed=1.98x elapsed=0:00:01.01    frame=   47 fps= 31 q=-0.0 size=     163KiB time=00:00:03.13 bitrate= 425.8kbits/s speed=2.06x elapsed=0:00:01.52    frame=   63 fps= 31 q=-0.0 size=     166KiB time=00:00:04.20 bitrate= 324.6kbits/s speed=2.07x elapsed=0:00:02.02    frame=   79 fps= 31 q=-0.0 size=     173KiB time=00:00:05.26 bitrate= 269.5kbits/s speed=2.07x elapsed=0:00:02.53    frame=   95 fps= 31 q=-0.0 size=     256KiB time=00:00:06.33 bitrate= 331.1kbits/s speed=2.08x elapsed=0:00:03.04    frame=  112 fps= 31 q=-0.0 size=     256KiB time=00:00:07.46 bitrate= 280.9kbits/s speed= 2.1x elapsed=0:00:03.55    frame=  128 fps= 31 q=-0.0 size=     256KiB time=00:00:08.53 bitrate= 245.8kbits/s speed= 2.1x elapsed=0:00:04.06    frame=  144 fps= 31 q=-0.0 size=     256KiB time=00:00:09.60 bitrate= 218.5kbits/s speed= 2.1x elapsed=0:00:04.57    frame=  160 fps= 31 q=-0.0 size=     512KiB time=00:00:10.66 bitrate= 393.2kbits/s speed= 2.1x elapsed=0:00:05.09    frame=  176 fps= 31 q=-0.0 size=     768KiB time=00:00:11.73 bitrate= 536.2kbits/s speed= 2.1x elapsed=0:00:05.59    frame=  192 fps= 31 q=-0.0 size=    1024KiB time=00:00:12.80 bitrate= 655.4kbits/s speed= 2.1x elapsed=0:00:06.10    frame=  209 fps= 32 q=-0.0 size=    1280KiB time=00:00:13.93 bitrate= 752.6kbits/s speed=2.11x elapsed=0:00:06.61    frame=  223 fps= 31 q=-0.0 size=    1536KiB time=00:00:14.86 bitrate= 846.4kbits/s speed=2.09x elapsed=0:00:07.12    frame=  240 fps= 31 q=-0.0 size=    1536KiB time=00:00:16.00 bitrate= 786.4kbits/s speed= 2.1x elapsed=0:00:07.63    [out#0/gif @ 0000024b0c96ab80] video:1632KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.001197%
+frame=  251 fps= 31 q=-0.0 Lsize=    1632KiB time=00:00:16.73 bitrate= 799.2kbits/s speed= 2.1x elapsed=0:00:07.97    

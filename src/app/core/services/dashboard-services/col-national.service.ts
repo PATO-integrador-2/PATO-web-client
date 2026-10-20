@@ -43,7 +43,7 @@ export class ColNationalService {
         },
         {
             id: 3,
-            label: 'Incidencia de Pobreza Multidimensioanl según sexo de la persona ',
+            label: 'Incidencia de Pobreza Multidimensional según sexo de la persona',
             content: MpiSex,
             filterFields: ['domain'],
             getDomainsSignal: () => this.getMpiSexDomains(),
@@ -80,7 +80,7 @@ export class ColNationalService {
 
         {
             id: 6,
-            label: 'Incidencia de Pobreza Multidimensioanl según sexo del jefe del hogar',
+            label: 'Incidencia de Pobreza Multidimensional según sexo del jefe del hogar',
             content: MpiBossSex,
             filterFields: ['domain'],
             getDomainsSignal: () => this.getMpiBossSexDomains(),
