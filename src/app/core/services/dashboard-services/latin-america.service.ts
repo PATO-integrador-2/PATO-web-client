@@ -34,13 +34,13 @@ export class LatinAmericaService {
             filterFields: ['year', 'area', 'country'],
             getYearsSignal: () => this.getNationalPovertyYears(),
             getCountriesByYear: (year?: number) => this.getNationalPovertyCountriesByYear(year),
-            getAreasByYearAndCountry: (year?: number, area?: string) =>
-                this.getNationalPovertyAreasByYearAndCountry(year, area),
+            getAreasByYearAndCountry: (year?: number, country?: string) =>
+                this.getNationalPovertyAreasByYearAndCountry(year, country),
             loadData: (f) => {
                 const selectedYear = f?.year ?? 2024;
                 const selectedArea = f?.area ?? 'Urban';
                 const selectedCountry = f?.country ?? 'Colombia';
-                this.loadNationalPovertyData(selectedYear, selectedArea, selectedCountry);
+                this.loadNationalPovertyData(selectedYear, selectedCountry, selectedArea);
             }
         },
         {
@@ -50,13 +50,14 @@ export class LatinAmericaService {
             filterFields: ['year', 'area', 'country'],
             getYearsSignal: () => this.getPovertyByAgeYears(),
             getCountriesByYear: (year?: number) => this.getPovertyByAgeCountriesByYear(year),
-            getAreasByYearAndCountry: (year?: number, area?: string) =>
-                this.getPovertyByAgeCountriesByYearAndArea(year, area),
+            getAreasByYearAndCountry: (year?: number, country?: string) =>
+                this.getPovertyByAgeAreasByYearAndCountry(year, country
+                ),
             loadData: (f) => {
                 const selectedYear = f?.year ?? 2024;
-                const selectedArea = f?.area ?? 'Urban';
                 const selectedCountry = f?.country ?? 'Colombia';
-                this.loadPovertyByAgeData(selectedYear, selectedArea, selectedCountry);
+                const selectedArea = f?.area ?? 'Urban';
+                this.loadPovertyByAgeData(selectedYear, selectedCountry, selectedArea);
             }
 
         },
@@ -147,7 +148,7 @@ export class LatinAmericaService {
     rawNationalPovertyData = signal<NationalPovertyItem[]>([]);
     nationalPovertyData = signal<NationalPovertyItem[]>([]);
 
-    fetchNationalPovertyData(year?: number, area?: string, country?: string,) {
+    fetchNationalPovertyData(year?: number, country?: string, area?: string) {
         if (!isPlatformBrowser(this.platformId)) return;
 
         this.httpClient.get<NationalPovertyItem[]>(this.national_poverty_url).subscribe({
@@ -221,12 +222,12 @@ export class LatinAmericaService {
     }
 
     // 3. Método de filtrado síncrono (llamado por el modal y al inicio)
-    loadNationalPovertyData(year?: number, area?: string, country?: string) {
+    loadNationalPovertyData(year?: number, country?: string, area?: string) {
         const data = this.rawNationalPovertyData();
 
         // Si no se han descargado los datos aún, llamar a la API
         if (!data || data.length === 0) {
-            this.fetchNationalPovertyData(year, area, country);
+            this.fetchNationalPovertyData(year, country, area);
             return;
         }
 
@@ -261,7 +262,7 @@ export class LatinAmericaService {
     rawpovertyByAgeData = signal<PovertyByAgeItem[]>([]);
     povertyByAgeData = signal<PovertyByAgeItem[]>([]);
 
-    fetchPovertyByAgeData(year?: number, area?: string, country?: string,) {
+    fetchPovertyByAgeData(year?: number, country?: string, area?: string) {
         if (!isPlatformBrowser(this.platformId)) return;
 
         this.httpClient.get<PovertyByAgeItem[]>(this.poverty_by_age_url).subscribe({
@@ -282,7 +283,7 @@ export class LatinAmericaService {
                     ? country
                     : availableCountries[0];
 
-                const availableAreas = this.getPovertyByAgeCountriesByYearAndArea(targetYear, targetCountry);
+                const availableAreas = this.getPovertyByAgeAreasByYearAndCountry(targetYear, targetCountry);
                 const targetArea = area && availableAreas.some(c => c.toLowerCase() === area.toLowerCase())
                     ? area
                     : availableAreas[0];
@@ -313,7 +314,7 @@ export class LatinAmericaService {
         ].sort();
     }
 
-    getPovertyByAgeCountriesByYearAndArea(year?: number, country?: string): string[] {
+    getPovertyByAgeAreasByYearAndCountry(year?: number, country?: string): string[] {
         const data = this.rawpovertyByAgeData();
         if (!year || !country) return [];
 
@@ -331,11 +332,11 @@ export class LatinAmericaService {
         ].sort();
     }
 
-    loadPovertyByAgeData(year?: number, area?: string, country?: string,) {
+    loadPovertyByAgeData(year?: number, country?: string, area?: string) {
         const data = this.rawpovertyByAgeData();
         // Si no se han descargado los datos aún, llamar a la API
         if (!data || data.length === 0) {
-            this.fetchPovertyByAgeData(year, area, country);
+            this.fetchPovertyByAgeData(year, country, area);
             return;
         }
 
