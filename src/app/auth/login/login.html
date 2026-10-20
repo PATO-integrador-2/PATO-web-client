@@ -26,14 +26,16 @@
       <mat-error>{{ errorMessage() }}</mat-error>
       }
 
-        <button type="button" matButton="filled" class="submit-container" (click)="login()">Iniciar Sesión</button>
+      <button type="button" matButton="filled" class="submit-container" (click)="login()">Iniciar Sesión</button>
 
-        <a routerLink="/accountRecovery" class="link">¿Olvidaste tu contraseña?</a>
+      <a routerLink="/accountRecovery" class="link">¿Olvidaste tu contraseña?</a>
 
     </div>
   </mat-drawer>
 
-  <mat-drawer-content >
-    <img src="assets/img/pe.png">
+  <mat-drawer-content class="drawer-content-container">
+    <div class="hero-wrapper">
+      <img src="patepanel.webp" class="responsive-img" alt="PATO Dashboard">
+    </div>
   </mat-drawer-content>
 </mat-drawer-container>

@@ -297,7 +297,7 @@ mat-toolbar {
   color: #64748b;
 }
 
-/* SIDEBARD PREDICCIONES */
+/* SIDEBAR PREDICCIONES */
 
 .main-container-predict {
   height: calc(100vh - 64px);
@@ -310,14 +310,34 @@ mat-drawer.custom-sidebar-predict {
   max-width: 350px !important;
   border-right: 1px solid #e0e0e0 !important;
   background-color: #ffffff !important;
+  
+  /* Mantiene el sidebar fijo en la altura disponible */
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important; /* Previene scroll general en el contenedor del drawer */
 }
 
+/* Encabezado fijo del sidebar */
+.sidebar-header {
+  flex-shrink: 0;
+  padding: 20px 20px 10px 20px;
+}
+
+/* Cuerpo con scroll independiente si sobrepasa la pantalla */
 .sidebar-body-predict {
   padding: 0 20px 20px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  flex: 1;
+  overflow-y: auto; /* Permite scroll solo en el contenido interno del sidebar si es muy largo */
+}
 
+/* Asegurar que el contenido principal haga scroll independientemente */
+mat-drawer-content {
+  height: 100%;
+  overflow-y: auto;
 }
 
 .main-content-predict {
