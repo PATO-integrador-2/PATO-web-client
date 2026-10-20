@@ -148,3 +148,39 @@
         display: inline;
     }
 }
+
+.main-container {
+    width: 100vw;
+    height: 100vh;
+}
+
+/* El contenedor principal ocupa el espacio restante */
+.drawer-content-container {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+/* Envoltorio para limitar el tamaño y centrarlo */
+.hero-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    max-width: 1500x;
+    /* Evita que la imagen se vuelva gigantesca en monitores grandes */
+    max-height: 90vh;
+}
+
+/* Reglas de la imagen para que nunca se corte ni se deforme */
+.responsive-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
