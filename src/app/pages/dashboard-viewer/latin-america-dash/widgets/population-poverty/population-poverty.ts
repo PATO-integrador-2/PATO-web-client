@@ -41,7 +41,7 @@ export class PopulationPoverty {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       // Disparar la carga inicial de datos desde el backend
-      this.dashboardService.loadNationalPovertyData(2025, 'National', 'Ecuador');
+      this.dashboardService.loadNationalPovertyData(2025, 'Ecuador', 'National');
     }
   }
 
